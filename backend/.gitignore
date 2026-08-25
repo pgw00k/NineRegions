@@ -1,0 +1,23 @@
+# 依赖与构建产物
+node_modules/
+dist/
+
+# 运行日志（保留目录结构，忽略内容）
+logs/
+
+# 本地环境
+.env
+
+# 操作系统垃圾
+.DS_Store
+Thumbs.db
+
+# 说明：protocol/source 与 src/proto/generated/message-registry.json 均纳入版本管理，
+# 这是本项目自包含、可离线 Docker 构建的关键。
+
+# 原始LUA协议
+protocol/
+
+# 模拟数据
+src/mocks/
+mocks/
