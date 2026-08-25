@@ -1,0 +1,22 @@
+# 本地服务器编排。
+# 注意：Frida 明文侧信道 relay（tools/auto_relay.py）必须在宿主机（Windows）运行并
+# attach 到 MC.exe，再把明文 C2S 发到 127.0.0.1:9002；本容器发布 9002/udp 接收它，
+# 客户端连 ws://127.0.0.1:8800。因此 relay 不进容器。
+services:
+  xj-server:
+    build: .
+    image: xj-local-server
+    restart: unless-stopped
+    ports:
+      - "8800:8800/tcp"      # 客户端 WS 网关
+      - "9002:9002/udp"      # Frida 明文侧信道
+      - "8080:8080/tcp"      # HTTP（/ver、/login、patchlist）
+    environment:
+      - WS_HOST=0.0.0.0
+      - PLAIN_UDP_HOST=0.0.0.0
+      - STORAGE_DRIVER=memory
+      - RECORD_FRAMES=true
+    volumes:
+      # 把协议源挂进去，便于改 mock / 重新生成注册表后无需重建镜像
+      - ./src/mocks:/app/src/mocks
+      - ./logs:/app/logs

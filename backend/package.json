@@ -1,0 +1,23 @@
+{
+  "name": "xj-nine-regions-local-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "仙剑奇侠传九野 (The Nine Regions) 本地服务器 — TS/Node 业务消息模拟后端",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/index.js",
+    "dev": "tsc -p tsconfig.json && node dist/src/index.js",
+    "registry": "python tools/extract_registry.py",
+    "test": "tsc -p tsconfig.json && node dist/tools/test_encoder.js",
+    "docker:build": "docker build -t xj-local-server .",
+    "docker:run": "docker run --rm -p 8800:8800/tcp -p 9002:9002/udp xj-local-server"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  }
+}
