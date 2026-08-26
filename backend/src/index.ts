@@ -23,6 +23,7 @@ import { MessageRouter } from './messages/MessageRouter';
 import { HandlerServices, INTERNAL_MSG_IDS } from './messages/types';
 import { PveSettlementService } from './messages/PveSettlement';
 import { UserStateStore } from './state/UserState';
+import { AccountDataStore } from './state/AccountDataStore';
 import { createStorage } from './storage/Storage';
 import { WsGateway } from './net/WsGateway';
 import { PlainChannel } from './net/PlainChannel';
@@ -100,8 +101,11 @@ async function main(): Promise<void> {
   // 按用户 ID 的会话状态（重连恢复战斗 / 起名 / 教程完成）
   const users = new UserStateStore();
 
+  // 玩家账号数据（卡牌库/英雄库/牌组库/商店，业务模拟核心）
+  const account = new AccountDataStore();
+
   // 共享服务 + 路由
-  const services: HandlerServices = { schema, encoder, orders, registry, storage, logger, config: Config, push, pve, users };
+  const services: HandlerServices = { schema, encoder, orders, registry, storage, logger, config: Config, push, pve, users, account };
   const router = new MessageRouter(services);
 
   const channel = new PlainChannel(logger, {

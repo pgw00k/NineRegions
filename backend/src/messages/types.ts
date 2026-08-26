@@ -17,6 +17,7 @@ import { Config } from '../config/env';
 import { wrapDynProtoAuto } from '../net/FrameCodec';
 import { PveSettlementService } from './PveSettlement';
 import { UserStateStore } from '../state/UserState';
+import { AccountDataStore } from '../state/AccountDataStore';
 
 /** 一条 S2C 帧（未包 WS 头；WsGateway 负责加 RFC6455 帧头）。 */
 export interface S2CFrame {
@@ -40,6 +41,8 @@ export interface HandlerServices {
   pve: PveSettlementService;
   /** 按用户 ID 的会话状态（重连恢复战斗、起名等）。 */
   users: UserStateStore;
+  /** 玩家账号数据（卡牌库/英雄库/牌组库/商店，业务模拟核心）。 */
+  account: AccountDataStore;
 }
 
 /** 处理器上下文：一次 C2S 的处理所需全部信息。 */

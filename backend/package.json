@@ -9,7 +9,9 @@
     "start": "node dist/src/index.js",
     "dev": "tsc -p tsconfig.json && node dist/src/index.js",
     "registry": "python tools/extract_registry.py",
+    "extract:data": "python tools/extract_account_data.py",
     "test": "tsc -p tsconfig.json && node dist/tools/test_encoder.js",
+    "test:account": "tsc -p tsconfig.json && node dist/tools/test_account_messages.js",
     "docker:build": "docker build -t xj-local-server .",
     "docker:run": "docker run --rm -p 8800:8800/tcp -p 9002:9002/udp xj-local-server"
   },

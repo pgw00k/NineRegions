@@ -12,16 +12,38 @@
 | `types.ts` | 公共类型：`S2CFrame` / `HandlerServices` / `HandlerContext` / `MessageHandler`(抽象基类) / `INTERNAL_MSG_IDS` / `buildResponseFrame` |
 | `MessageRegistry.ts` | 加载 `generated/message-registry.json`，提供 `get(msgId)` 与 `responseId(msgId)` |
 | `MockLoader.ts` | 加载 `mocks/<repMsgId>.json`，解析 `$type`、替换占位符、按 schema 编码为裸 protobuf |
-| `MessageRouter.ts` | 计算 repMsgId → 构造 `HandlerContext` → 三级处理器链路由 |
+| `ProtoTools.ts` | C2S 请求解码：剥离 NetBitStream 前缀（`1100`+userID+token 实证）→ 按 schema 递归解码为字段号 keyed 对象 |
+| `MessageRouter.ts` | 计算 repMsgId → 构造 `HandlerContext` → 处理器链路由 |
 | `handlers/InternalHandler.ts` | 处理内部消息 1/2/3/4/7（回显同号空体）|
+| `handlers/GameDataHandler.ts` | **10001 EnterGame → 10002 动态组装**：读 10002.json 骨架，用 `AccountDataStore` 覆写 cardLibrary/deckLibrary/heroLibrary/shopInfo |
+| `handlers/DeckHandler.ts` | 牌组/卡牌：10005 EditDeck / 10007 DeleteDeck / 10039 ChangeDeckName / 10041 CardResolve / 10043 CardCompound |
+| `handlers/HeroHandler.ts` | 英雄：10260 ChallengeHero / 10262 HeroGiveGift / 10264 GetFavorReward / 10266 SetHeroSkin |
+| `handlers/ShopHandler.ts` | 商店：10210 GetShopInfo / 10212 ShopBuy |
 | `handlers/MockHandler.ts` | 数据驱动业务消息（命中 `mocks/<repMsgId>.json` 即应答）|
 | `handlers/EchoHandler.ts` | 兜底：把收到的 C2S 裸体包 dynproto 回送（永远 match）|
 
 ---
 
-## 应答号（repMsgId）规则
+## 处理器链（OOP 继承/多态）
+
+`MessageRouter` 按序尝试，首个 `match` 的处理器负责 `handle`：
+
+1. **InternalHandler** — match 内部消息 → 回显同号空体。
+2. **ReconnectHandler / BattleHandler / NameHandler** — 重连恢复、战斗链路、起名（见各自文档）。
+3. **GameDataHandler / DeckHandler / HeroHandler / ShopHandler** — 业务数据（`AccountDataStore` 档案驱动，状态保持）。
+4. **MockHandler** — match `loader.exists(repMsgId)` → 加载 JSON 编码应答；编码失败降级为不回应。
+5. **EchoHandler** — 永远 match 兜底；把 C2S 裸体包 dynproto 回送（客户端容错忽略未预期的 REP）。
+
+新增业务消息：**简单应答**丢 `src/mocks/<repMsgId>.json` 即可；**有状态业务**（牌组/英雄/商店）
+参照 `DeckHandler`：在 `AccountDataStore` 加 API → 在 `handlers/` 加处理器 → 在 `MessageRouter`
+按序注册。请求解析用 `ProtoTools.decodeMessage`（自动剥 NetBitStream 前缀），响应用
+`encoder.encode(schema, payload)` + `buildResponseFrame`。
 
 实证：本游戏**所有 REQ/REP 配对均为 `REP = REQ + 1`**。
+
+---
+
+## 应答号（repMsgId）规则
 
 ```ts
 repMsgId = INTERNAL_MSG_IDS.has(msgId) ? msgId
@@ -41,18 +63,6 @@ function buildResponseFrame(ctx: HandlerContext, innerPbuf: Buffer): S2CFrame;
 
 - **order**：交给 `OrderTracker`（内部消息回显、逻辑消息逐连接 +1）。
 - **dynproto 包裹**：内部消息（repMsgId ∈ {1,2,3,4,7}）**不包 dynproto**，body 即 inner；其余逻辑消息用 `wrapDynProtoAuto` 包裹（小体补零到 28B，大体不补）。
-
----
-
-## 处理器链（OOP 继承/多态）
-
-`MessageRouter` 按序尝试，首个 `match` 的处理器负责 `handle`：
-
-1. **InternalHandler** — match 内部消息 → 回显同号空体。
-2. **MockHandler** — match `loader.exists(repMsgId)` → 加载 JSON 编码应答；编码失败降级为不回应（避免发畸形包）。
-3. **EchoHandler** — 永远 match 兜底；把 C2S 裸体包 dynproto 回送（参考网关 smart 模式 echo_body），客户端容错忽略未预期的 REP，不致崩溃。
-
-新增业务消息：只需在 `src/mocks/` 丢一个 `<repMsgId>.json`，**无需改代码**（`MockHandler` 自动命中，`EchoHandler` 退居兜底）。
 
 ---
 
