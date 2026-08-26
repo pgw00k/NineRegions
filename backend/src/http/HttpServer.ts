@@ -1,24 +1,31 @@
 /**
- * HttpServer.ts — HTTP 仿真层（/ver 与 /login），整合进 TS 服务便于单容器 Docker。
+ * HttpServer.ts — HTTP 仿真层入口（路由装配 + 生命周期）。
  *
- * 实证结论（HANDOFF.md §6.2/§6.3）：
- *  - /ver 所有字段必须是「字符串」（port 给数字会被客户端 NRE）；
- *  - /login 是 JSON 不是 protobuf，客户端 JsonConvert 只吃 JSON；同时返回驼峰与帕斯卡
- *    大小写变体字段，防 NRE。
+ * 职责收敛为两件事：
+ *  1. 生命周期：作为 Server 子类提供 start()/stop()（index.ts 统一编排不变）；
+ *  2. 装配：把请求交给 HttpRouter 分发，未命中兜底 404。
+ *
+ * 端点实现全部下沉到 routes/ 目录（见 routes/index.ts 登记表），新增路由
+ * 无需改动本文件。路由层实证结论（/ver 全字符串、/login 双大小写变体、
+ * /r/:ver/statistics 打点）见各 handler 文件注释。
+ *
  * 客户端通过 hosts 把官方域名指向本机，由本地 CA 证书过 TLS；这里只负责 HTTP 语义。
  */
 import * as http from 'http';
-import { URL } from 'url';
-import { Buffer } from 'buffer';
 import { Server } from '../core/Server';
 import { Logger } from '../core/Logger';
 import { Config } from '../config/env';
+import { HttpRouter } from './HttpRouter';
+import { HttpContext } from './HttpContext';
+import { registerRoutes } from './routes';
 
 export class HttpServer extends Server {
   private server?: http.Server;
+  private readonly router = new HttpRouter();
 
   constructor(logger: Logger) {
     super('http', logger);
+    registerRoutes(this.router);
   }
 
   async start(): Promise<void> {
@@ -32,7 +39,10 @@ export class HttpServer extends Server {
       });
     });
     this.setRunning(true);
-    this.logger.info('http', `HTTP 仿真监听 http://${Config.httpHost}:${Config.httpPort} (/ver, /login)`);
+    this.logger.info(
+      'http',
+      `HTTP 仿真监听 http://${Config.httpHost}:${Config.httpPort} (${this.router.list().join(', ')})`,
+    );
   }
 
   async stop(): Promise<void> {
@@ -43,67 +53,9 @@ export class HttpServer extends Server {
   }
 
   private handle(req: http.IncomingMessage, res: http.ServerResponse): void {
-    const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
-    if (url.pathname === '/ver') return this.sendVer(res);
-    if (url.pathname === '/login') return this.handleLogin(req, res);
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('not found');
-  }
-
-  private sendVer(res: http.ServerResponse): void {
-    // 全部字符串，port 必须是字符串（客户端 NRE 实测）
-    const body = {
-      ver: Config.gameVer,
-      cdn: Config.gameCdn,
-      cdnbak: '',
-      host: Config.gameHost,
-      port: String(Config.gamePort),
-      phost: '',
-      pport: '',
-      newapp: '',
-      notice: '',
-      state: '0',
-      tag: '',
-      md5: '',
-      supportver: '0.12.0',
-      forceupdate: '0',
-      packresetver: '',
-    };
-    const json = JSON.stringify(body);
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-    res.end(json);
-    this.logAccess('/ver');
-  }
-
-  private handleLogin(req: http.IncomingMessage, res: http.ServerResponse): void {
-    let buf = '';
-    req.on('data', (c: Buffer) => (buf += c.toString('utf-8')));
-    req.on('end', () => {
-      const token = 'localtoken123';
-      // 驼峰 + 帕斯卡大小写变体，防客户端字段名不匹配导致 NRE
-      const resp = {
-        error: 0,
-        index: '0',
-        token,
-        host: Config.gameHost,
-        port: String(Config.gamePort),
-        Error: 0,
-        Index: '0',
-        Token: token,
-        Host: Config.gameHost,
-        Port: String(Config.gamePort),
-        uid: '76561198124119613',
-        userid: '76561198124119613',
-        session: token,
-      };
-      const json = JSON.stringify(resp);
-      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-      res.end(json);
-      this.logAccess('/login');
-    });
-  }
-
-  private logAccess(path: string): void {
-    this.logger.info('http', `GET ${path} 200`);
+    const ctx = new HttpContext(req, res, this.logger);
+    if (!this.router.dispatch(ctx.method, ctx.pathname, ctx)) {
+      ctx.text('not found', 404);
+    }
   }
 }
