@@ -18,6 +18,10 @@ import { EchoHandler } from './handlers/EchoHandler';
 import { BattleHandler } from './handlers/BattleHandler';
 import { ReconnectHandler } from './handlers/ReconnectHandler';
 import { NameHandler } from './handlers/NameHandler';
+import { GameDataHandler } from './handlers/GameDataHandler';
+import { DeckHandler } from './handlers/DeckHandler';
+import { HeroHandler } from './handlers/HeroHandler';
+import { ShopHandler } from './handlers/ShopHandler';
 import { UserStateStore } from '../state/UserState';
 import { MOCKS_DIR_ABS } from '../config/env';
 import { LOGIC_RECONNECTION_REQ, BATTLE_RECONNECTION_REQ } from '../net/OrderTracker';
@@ -41,6 +45,11 @@ export class MessageRouter {
       new ReconnectHandler(loader, services.users),
       new BattleHandler(),
       new NameHandler(),
+      // 业务数据（账号档案驱动）：先进游戏 → 牌组/英雄/商店
+      new GameDataHandler(loader),
+      new DeckHandler(),
+      new HeroHandler(),
+      new ShopHandler(),
       new MockHandler(loader),
       new EchoHandler(),
     ];
