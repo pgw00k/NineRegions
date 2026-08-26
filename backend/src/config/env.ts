@@ -55,8 +55,8 @@ export const Config = {
   wsSubprotocol: get('WS_SUBPROTOCOL', 'xj'),
   plainUdpPort: getNum('PLAIN_UDP_PORT', 9002),
   plainUdpHost: get('PLAIN_UDP_HOST', '0.0.0.0'),
-  httpPort: getNum('HTTP_PORT', 8080),
-  httpHost: get('HTTP_HOST', '127.0.0.1'),
+  httpPort: getNum('HTTP_PORT', 4010),
+  httpHost: get('HTTP_HOST', '0.0.0.0'),
 
   // 协议源 / 生成产物（相对 backend 根）
   protocolDir: get('PROTOCOL_DIR', 'protocol/source'),
@@ -68,7 +68,7 @@ export const Config = {
   gameHost: get('GAME_HOST', '127.0.0.1'),
   gamePort: getNum('GAME_PORT', 8800),
   gameVer: get('GAME_VER', '0.12.786'),
-  gameCdn: get('GAME_CDN', 'http://127.0.0.1:8080/res/'),
+  gameCdn: get('GAME_CDN', 'http://127.0.0.1:4010/res/'),
 
   // 存储后端
   storageDriver: get('STORAGE_DRIVER', 'memory'),
