@@ -3,21 +3,24 @@
  *
  * 协议事实（来自 HANDOFF.md / Note.md 实证）：
  *  - S2C / C2S（明文）帧: [bodyLen u32 LE][order u32 LE][msgId u16 LE][body]
- *      - ★bodyLen 含 msgId 2B：body 实际字节数 = bodyLen - 2（与 parsePlain / 客户端同构）。
- *        body 始终从字节 10 开始（跳过 10B 头），到 8 + bodyLen 结束。
- *        ⚠️ 坑：若 bodyLen 误写成「不含 msgId 的 body 长度」，客户端会把 body 末尾裁掉 2B，
- *        protobuf 被截断 → 能解出 msgId 但解析 MsgBody 失败（2026-08-28 实证）。
+ *      - ★bodyLen = body 的字节数：即「不含 10B 头 + 不含 msgId 2B」的消息体长度，
+ *        客户端从 msgId 之后连续读 bodyLen 字节作为 body（真实抓包 EnterGame 10002 应答
+ *        实测 bodyLen=body.length，客户端可正确解析 MsgBody）。
+ *        ⚠️ 坑：若 bodyLen 误写成 body.length + 2（误含 msgId 2B），客户端会越过 body 末尾
+ *        多读 2B，导致能解出 msgId 但判 MsgBodyExists=false、解析 MsgBody 失败
+ *        （2026-08-28 实证）。
  *  - 业务 protobuf body 外套 dynproto 头: [4B 零][4B LE 长度][pbuf]，小体补零到 28B
  */
 import { Buffer } from 'buffer';
 
 /**
  * 构造一条 S2C 应答帧。
- * bodyLen 含 msgId 2B（与 parsePlain / 客户端解码约定一致）：`body 长度 = bodyLen - 2`。
+ * bodyLen = body 字节数（不含 10B 头 + 不含 msgId 2B），与客户端解码约定一致
+ * （2026-08-28 实证：写 body.length + 2 会让客户端多读 2B → MsgBodyExists=false）。
  */
 export function buildS2C(msgId: number, order: number, body: Buffer): Buffer {
   const header = Buffer.allocUnsafe(10);
-  header.writeUInt32LE((body.length + 2) & 0xffffffff, 0); // bodyLen（含 msgId 2B）
+  header.writeUInt32LE(body.length & 0xffffffff, 0); // bodyLen（不含 msgId）
   header.writeUInt32LE(order & 0xffffffff, 4); // order
   header.writeUInt16LE(msgId & 0xffff, 8); // msgId
   return Buffer.concat([header, body]);
@@ -32,10 +35,13 @@ export function parsePlain(
   const order = buf.readUInt32LE(4);
   const msgId = buf.readUInt16LE(8);
   let body: Buffer;
-  if (bodyLen < 2 || 8 + bodyLen > buf.length) {
+  // bodyLen = body 字节数（不含 10B 头 + 不含 msgId）；body 从字节 10 起、长 bodyLen
+  if (bodyLen === 0) {
+    body = Buffer.alloc(0);
+  } else if (10 + bodyLen > buf.length) {
     body = buf.subarray(10); // 容错：取剩余全部
   } else {
-    body = buf.subarray(10, 8 + bodyLen);
+    body = buf.subarray(10, 10 + bodyLen);
   }
   return { msgId, order, body };
 }
