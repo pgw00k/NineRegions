@@ -49,7 +49,7 @@ export class FrameRecorder {
       hex: payload.toString('hex'),
     };
     try {
-      rec.ascii = payload.toString('latin1');
+      // rec.ascii = payload.toString('latin1');
     } catch {
       /* ignore */
     }
