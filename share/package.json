@@ -1,0 +1,26 @@
+{
+  "name": "mc-local-share",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nine Regions 共享类型定义 — 由 pack_msg 生成的 message interface 与 enum",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "gen": "tsx scripts/generate_msg.ts",
+    "gen:res": "tsx scripts/generate_res.ts",
+    "gen:ts": "tsx scripts/generate_ts.ts",
+    "gen:grpc": "tsx scripts/generate_gRPC.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rimraf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "rimraf": "^5.0.5",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0"
+  }
+}

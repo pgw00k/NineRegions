@@ -33,7 +33,7 @@ export class MessageRouter2 {
   /**
    * 路由一条已解密的 C2S。
    * @param msgId 解密后的请求消息号（reqId）。
-   * @param order C2S 的 order，原样回用于应答。
+   * @param order C2S 的 order；应答帧使用 order + 1。
    * @param body  解密后、含 NetBitStream 前缀的业务体。
    * @returns 要下发的 S2C 帧（0 或 1 条）。
    */
@@ -64,12 +64,12 @@ export class MessageRouter2 {
       return [];
     }
 
-    // ③ 编码 REP → dynproto 体 → 生成 S2C 帧（应答号用应答器 recId，order 沿用 C2S）
+    // ③ 编码 REP → dynproto 体 → 生成 S2C 帧（应答号用应答器 recId，order = C2S order + 1）
     const repSchema = get(Number(responder.recId));
     if (!repSchema) return [];
     try {
       const inner = encodeMessage(repSchema, rep);
-      return [{ msgId: Number(responder.recId), order, body: wrapDynProtoAuto(inner) }];
+      return [{ msgId: Number(responder.recId), order: order + 1, body: wrapDynProtoAuto(inner) }];
     } catch (e) {
       this.logger?.warn('router', `[${connId}] 编码 rec#${responder.recId} 失败: ${(e as Error).message}`);
       return [];
