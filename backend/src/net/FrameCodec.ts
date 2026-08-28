@@ -2,18 +2,22 @@
  * FrameCodec.ts — 线格式编解码（复刻参考网关 gateway.py 的 build_msg / parse_plain / _wrap_dynproto）。
  *
  * 协议事实（来自 HANDOFF.md / Note.md 实证）：
- *  - S2C 帧: [bodyLen u32 LE][order u32 LE][msgId u16 LE][body]
- *      - bodyLen = body 的字节长度（不含头部、不含 msgId）
- *  - C2S 明文帧（Frida 侧信道转发）: [bodyLen u32 LE][order u32 LE][msgId u16 LE][body]
- *      - bodyLen 含 msgId 2B
+ *  - S2C / C2S（明文）帧: [bodyLen u32 LE][order u32 LE][msgId u16 LE][body]
+ *      - ★bodyLen 含 msgId 2B：body 实际字节数 = bodyLen - 2（与 parsePlain / 客户端同构）。
+ *        body 始终从字节 10 开始（跳过 10B 头），到 8 + bodyLen 结束。
+ *        ⚠️ 坑：若 bodyLen 误写成「不含 msgId 的 body 长度」，客户端会把 body 末尾裁掉 2B，
+ *        protobuf 被截断 → 能解出 msgId 但解析 MsgBody 失败（2026-08-28 实证）。
  *  - 业务 protobuf body 外套 dynproto 头: [4B 零][4B LE 长度][pbuf]，小体补零到 28B
  */
 import { Buffer } from 'buffer';
 
-/** 构造一条 S2C 应答帧。 */
+/**
+ * 构造一条 S2C 应答帧。
+ * bodyLen 含 msgId 2B（与 parsePlain / 客户端解码约定一致）：`body 长度 = bodyLen - 2`。
+ */
 export function buildS2C(msgId: number, order: number, body: Buffer): Buffer {
   const header = Buffer.allocUnsafe(10);
-  header.writeUInt32LE(body.length & 0xffffffff, 0); // bodyLen
+  header.writeUInt32LE((body.length + 2) & 0xffffffff, 0); // bodyLen（含 msgId 2B）
   header.writeUInt32LE(order & 0xffffffff, 4); // order
   header.writeUInt16LE(msgId & 0xffff, 8); // msgId
   return Buffer.concat([header, body]);

@@ -1,5 +1,5 @@
 {
-  "name": "xj-nine-regions-local-server",
+  "name": "mc-local-backend",
   "version": "0.1.0",
   "private": true,
   "description": "仙剑奇侠传九野 (The Nine Regions) 本地服务器 — TS/Node 业务消息模拟后端",
@@ -13,13 +13,22 @@
     "test": "tsc -p tsconfig.json && node dist/tools/test_encoder.js",
     "test:account": "tsc -p tsconfig.json && node dist/tools/test_account_messages.js",
     "docker:build": "docker build -t xj-local-server .",
-    "docker:run": "docker run --rm -p 8800:8800/tcp -p 9002:9002/udp xj-local-server"
+    "docker:run": "docker run --rm -p 8800:8800/tcp -p 9002:9002/udp xj-local-server",
+    "bundle": "esbuild dist/src/index.js --bundle --platform=node --target=node18 --format=cjs --outfile=dist/bundle.js",
+    "pack": "rimraf dist/pack && pnpm run build && pnpm run bundle && pkg dist/bundle.js --targets node18-win-x64 --output dist/pack/nine-regions-backend.exe",
+    "pack:dir": "pnpm run pack && xcopy /e /i /y static dist\\pack\\static && copy /y .env.example dist\\pack\\.env.example && copy /y protocol\\source\\pack_msg dist\\pack\\ 2>nul"
   },
   "engines": {
     "node": ">=18"
   },
+  "dependencies": {
+    "mc-local-share": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "esbuild": "^0.28.0",
+    "pkg": "^5.8.1",
+    "rimraf": "^5.0.5",
     "typescript": "^5.5.0"
   }
 }
