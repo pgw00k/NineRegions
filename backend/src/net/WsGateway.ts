@@ -25,7 +25,6 @@ import { Config } from '../config/env';
 import { buildS2C, buildConnectionAccepted } from './FrameCodec';
 import { FrameRecorder } from './FrameRecorder';
 import { S2CFrame } from '../messages/types';
-import { OrderTracker } from './OrderTracker';
 import { decryptC2S, DecodedC2S } from './C2SCrypto';
 
 const WS_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
@@ -44,7 +43,7 @@ export class WsGateway extends Server {
   /** C2S 解密后回调（由 index.ts 注入，路由应答）。返回要下发的 S2C 帧。 */
   private onC2S?: (connId: string, frame: DecodedC2S) => S2CFrame[];
 
-  constructor(logger: Logger, private readonly orders: OrderTracker) {
+  constructor(logger: Logger) {
     super('ws', logger);
     this.recorder = new FrameRecorder(logger, Config.recordFrames);
     try {
@@ -110,7 +109,6 @@ export class WsGateway extends Server {
     const connId = `c${String(++this.connCounter).padStart(3, '0')}`;
     // 重连识别：本进程此前已有连接（跨重启持久标记命中）或当前仍有旧连接活跃 → 视为重连会话。
     const isReconnect = this.hadPriorSession || this.activeConnId !== '';
-    if (isReconnect) this.orders.markReconnect(connId);
     this.activeSocket = sock;
     this.activeConnId = connId;
     this.logger.info(
@@ -121,7 +119,6 @@ export class WsGateway extends Server {
     sock.on('error', (e) => this.logger.warn('ws', `[${connId}] socket error: ${(e as Error).message}`));
     sock.on('close', () => {
       this.logger.info('ws', `[${connId}] 断开`);
-      this.orders.reset(connId);
       if (this.onConnClose) this.onConnClose(connId);
       if (this.activeSocket === sock) {
         this.activeSocket = null;

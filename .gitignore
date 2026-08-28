@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+.pkg-cache/
+.pnpm-store/
+.tmp/
+node_modules/

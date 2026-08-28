@@ -1,36 +1,31 @@
-# 仙剑奇侠传九野 (The Nine Regions) — 本地服务器模拟后端
+# 仙剑奇侠传九野 (The Nine Regions) — 九野模拟后端
 
 让已停服的 Steam 游戏「仙剑奇侠传九野」在本地完整运行：复刻官方 WS 网关与 HTTP 仿真，
-从 `MESSAGE_ID.lua` + `pack_msg` 逐个实现业务消息的模拟应答。
+对客户端加密 C2S 直读解密后，用**自动生成 + 手写**的应答器逐个模拟业务消息。
 
-- **语言**：TypeScript + Node 22
-- **依赖**：**零运行时 npm 依赖**（自研 RFC6455 WebSocket + 自研 protobuf 编解码）
-- **部署**：Docker 单容器（见 `Dockerfile` / `docker-compose.yml`）
-- **协议源**：自包含于 `protocol/source/`（`MESSAGE_ID.lua` / `pack_msg` / `NetMsg/*.lua`）
+- **语言**：TypeScript + Node（打包成独立 `nine-regions-backend.exe`，运行不依赖 Node）
+- **运行时依赖**：仅 `mc-local-share`（共享层的静态 protobuf schema 与编解码）
+- **协议源**：schema / MESSAGE_ID / services 由 `share/scripts/*.ts` 从 lua 解析生成，见 [`../share/`](../share/)
+- **C2S 解密**：`net/C2SCrypto.ts` 离线恢复帧 key 直读密文，**脱离 Frida 明文侧信道**
 
-> 详细开发记录、协议事实、坑与教训见 [`Note.md`](./Note.md)。
+> 详细协议事实、帧格式、坑与教训见各目录 `README.md`（重点 `net/` 与 `messages/`）。
 
 ---
 
 ## 快速开始
 
 ```bash
-npm install        # 仅 devDependencies: typescript + @types/node
-npm run build      # tsc 编译到 dist/
-npm start          # node dist/src/index.js  （或 npm run dev 一步到位）
-npm test           # proto 层 + mock 文件一致性自测
+pnpm install          # 安装（monorepo：share + backend）
+pnpm --filter mc-local-share build     # 先编译共享层（若 schema 有改动还需 gen）
+pnpm --filter mc-local-backend dev     # tsc 编译 + node dist/src/index.js
 ```
 
 启动后监听：
-- `ws://127.0.0.1:8800` — 游戏 WS 网关（握手需回显 `Sec-WebSocket-Protocol: xj`）
-- `udp://127.0.0.1:9002` — Frida 明文侧信道（接收加密前明文帧）
-- `http://127.0.0.1:8080` — `/ver`、`/login` 仿真
+- `ws://0.0.0.0:8800` — 游戏 WS 网关（握手需回显 `Sec-WebSocket-Protocol: xj`）
+- `http://0.0.0.0:4010` — `/login`、`/ver` 等 HTTP 登录仿真
 
-### 真实联调前置（宿主机 Windows，不进容器）
-1. `hosts` 把官方域名（`xianjiantcglogin.51aiwan.com` 等）指向本机 + 本地 CA 证书（参考蓝本 `HANDOFF.md §2`）。
-2. 启动本服务。
-3. 启动游戏，进程起来后用 Frida relay（参考 `frida_relay.py <PID>` 或 `auto_relay.py`）hook `WebSocketClient.Send` 转发明文帧到 UDP :9002。
-4. 客户端即走通 握手 → 登录 → 进游戏 → 心跳 → 业务消息。
+> 直接连真实客户端：把游戏登录域名指向本机（hosts + 本地 CA，见 `capture/certs`），启动服务，
+> 客户端即可走通 登录 → 握手 → 进游戏 → 业务消息。
 
 ---
 
@@ -39,19 +34,22 @@ npm test           # proto 层 + mock 文件一致性自测
 ```
 backend/
 ├── src/
-│   ├── config/env.ts          # 配置与路径常量
-│   ├── core/                  # Logger / Server 基类
-│   ├── net/                   # FrameCodec / OrderTracker / FrameRecorder / WsGateway / PlainChannel
-│   ├── proto/                 # ProtobufCodec / SchemaRegistry / ProtobufEncoder + 生成物
-│   ├── messages/              # MessageRegistry / types / MockLoader / handlers / MessageRouter
-│   ├── storage/               # Storage 抽象 + Memory + Redis/Database 桩
-│   ├── http/                  # HttpServer (/ver, /login)
-│   ├── mocks/                 # 以消息号命名的业务消息模拟 JSON
-│   └── index.ts               # 入口编排
-├── protocol/source/           # 协议源（自包含）：MESSAGE_ID.lua / pack_msg / NetMsg/*.lua
-├── tools/                     # extract_registry.py / test_encoder.ts / dump_schema.ts / smoke_ws.js
+│   ├── config/env.ts              # 配置与路径常量
+│   ├── core/                      # Logger / Server 基类
+│   ├── net/                       # FrameCodec / WsGateway / C2SCrypto / FrameRecorder
+│   │   ├── msg/                   # 自动生成的应答器（NetMsg_*.ts）
+│   │   ├── msg_mod/               # 应答器扩展点（心跳、逻辑重连）
+│   │   ├── IHandle.ts             # IHandle<REQ,REP> 契约
+│   │   └── MessageControllerBase.ts
+│   ├── messages/                  # MessageRouter2（路由）+ types
+│   ├── http/                      # HttpServer（/login /ver 仿真）
+│   ├── data/game/                 # 游戏静态数据（cards/decks/heros/heroSkills...）
+│   ├── state/                     # 用户/账号状态（可选）
+│   └── index.ts                   # 装配入口（gateway + router + http）
+├── static/                        # 静态资源（patchlist 等）
+├── share/ → ../share               # 共享层（pnpm workspace）
+├── tmp_*.js / tmp_*.ts            # 开发期临时脚本（可安全删除）
 ├── Dockerfile / docker-compose.yml / .env.example / tsconfig.json / package.json
-├── Note.md                    # 开发记录（记忆锚点）
 └── README.md
 ```
 
@@ -59,26 +57,47 @@ backend/
 
 ## 设计要点
 
-- **零运行时依赖**：WS（RFC6455 手搓）、protobuf（线格式原语自研）全部自研，最大化 Docker 健壮性。
-- **数据驱动 mock**：`src/mocks/<repMsgId>.json` 用字段号做 key、`$type` 标注 protobuf 短名，加载即生效，无需改代码。
-- **帧格式**：S2C / UDP 明文均为 `[bodyLen u32][order u32][msgId u16][body]`；逻辑消息 body 包 dynproto（`[4B零][4B LE 长度][pbuf][小体补零28B]`），内部消息(1/2/3/4/7) 空体不包。
-- **order**：逻辑消息 REP 严格递增 REQ+1；内部消息回显（客户端 `OnSetOrder` 校验 `order-logicOrder==1`）。
-- **C2S 加密绕过**：C2S 是 IFix JIT 内联加密，静态不可还原；用 Frida 明文侧信道（UDP :9002）拿到明文帧驱动应答。
+- **零运行时 npm 依赖**：WS（RFC6455 手搓）、C2S 解密、protobuf 编解码全部自研/共享层，最大化打包健壮性。
+- **应答 = `AutoResponser[reqId].Handle(req)`**：`MessageController`（自动生成）按 `reqId` 注册应答器，
+  每个应答器实现 `IHandle<REQ, REP>`，声明 `reqId/recId` 并 `Handle(req)` 返回字段名对象。
+- **帧格式**：S2C 为 `[bodyLen u32][order u32][msgId u16][body]`，**bodyLen 含 msgId 2B**（详见 `net/README`）；
+  逻辑消息 body 包 dynproto（`[4B零][4B LE 长度][pbuf]`，空体 8B、小体补零 28B）。
+- **不回显 order / 不特判内部消息**：`MessageRouter2` 不做 `OrderTracker` 与内部消息分类，
+  每条 C2S 至多产出一条 S2C，失败即静默丢弃。
+- **C2S 解密直读**：`WsGateway` 收密文 → `decryptC2S` 还原 `{msgId, order, body}` → `MessageRouter2` 应答。
 
 ---
 
-## 新增一个消息模拟
+## 新增一个业务消息
 
-在 `src/mocks/` 新建 `<repMsgId>.json`：
+1. 在 `share` 确认 REQ/REP 的 schema 与 `MESSAGE_ID` 已生成（见 [`../share/README`](../share/) 或生成脚本）。
+2. 新建一个应答器（参照 [`src/net/msg/NetMsg_EnterGame.ts`](src/net/msg/NetMsg_EnterGame.ts)）：
 
-```json
-{ "$type": "EnterGameResponse", "1": 0, "2": "1", "22": { "1": "@now", "2": 8 } }
+```ts
+import { IHandle } from '../net/IHandle';
+import { MESSAGE_ID, EnterGameRequest, EnterGameResponse } from 'mc-local-share';
+
+export class NetMsg_EnterGame implements IHandle<EnterGameRequest, EnterGameResponse> {
+  readonly reqId: MESSAGE_ID = MESSAGE_ID.ENTER_GAME_REQ; // 10001
+  readonly recId: MESSAGE_ID = MESSAGE_ID.ENTER_GAME_REP; // 10002
+  Handle(req: EnterGameRequest): EnterGameResponse {
+    return { error: 0, /* ...字段名对象... */ };
+  }
+}
 ```
 
-- `$type`：protobuf 消息短名（必填，用于定位 schema）。
-- key：字段号（字符串）；值：嵌套对象 / 数组 / 标量。
-- 占位符：`@now`(秒) `@nowMs` `@gameHost` `@gamePort` `@gameVer`。
-- 运行 `npm test` 可校验 `$type` 是否解析、编码是否成功。
+3. 在 `MessageController`（或 `MessageControllerMod`）注册：`this.AutoResponser[reqId] = new NetMsg_Xxx();`。
+
+> 若为 `share` 自动生成文件，改动后跑生成脚本、重新 `pnpm --filter mc-local-share build` 再编译。
+
+---
+
+## 打包为独立 exe（不经 Node 运行）
+
+```bash
+pnpm run pack       # build(tsc) → bundle(esbuild) → pkg → dist/pack/nine-regions-backend.exe
+pnpm run pack:dir   # 在 pack 基础上再拷 static、.env.example（见 backend/package.json）
+```
 
 ---
 
@@ -87,11 +106,9 @@ backend/
 | 变量 | 默认 | 说明 |
 |---|---|---|
 | `WS_PORT` | 8800 | WS 网关端口 |
-| `PLAIN_UDP_PORT` | 9002 | Frida 明文侧信道 UDP 端口 |
-| `HTTP_PORT` | 8080 | HTTP 仿真端口 |
+| `HTTP_PORT` | 4010 | HTTP 仿真端口 |
 | `WS_SUBPROTOCOL` | xj | 必须回显的子协议 |
-| `STORAGE_DRIVER` | memory | memory / redis / database（后两者为桩） |
 | `RECORD_FRAMES` | true | 是否记录全量帧到 logs/gw_*.jsonl |
 | `GAME_HOST` / `GAME_PORT` / `GAME_VER` | 127.0.0.1 / 8800 / 0.12.786 | 下发给客户端的服务器信息 |
 
-详见各模块目录下的 `README.md`。
+详见各模块目录下的 `README.md`（重点 `net/` 与 `messages/`）。
