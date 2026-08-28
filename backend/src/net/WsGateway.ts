@@ -258,9 +258,11 @@ export class WsGateway extends Server {
     }
     if (opcode === 0xa) return; // pong
     // 0x1/0x2: 客户端 C2S（IFix JIT 内联加密 → 密文）。★C2S 解密直读（脱离 Frida 的关键）。
-    this.recorder.record(connId, 'C2S', payload);
+    // this.recorder.record(connId, 'C2S', payload);
+    let recData:any={raw: payload.toString('hex')};
     const started = Date.now();
     const dec = decryptC2S(payload);
+    let isrecorded=false;
     if (dec) {
       const cost = Date.now() - started;
       this.logger.info(
@@ -269,6 +271,10 @@ export class WsGateway extends Server {
           .slice(0, 24)
           .toString('hex')} (${cost}ms)`,
       );
+      recData.msgId=dec.msgId;
+      recData.order=dec.order;
+      this.recorder.record(connId, 'C2S', dec.body,recData);
+      isrecorded=true;
       if (this.onC2S) {
         const frames = this.onC2S(connId, dec);
         for (const f of frames) this.sendS2C(f);
@@ -279,6 +285,12 @@ export class WsGateway extends Server {
         `[${connId}] C2S解密失败 len=${payload.length} hex=${payload.slice(0, 24).toString('hex')} (${Date.now() - started}ms)`,
       );
     }
+
+    if (!isrecorded) {
+      delete recData.raw;
+      this.recorder.record(connId, 'C2S', payload,recData);
+    }
+    
   }
 
   /** 下发一条 S2C 帧到活跃连接（无活跃连接则丢弃并告警）。 */
@@ -288,7 +300,7 @@ export class WsGateway extends Server {
       return;
     }
     const bytes = buildS2C(frame.msgId, frame.order, frame.body);
-    this.recorder.record(this.activeConnId, 'S2C', bytes);
+    this.recorder.record(this.activeConnId, 'S2C', bytes,{msgId: frame.msgId, order: frame.order});
     this.sendFrame(this.activeSocket, 0x2, bytes);
   }
 
