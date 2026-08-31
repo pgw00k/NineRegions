@@ -1,27 +1,29 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_QueryPersonInfoRsp
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
-  PlayerInfoSimple,
   QueryPersonalInfoRsp,
 } from 'mc-local-share';
 
 /**
  * NetMsg_QueryPersonInfoRsp
- * REQ = PlayerInfoSimple（reqProto 缺失，回退）
+ * REQ = {}
  * RES = QueryPersonalInfoRsp
- * 说明：REQ 使用 PlayerInfoSimple 作为占位。（未声明 reqProto）
- * 注册：reqId=-1、recId=10349
+ * 注册：reqId=0、recId=10349
  */
-export class NetMsg_QueryPersonInfoRsp implements IHandle<PlayerInfoSimple, QueryPersonalInfoRsp> {
-  /** 请求消息号：-1 */
-  readonly reqId: number = -1;
+export class NetMsg_QueryPersonInfoRsp extends MessageBase<{}, QueryPersonalInfoRsp> {
+  /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
+  reqId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
   /** 响应消息号：QUERY_PERSONAL_INFO_RSP (10349) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.QUERY_PERSONAL_INFO_RSP;
+  recId: MESSAGE_ID = MESSAGE_ID.QUERY_PERSONAL_INFO_RSP;
 
-  Handle(req: PlayerInfoSimple): QueryPersonalInfoRsp {
-    throw new Error('Handle not implemented: NetMsg_QueryPersonInfoRsp');
+  override Handle(req: {}): QueryPersonalInfoRsp {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_QueryPersonInfoRsp');
+    }
+    return resobj
   }
 }

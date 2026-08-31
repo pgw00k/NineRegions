@@ -1,27 +1,29 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_SetHeadPicRsp
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
-  PlayerInfoSimple,
   SetHeadPicRsp,
 } from 'mc-local-share';
 
 /**
  * NetMsg_SetHeadPicRsp
- * REQ = PlayerInfoSimple（reqProto 缺失，回退）
+ * REQ = {}
  * RES = SetHeadPicRsp
- * 说明：REQ 使用 PlayerInfoSimple 作为占位。（未声明 reqProto）
- * 注册：reqId=-1、recId=10345
+ * 注册：reqId=0、recId=10345
  */
-export class NetMsg_SetHeadPicRsp implements IHandle<PlayerInfoSimple, SetHeadPicRsp> {
-  /** 请求消息号：-1 */
-  readonly reqId: number = -1;
+export class NetMsg_SetHeadPicRsp extends MessageBase<{}, SetHeadPicRsp> {
+  /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
+  reqId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
   /** 响应消息号：SET_HEAD_PIC_RSP (10345) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.SET_HEAD_PIC_RSP;
+  recId: MESSAGE_ID = MESSAGE_ID.SET_HEAD_PIC_RSP;
 
-  Handle(req: PlayerInfoSimple): SetHeadPicRsp {
-    throw new Error('Handle not implemented: NetMsg_SetHeadPicRsp');
+  override Handle(req: {}): SetHeadPicRsp {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_SetHeadPicRsp');
+    }
+    return resobj
   }
 }

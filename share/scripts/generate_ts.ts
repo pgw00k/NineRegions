@@ -142,7 +142,8 @@ function genFieldsTs(
     }
   }
 
-  // 循环块：按消息逐条生成 define(...) 行（含内联 FieldSchema 数组），块间以空行分隔。
+  // 按消息逐条生成 define(...) 行（含内联 FieldSchema 数组），
+  // 交由模板里的 `<% defines.forEach %>` 循环逐行输出。
   const seen = new Set<string>();
   const defineLines: string[] = [];
   for (const m of desc.messages) {
@@ -154,7 +155,7 @@ function genFieldsTs(
     defineLines.push(`define(${idRef}, '${flat}', ${genFieldArrayDecl(m, ctx)});`);
   }
 
-  return renderTemplate(loadFieldsTemplate(scriptDir), { DEFINE_LINES: defineLines.join('\n\n') }) + '\n';
+  return renderEjs(loadFieldsTemplate(scriptDir), { defines: defineLines }).trimEnd();
 }
 
 /** 生成 FieldSchema[] 的元素数组文本（内联），供 define 使用。 */
@@ -184,20 +185,41 @@ interface HandlerResult {
 let cachedHandlerTemplate: string | null = null;
 
 /**
- * 读取处理器模板文件（share/scripts/templates/NetMsg.ts.tpl），
+ * 读取处理器模板文件（share/scripts/templates/NetMsg.ejs），
  * 便于直接编辑模板来调整生成内容，而无需改动本脚本。
  */
 function loadHandlerTemplate(scriptDir: string): string {
   if (cachedHandlerTemplate === null) {
-    const tpl = path.join(scriptDir, 'templates', 'NetMsg.ts.tpl');
+    const tpl = path.join(scriptDir, 'templates', 'NetMsg.ejs');
     cachedHandlerTemplate = fs.readFileSync(tpl, 'utf-8');
   }
   return cachedHandlerTemplate;
 }
 
-/** 把模板里的 {{KEY}} 占位符替换成实际值；未命中的占位符予以保留。 */
-function renderTemplate(tpl: string, vars: Record<string, string>): string {
-  return tpl.replace(/\{\{(\w+)\}\}/g, (m, key: string) => vars[key] ?? m);
+/**
+ * 轻量 EJS 兼容渲染器：支持 `<% ... %>`（JS 逻辑，如 if/for）与 `<%- ... %>`（看原始输出）。
+ * data 里的字段在模板中按名字直接引用；渲染发生在收集用的 function 作用域内。
+ * 说明：生成的是 TS 源码而非 HTML，因此 `<%= %>` / `<%- %>` 均不做 HTML 转义。
+ */
+function renderEjs(tpl: string, data: Record<string, unknown>): string {
+  const body: string[] = [];
+  const tagRe = /<%([=!-])?\s*([\s\S]*?)\s*%>/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = tagRe.exec(tpl)) !== null) {
+    const text = tpl.slice(last, m.index);
+    if (text) body.push(`__o.push(${JSON.stringify(text)});`);
+    if (m[1] === undefined) {
+      body.push(m[2]); // scriptlet：原样作为 JS 语句
+    } else {
+      body.push(`__o.push(String(${m[2]}));`); // 输出表达式的值
+    }
+    last = m.index + m[0].length;
+  }
+  if (last < tpl.length) body.push(`__o.push(${JSON.stringify(tpl.slice(last))});`);
+  const src = `var __o=[];\nwith(data||{}){\n${body.join('\n')}\n}\nreturn __o.join('');`;
+  const fn = new Function('data', src) as (d: unknown) => string;
+  return fn(data);
 }
 
 function genHandler(
@@ -207,18 +229,19 @@ function genHandler(
   msgIdNameToNum: Map<string, number>,
   scriptDir: string,
 ): HandlerResult {
-  const reqType = n.reqProto ? ctx.shortToFlat.get(n.reqProto) : undefined;
-  const resType = n.recvProto ? ctx.shortToFlat.get(n.recvProto) : undefined;
-  const reqIdName = msgIdNameToNum.has(n.reqId) ? n.reqId : 'NONE';
-  const recIdName = msgIdNameToNum.has(n.recId) ? n.recId : 'NONE';
-  const register = Boolean(n.needParseLua && reqType && resType && reqIdName && recIdName);
+  const reqType = n.reqProto ? ctx.shortToFlat.get(n.reqProto) : "{}";
+  const resType = n.recvProto ? ctx.shortToFlat.get(n.recvProto) : "{}";
+  const reqIdName = msgIdNameToNum.has(n.reqId) ? n.reqId : 'NETWORK_MESSAGE_BEGIN';
+  const recIdName = msgIdNameToNum.has(n.recId) ? n.recId : 'NETWORK_MESSAGE_BEGIN';
+  const register = Boolean(reqIdName || recIdName);
+  
   if (!register) return { base, className: base, reqIdName: '', register: false };
 
   const reqIdNum = msgIdNameToNum.get(reqIdName)!;
   const recIdNum = msgIdNameToNum.get(recIdName)!;
   const tag = n.TageName || base;
 
-  const content = renderTemplate(loadHandlerTemplate(scriptDir), {
+  const content = renderEjs(loadHandlerTemplate(scriptDir), {
     TAG: tag,
     REQ_TYPE: reqType!,
     RES_TYPE: resType!,
@@ -331,12 +354,12 @@ function main(): void {
 let cachedFieldsTemplate: string | null = null;
 
 /**
- * 读取 fields 模板文件（share/scripts/templates/Fields.ts.tpl）。
- * 模板内嵌 {{DEFINE_LINES}} 循环块占位符，由 genFieldsTs 生成 define 行后替换。
+ * 读取 fields 模板文件（share/scripts/templates/Fields.ejs）。
+ * 模板内嵌 `<% defines.forEach %>` 循环占位符，由 genFieldsTs 生成 define 行后替换。
  */
 function loadFieldsTemplate(scriptDir: string): string {
   if (cachedFieldsTemplate === null) {
-    const tpl = path.join(scriptDir, 'templates', 'Fields.ts.tpl');
+    const tpl = path.join(scriptDir, 'templates', 'Fields.ejs');
     cachedFieldsTemplate = fs.readFileSync(tpl, 'utf-8');
   }
   return cachedFieldsTemplate;
@@ -346,13 +369,13 @@ function loadFieldsTemplate(scriptDir: string): string {
 let cachedControllerTemplate: string | null = null;
 
 /**
- * 读取控制器模板文件（share/scripts/templates/MessageController.ts.tpl）。
- * 模板内嵌 {{IMPORTS_LINES}} / {{REGISTER_LINES}} 两个循环块占位符，
- * 由本函数按注册清单动态生成行集合后替换。
+ * 读取控制器模板文件（share/scripts/templates/MessageController.ejs）。
+ * 模板内嵌 `<% imports.forEach %>` / `<% registers.forEach %>` 两个 EJS 循环，
+ * 由 genMessageControllerWithIds 注入 imports / registers 数组。
  */
 function loadControllerTemplate(scriptDir: string): string {
   if (cachedControllerTemplate === null) {
-    const tpl = path.join(scriptDir, 'templates', 'MessageController.ts.tpl');
+    const tpl = path.join(scriptDir, 'templates', 'MessageController.ejs');
     cachedControllerTemplate = fs.readFileSync(tpl, 'utf-8');
   }
   return cachedControllerTemplate;
@@ -365,18 +388,11 @@ function genMessageControllerWithIds(
   scriptDir: string,
 ): string {
   const sorted = [...handlers].filter((h) => h.register).sort((a, b) => a.className.localeCompare(b.className));
-  // 循环块①：按类名逐个 import 处理器
-  const importsLines = sorted.map((h) => `import { ${h.className} } from './${h.className}';`).join('\n');
-  // 循环块②：按类名逐个注册到 AutoResponser
-  const regLines = sorted
-    .map((h) => `    this.AutoResponser[MESSAGE_ID.${h.reqIdName}] = new ${h.className}();`)
-    .join('\n');
-  return (
-    renderTemplate(loadControllerTemplate(scriptDir), {
-      IMPORTS_LINES: importsLines,
-      REGISTER_LINES: regLines,
-    }) + '\n'
-  );
+  return renderEjs(loadControllerTemplate(scriptDir), {
+    // 模板里的 for 循环会遍历这两个数组来生成 import 与注册行。
+    imports: sorted.map((h) => ({ name: h.className })),
+    registers: sorted.map((h) => ({ name: h.className, idName: h.reqIdName })),
+  }) + '\n';
 }
 
 if (require.main === module) {

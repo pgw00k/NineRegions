@@ -2,11 +2,11 @@
 
 import { MessageControllerBase } from '../MessageControllerBase';
 import { MESSAGE_ID } from 'mc-local-share';
-{{IMPORTS_LINES}}
-
+<% imports.forEach(i => { %>import { <%- i.name %> } from './<%- i.name %>';
+<% }) %>
 export class MessageController extends MessageControllerBase {
   constructor() {
     super();
-{{REGISTER_LINES}}
-  }
+<% registers.forEach(r => { %>    this.AutoResponser[MESSAGE_ID.<%- r.idName %>] = new <%- r.name %>();
+<% }) %>  }
 }

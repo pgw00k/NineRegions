@@ -1,27 +1,29 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_ChampBattleComplete_SN
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
-  PlayerInfoSimple,
   ChampBattleComplete,
 } from 'mc-local-share';
 
 /**
  * NetMsg_ChampBattleComplete_SN
- * REQ = PlayerInfoSimple（reqProto 缺失，回退）
+ * REQ = {}
  * RES = ChampBattleComplete
- * 说明：REQ 使用 PlayerInfoSimple 作为占位。（未声明 reqProto）
- * 注册：reqId=-1、recId=15046
+ * 注册：reqId=0、recId=15046
  */
-export class NetMsg_ChampBattleComplete_SN implements IHandle<PlayerInfoSimple, ChampBattleComplete> {
-  /** 请求消息号：-1 */
-  readonly reqId: number = -1;
+export class NetMsg_ChampBattleComplete_SN extends MessageBase<{}, ChampBattleComplete> {
+  /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
+  reqId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
   /** 响应消息号：CHAMP_BATTLE_COMPLETE (15046) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.CHAMP_BATTLE_COMPLETE;
+  recId: MESSAGE_ID = MESSAGE_ID.CHAMP_BATTLE_COMPLETE;
 
-  Handle(req: PlayerInfoSimple): ChampBattleComplete {
-    throw new Error('Handle not implemented: NetMsg_ChampBattleComplete_SN');
+  override Handle(req: {}): ChampBattleComplete {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_ChampBattleComplete_SN');
+    }
+    return resobj
   }
 }
