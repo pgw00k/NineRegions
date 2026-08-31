@@ -1,122 +1,116 @@
 /**
- * MessageRouter.ts — 消息路由编排。
+ * MessageRouter2.ts — 消息路由核心链路。
  *
- * 收到一条 C2S（msgId/order/body）后：计算应答消息号 repMsgId，构造 HandlerContext，
- * 依次尝试各处理器（内部 → mock → 兜底 echo），首个 match 的处理器负责产出 S2C 帧。
+ *   C2S（已解密）→ 解码为对象 → 交给 MessageController（Auto）应答器 Handle
+ *   → 得到返回对象 → 编码 → 发回客户端。
  *
- * 应答号规则（实证：本游戏所有 REQ/REP 配对均为 REP = REQ + 1）：
- *  - 内部消息：repMsgId = 自身（回显）；
- *  - 其余：优先用注册表 responseId，缺失时回退 msgId + 1。
+ * 设计约束：
+ *  - 全程只依赖共享层的静态编解码与注册表（mc-local-share），不在本文件碰操作号之外
+ *    的业务细节；
+ *  - 不做任何附加业务（无 INTERNAL 特判、无 order 增/减）。每条 C2S 至多产出一条 S2C；
+ *  - 解码/编码/处理任一环节失败即静默丢弃该请求。
  */
 import { Buffer } from 'buffer';
-import { HandlerServices, HandlerContext, MessageHandler, S2CFrame, INTERNAL_MSG_IDS } from './types';
-import { MessageRegistry } from './MessageRegistry';
-import { MockLoader } from './MockLoader';
-import { InternalHandler } from './handlers/InternalHandler';
-import { MockHandler } from './handlers/MockHandler';
-import { EchoHandler } from './handlers/EchoHandler';
-import { BattleHandler } from './handlers/BattleHandler';
-import { ReconnectHandler } from './handlers/ReconnectHandler';
-import { NameHandler } from './handlers/NameHandler';
-import { GameDataHandler } from './handlers/GameDataHandler';
-import { DeckHandler } from './handlers/DeckHandler';
-import { HeroHandler } from './handlers/HeroHandler';
-import { ShopHandler } from './handlers/ShopHandler';
-import { UserStateStore } from '../state/UserState';
-import { MOCKS_DIR_ABS } from '../config/env';
-import { LOGIC_RECONNECTION_REQ, BATTLE_RECONNECTION_REQ } from '../net/OrderTracker';
-
-/** 空闲心跳消息号（PINGPONG）。 */
-const PINGPONG_MSGID = 7;
-/** CREATE_PVEROOM_REQ：lua 实证成功时服务端不应答（仅出错才回 10010）。 */
-const CREATE_PVEROOM_REQ = 10009;
+import { get, encodeMessage, decodeMessage, MESSAGE_ID } from 'mc-local-share';
+import { Logger } from '../core/Logger';
+import { wrapDynProtoAuto } from '../net/FrameCodec';
+import { S2CFrame } from './types';
+import { MessageControllerMod } from '../net/msg_mod/MessageControllerMod';
 
 export class MessageRouter {
-  private readonly handlers: MessageHandler[];
-  private readonly registry: MessageRegistry;
-  private readonly services: HandlerServices;
+  private readonly controller = new MessageControllerMod();
 
-  constructor(services: HandlerServices) {
-    this.services = services;
-    this.registry = services.registry;
-    const loader = new MockLoader(MOCKS_DIR_ABS, services.schema, services.encoder, services.logger);
-    this.handlers = [
-      new InternalHandler(),
-      new ReconnectHandler(loader, services.users),
-      new BattleHandler(),
-      new NameHandler(),
-      // 业务数据（账号档案驱动）：先进游戏 → 牌组/英雄/商店
-      new GameDataHandler(loader),
-      new DeckHandler(),
-      new HeroHandler(),
-      new ShopHandler(),
-      new MockHandler(loader),
-      new EchoHandler(),
-    ];
-  }
+  constructor(private readonly logger?: Logger) {}
 
-  /** 路由一条 C2S，返回要下发的 S2C 帧列表（通常 1 条）。 */
+  /**
+   * 路由一条已解密的 C2S。
+   * @param msgId 解密后的请求消息号（reqId）。
+   * @param order C2S 的 order；应答帧使用 order + 1。
+   * @param body  解密后、含 NetBitStream 前缀的业务体。
+   * @returns 要下发的 S2C 帧（0 或 1 条）。
+   */
   route(connId: string, msgId: number, order: number, body: Buffer): S2CFrame[] {
-    // 记录最近 req order（服务端主动推送的 order 基准）
-    this.services.orders.noteReq(connId, order);
-    // PVE 结算状态机：会话时间 / 战斗进出状态
-    this.services.pve.noteSession(connId);
-    this.services.pve.noteBattleMsg(connId, msgId);
-
-    // 用户状态绑定：从 C2S body 提取 playerID，建立 connId→userId 映射（重连恢复用）
-    const uid = UserStateStore.extractUserId(body);
-    if (uid) this.services.users.bind(connId, uid);
-
-    // 用户状态迁移（重连/登录时据此返回 battleRoomType）
-    if (msgId === 10019) this.services.users.markTutorialDone(connId); // PVE_SKIP → 教程完成
-    if (msgId === 25012 || msgId === 25014) this.services.users.markBattleEnded(connId); // 战斗结束
-
-    // ★重连识别：客户端重连 / 战斗重连请求走明文侧信道到达，收到即标记本连接为重连会话，
-    // 使得后续 BattleStartResponse(15018) 后能同步重置 order 计数器（对齐客户端 logicOrder 重置）。
-    if (msgId === LOGIC_RECONNECTION_REQ || msgId === BATTLE_RECONNECTION_REQ) {
-      this.services.orders.markReconnect(connId);
-      this.services.logger.info('router', `[${connId}] 检测到重连请求 msgId=${msgId} → 标记为重连会话${uid ? `，user=${uid}` : ''}`);
+    // 心跳 PINGPONG：无 protobuf → 用 wrapDynProtoAuto 生成 8B 空体（符合客户端约定），
+    // order 沿 C2S order + 1；若直接返回 Buffer.alloc(0)，客户端判 MsgBodyExists=False 拒读。
+    if (msgId === MESSAGE_ID.PINGPONG) {
+      return [{ msgId, order: order + 1, body: wrapDynProtoAuto(Buffer.alloc(0)) }];
     }
 
-    // CREATE_PVEROOM_REQ：成功不应答（lua 实证），避免 EchoHandler 回显垃圾
-    if (msgId === CREATE_PVEROOM_REQ) {
-      this.services.logger.info('router', `[${connId}] CreatePVERoom 成功 → 按协议不应答`);
+    const responder = this.controller.AutoResponser[msgId as MESSAGE_ID] as any | undefined;
+    if (!responder) {
+      // Auto 未注册 → 不应答
       return [];
     }
 
-    const repMsgId = INTERNAL_MSG_IDS.has(msgId)
-      ? msgId
-      : this.registry.responseId(msgId) ?? msgId + 1;
-
-    const ctx: HandlerContext = {
-      connId,
-      msgId,
-      order,
-      body,
-      repMsgId,
-      services: this.services,
-    };
-
-    const frames: S2CFrame[] = [];
-    for (const h of this.handlers) {
-      if (h.match(ctx)) {
-        frames.push(...h.handle(ctx));
-        break;
+    // ① 解码 REQ：按请求消息号取静态 schema（字段号/类型表）→ 字段名对象
+    let req: Record<string, unknown> = {};
+    const reqSchema = get(msgId);
+    if (reqSchema) {
+      try {
+        req = decodeMessage(reqSchema, stripNetBitStream(body)) as Record<string, unknown>;
+      } catch (e) {
+        this.logger?.warn('router', `[${connId}] 解码 req#${msgId} 失败: ${(e as Error).message}`);
       }
     }
 
-    // 空闲心跳兜底：重连会话上「未进战斗 / 战斗进入超时」→ 自动补推 PUSH_PVECOMPLETE(15003)，
-    // 修复客户端打完引导战斗后只发心跳、等待结算被卡死的问题（15003 → Guide_PVEComplete）。
-    // ★门控：仅「引导未完成」的用户需要 15003 兜底；已跳过引导（有名字/引导全通）的
-    // 主界面用户绝不推（否则会把 PVE 进度又标回 10001，干扰主界面初始化）。
-    const ust = this.services.users.state(connId);
-    const needsTutorial = !ust || !ust.tutorialDone;
-    if (msgId === PINGPONG_MSGID && needsTutorial && this.services.pve.shouldAutoPush(connId, this.services.orders.isReconnect(connId))) {
-      this.services.pve.pushComplete(connId);
-      this.services.users.markTutorialDone(connId);
-      this.services.users.markBattleEnded(connId);
+    // ② 交给 Auto 处理，取得返回对象
+    let rep: Record<string, unknown>;
+    try {
+      rep = responder.Handle(req) ?? {};
+    } catch (e) {
+      this.logger?.warn('router', `[${connId}] 处理 req#${msgId} 异常: ${(e as Error).message}`);
+      return [];
     }
 
-    return frames;
+    // ③ 编码 REP → dynproto 体 → 生成 S2C 帧（应答号用应答器 recId，order = C2S order + 1）
+    const repSchema = get(Number(responder.recId));
+    if (!repSchema) return [];
+    try {
+      const inner = encodeMessage(repSchema, rep);
+      return [{ msgId: Number(responder.recId), order: order + 1, body: wrapDynProtoAuto(inner) }];
+    } catch (e) {
+      this.logger?.warn('router', `[${connId}] 编码 rec#${responder.recId} 失败: ${(e as Error).message}`);
+      return [];
+    }
   }
+}
+
+/**
+ * 剥离客户端 C2S 业务体前的 NetBitStream 信封，剩余为纯 protobuf。
+ *
+ * 信封结构（实证，EnterGame 帧）：
+ *   [11 00][u16 len][userId 数字串]
+ *   [u16 len][token 字符串]
+ *   [u32 len][protobuf]
+ * 仅含 userId（心跳类，msgId=7）时只有第一段，无 protobuf。
+ * 返回：跳过 userId/token 段及 u32 长度后的 protobuf；无 protobuf 则返回空。
+ */
+function stripNetBitStream(body: Buffer): Buffer {
+  let off = 0;
+  const n = body.length;
+
+  // ① userId 段：[11 00][u16 len][len 字节数字串]。非 11 起头则原样返回。
+  if (n < 2 || body[0] !== 0x11 || body[1] !== 0x00) return body;
+  const userIdLen = body.readUInt16LE(0);
+  off = 2 + userIdLen;
+  if (off > n) return Buffer.alloc(0);
+  if (off === n) return Buffer.alloc(0); // 只有 userId 段（心跳），无业务 protobuf
+
+  // ② token 段：[u16 len][len 字节字符串]。长度须自洽，否则视为已到 protobuf。
+  if (n >= off + 2) {
+    const tokenLen = body.readUInt16LE(off);
+    if (tokenLen > 0 && off + 2 + tokenLen <= n) {
+      off += 2 + tokenLen;
+    }
+  }
+
+  // ③ u32 长度前缀：[u32 len][len 字节 protobuf]。越界则原样截取到剩余。
+  if (n >= off + 4) {
+    const protoLen = body.readUInt32LE(off);
+    if (protoLen > 0 && off + 4 + protoLen <= n) {
+      off += 4;
+    }
+  }
+
+  return body.subarray(off);
 }

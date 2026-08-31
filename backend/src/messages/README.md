@@ -1,7 +1,30 @@
 # messages — 消息路由与应答
 
-本目录是后端「应答逻辑」的核心：把一条收到的 C2S（msgId/order/body）路由到对应的处理器，
-产出要下发的 S2C 帧；并提供**数据驱动**的业务消息模拟（`MockLoader` + `src/mocks/*.json`）。
+本目录是后端「应答逻辑」的核心：把一条收到的 C2S（已解密，msgId / order / body）路由到对应的
+**应答器**（`Handlers`），调用其 `Handle` 得到返回对象，再编码为 protobuf、包装成 S2C 帧下发。
+
+---
+
+## 当前架构（MessageRouter2 + MessageController / AutoResponser）
+
+> 起作用的只有两处：`MessageRouter2.ts`（路由编排）与 `../net/msg/`（自动生成的应答器）。
+> `types.ts` 仅定义链路内最小类型 `S2CFrame`。旧的 `MessageRegistry / MockLoader /
+> ProtoTools / handlers/* / OrderTracker` 已删除，不要再依赖它们。
+
+```
+C2S（已解密, msgId/order/body）
+  → MessageRouter2.route()
+      ① 按 msgId 取静态 schema（mc-local-share 的 get）→ 剥离 NetBitStream 信封 → decodeMessage 为「字段名对象」
+      ② 取 AutoResponser[msgId]（MessageController 自动注册）→ responder.Handle(req) 得「字段名返回对象」
+      ③ 按 responder.recId 取静态 schema → encodeMessage → wrapDynProtoAuto 包 dynproto
+      ④ 产出 1 条 S2CFrame{ msgId: recId, order: 原样沿用, body: dynproto 体 }
+  → WsGateway.sendS2C → buildS2C（10B 头）下发
+```
+
+三条设计约束（写入本文件的意图，勿破坏）：
+- 全程只依赖共享层静态编解码/注册表（`mc-local-share`），本文件不碰「操作号之外的业务细节」；
+- **不做任何附加业务**：无内部消息特判、无 order 增/减；每条 C2S 至多产出一条 S2C；
+- 解码 / 编码 / 处理任一环节失败即**静默丢弃**该请求（不打 `INTERNAL` / `OrderTracker` 那些旧逻辑）。
 
 ---
 
@@ -9,92 +32,67 @@
 
 | 文件 | 职责 |
 |---|---|
-| `types.ts` | 公共类型：`S2CFrame` / `HandlerServices` / `HandlerContext` / `MessageHandler`(抽象基类) / `INTERNAL_MSG_IDS` / `buildResponseFrame` |
-| `MessageRegistry.ts` | 加载 `generated/message-registry.json`，提供 `get(msgId)` 与 `responseId(msgId)` |
-| `MockLoader.ts` | 加载 `mocks/<repMsgId>.json`，解析 `$type`、替换占位符、按 schema 编码为裸 protobuf |
-| `ProtoTools.ts` | C2S 请求解码：剥离 NetBitStream 前缀（`1100`+userID+token 实证）→ 按 schema 递归解码为字段号 keyed 对象 |
-| `MessageRouter.ts` | 计算 repMsgId → 构造 `HandlerContext` → 处理器链路由 |
-| `handlers/InternalHandler.ts` | 处理内部消息 1/2/3/4/7（回显同号空体）|
-| `handlers/GameDataHandler.ts` | **10001 EnterGame → 10002 动态组装**：读 10002.json 骨架，用 `AccountDataStore` 覆写 cardLibrary/deckLibrary/heroLibrary/shopInfo |
-| `handlers/DeckHandler.ts` | 牌组/卡牌：10005 EditDeck / 10007 DeleteDeck / 10039 ChangeDeckName / 10041 CardResolve / 10043 CardCompound |
-| `handlers/HeroHandler.ts` | 英雄：10260 ChallengeHero / 10262 HeroGiveGift / 10264 GetFavorReward / 10266 SetHeroSkin |
-| `handlers/ShopHandler.ts` | 商店：10210 GetShopInfo / 10212 ShopBuy |
-| `handlers/MockHandler.ts` | 数据驱动业务消息（命中 `mocks/<repMsgId>.json` 即应答）|
-| `handlers/EchoHandler.ts` | 兜底：把收到的 C2S 裸体包 dynproto 回送（永远 match）|
+| `MessageRouter2.ts` | 路由核心：schema 编解码 + 查 `MessageController.AutoResponser` + 包装 dynproto。含 `stripNetBitStream`（C2S 业务体前信封剥离） |
+| `types.ts` | 链路最小类型：`S2CFrame { msgId, order, body }` |
+
+应答器实际在 [`../net/msg/`](../net/msg/)：
+- `MessageController.ts`（**自动生成**）：`AutoResponser[reqId] = new 某应答器()`；
+- `NetMsg_*.ts`（**自动生成**）：每个都是 `IHandle<REQ, REP>`，带 `readonly reqId / recId` 与 `Handle(req)`；
+- `../net/msg_mod/MessageControllerMod.ts`：可复写/追加的应答器扩展点（如心跳、逻辑重连）；
+- `../net/IHandle.ts`：`IHandle<REQ, REP>` 契约（`Handle(req): REP`）；
+- `../net/MessageControllerBase.ts`：`AutoResponser` 容器基类。
+
+> 这些文件由 `mc-local-share` 的 `generate_ts` / `generate_res` 自动生成，**请勿手改**；
+> 生成后如需新增消息，参照 `Handler` 结构写到一个 `msg/` 或 `msg_mod/` 文件并注册即可。
 
 ---
 
-## 处理器链（OOP 继承/多态）
+## 新增 / 修改一个业务应答
 
-`MessageRouter` 按序尝试，首个 `match` 的处理器负责 `handle`：
-
-1. **InternalHandler** — match 内部消息 → 回显同号空体。
-2. **ReconnectHandler / BattleHandler / NameHandler** — 重连恢复、战斗链路、起名（见各自文档）。
-3. **GameDataHandler / DeckHandler / HeroHandler / ShopHandler** — 业务数据（`AccountDataStore` 档案驱动，状态保持）。
-4. **MockHandler** — match `loader.exists(repMsgId)` → 加载 JSON 编码应答；编码失败降级为不回应。
-5. **EchoHandler** — 永远 match 兜底；把 C2S 裸体包 dynproto 回送（客户端容错忽略未预期的 REP）。
-
-新增业务消息：**简单应答**丢 `src/mocks/<repMsgId>.json` 即可；**有状态业务**（牌组/英雄/商店）
-参照 `DeckHandler`：在 `AccountDataStore` 加 API → 在 `handlers/` 加处理器 → 在 `MessageRouter`
-按序注册。请求解析用 `ProtoTools.decodeMessage`（自动剥 NetBitStream 前缀），响应用
-`encoder.encode(schema, payload)` + `buildResponseFrame`。
-
-实证：本游戏**所有 REQ/REP 配对均为 `REP = REQ + 1`**。
-
----
-
-## 应答号（repMsgId）规则
+1. 在 `proto` / `share` 层确认 REQ/REP 消息 schema 已生成（`MESSAGE_ID` 枚举、`XxxRequest/XxxResponse` 类型）。
+2. 新建一个 `IHandle<REQ, REP>` 应答器（参照 [`../net/msg/NetMsg_EnterGame.ts`](../net/msg/NetMsg_EnterGame.ts)）：
+   - 声明 `readonly reqId` 与 `readonly recId`（来自 `MESSAGE_ID`）；
+   - `Handle(req): REP` 直接返回**字段名**对象（如 `{ error: 0, index: "测试文本", ... }`）；
+   - 若为自动生成文件则由生成脚本产出，修改生成源后重新生成。
+3. 在 `MessageController`（或 `MessageControllerMod`）注册：`AutoResponser[reqId] = new NetMsg_Xxx()`。
 
 ```ts
-repMsgId = INTERNAL_MSG_IDS.has(msgId) ? msgId
-         : registry.responseId(msgId) ?? msgId + 1;
-```
+import { IHandle } from '../net/IHandle';
+import { MESSAGE_ID, EnterGameRequest, EnterGameResponse } from 'mc-local-share';
 
-- 内部消息（1/2/3/4/7）：repMsgId = 自身（回显）。
-- 其余：优先用注册表 `responseId`（来自 `NetMetaDefine` 的 `recId`）；native 消息（10011/10012、206/207）无 lua 条目，靠 `+1` 兜底（对应 mock 已就绪）。
-
----
-
-## buildResponseFrame — 统一应答构造
-
-```ts
-function buildResponseFrame(ctx: HandlerContext, innerPbuf: Buffer): S2CFrame;
-```
-
-- **order**：交给 `OrderTracker`（内部消息回显、逻辑消息逐连接 +1）。
-- **dynproto 包裹**：内部消息（repMsgId ∈ {1,2,3,4,7}）**不包 dynproto**，body 即 inner；其余逻辑消息用 `wrapDynProtoAuto` 包裹（小体补零到 28B，大体不补）。
-
----
-
-## MockLoader
-
-```ts
-loader.exists(repMsgId): boolean;
-loader.load(repMsgId): Buffer;   // 返回裸 protobuf（不包 dynproto）
-```
-
-- mock JSON 约定：
-  ```json
-  { "$type": "EnterGameResponse", "1": 0, "2": "1", "22": { "1": "@now", "2": 8 } }
-  ```
-  - `$type`：必填，protobuf 消息**短名**，用于定位 schema。
-  - key：字段号（字符串）；值：嵌套对象 / 数组 / 标量。
-  - 占位符：`@now`(秒) `@nowMs` `@gameHost` `@gamePort` `@gameVer`（递归替换字符串值）。
-- 加载即生效；`npm test` 的 mock 校验段会报告缺失 `$type` 或不可解析类型。
-
----
-
-## HandlerServices（依赖注入）
-
-```ts
-interface HandlerServices {
-  schema: SchemaRegistry;
-  encoder: ProtobufEncoder;
-  orders: OrderTracker;
-  registry: MessageRegistry;
-  storage: Storage;
-  logger: Logger;
-  config: typeof Config;
+export class NetMsg_EnterGame implements IHandle<EnterGameRequest, EnterGameResponse> {
+  readonly reqId: MESSAGE_ID = MESSAGE_ID.ENTER_GAME_REQ; // 10001
+  readonly recId: MESSAGE_ID = MESSAGE_ID.ENTER_GAME_REP; // 10002
+  Handle(req: EnterGameRequest): EnterGameResponse {
+    return { error: 0, index: '测试文本', /* ... */ };
+  }
 }
 ```
-通过 `index.ts` 注入，避免全局单例，便于替换/测试。
+
+---
+
+## 关键实现点
+
+### ① 请求解码（字段名对象）
+按输入 `msgId` 取静态 schema，`decodeMessage(schema, body)` 得到字段名对象。body 需先把
+C2S 的 NetBitStream **信封**剥掉（`userId`/`token`/长度段），残余才是纯 protobuf。
+
+### ② 应答编码（字段名 → protobuf）
+按 `responder.recId` 取 schema，`encodeMessage(schema, rep)` 直接编码为裸 protobuf。
+
+### ③ dynproto 包裹
+裸露 protobuf 不能直接当 S2C body 下发，需包 dynproto 头 `[4B 零][4B LE 长度][pbuf]`
+（`wrapDynProtoAuto`，空体/小体补零规则见 [`net/FrameCodec.ts`](../net/FrameCodec.ts)）。
+
+### ④ S2C 帧（bodyLen 含 msgId ★坑）
+应答号用 `responder.recId`（**不是** `msgId+1`），order 原样沿用 C2S。最终下发经
+`buildS2C(msgId, order, body)`，**其 bodyLen 字段含 msgId 2B**（`body 长度 = bodyLen - 2`）。
+若把 bodyLen 写成不算 msgId 的裸长度，客户端会把 body 末尾裁掉 2B、protobuf 截断，
+表现为「能解出 MSG ID、解不出 MsgBody」（2026-08-28 实证，已修复）。
+
+---
+
+## 实证一对多映射
+
+- 每个 REQ 的应答号在 `MESSAGE_ID`/`recId` 中显式声明（不依赖旧的 `REQ+1` 猜法）。
+- 心跳 `10003` → `10004`、逻辑重连等在 `MessageControllerMod` 中追加注册。
