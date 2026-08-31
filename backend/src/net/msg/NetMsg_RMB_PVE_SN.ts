@@ -1,27 +1,29 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_RMB_PVE_SN
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
-  PlayerInfoSimple,
   PveBuyPush,
 } from 'mc-local-share';
 
 /**
  * NetMsg_RMB_PVE_SN
- * REQ = PlayerInfoSimple（reqProto 缺失，回退）
+ * REQ = {}
  * RES = PveBuyPush
- * 说明：REQ 使用 PlayerInfoSimple 作为占位。（未声明 reqProto）
- * 注册：reqId=-1、recId=15045
+ * 注册：reqId=0、recId=15045
  */
-export class NetMsg_RMB_PVE_SN implements IHandle<PlayerInfoSimple, PveBuyPush> {
-  /** 请求消息号：-1 */
-  readonly reqId: number = -1;
+export class NetMsg_RMB_PVE_SN extends MessageBase<{}, PveBuyPush> {
+  /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
+  reqId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
   /** 响应消息号：PVE_BUY_PUSH (15045) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.PVE_BUY_PUSH;
+  recId: MESSAGE_ID = MESSAGE_ID.PVE_BUY_PUSH;
 
-  Handle(req: PlayerInfoSimple): PveBuyPush {
-    throw new Error('Handle not implemented: NetMsg_RMB_PVE_SN');
+  override Handle(req: {}): PveBuyPush {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_RMB_PVE_SN');
+    }
+    return resobj
   }
 }

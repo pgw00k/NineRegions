@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_FriendBehavior_CN
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   FriendBehaviorRpt,
@@ -10,17 +10,20 @@ import {
 /**
  * NetMsg_FriendBehavior_CN
  * REQ = FriendBehaviorRpt
- * RES = {}（recvProto 缺失，回退）
- * 说明：RES 使用 {} 作为占位。（未声明 recvProto）
- * 注册：reqId=15024、recId=-1
+ * RES = {}
+ * 注册：reqId=15024、recId=0
  */
-export class NetMsg_FriendBehavior_CN implements IHandle<FriendBehaviorRpt, {}> {
+export class NetMsg_FriendBehavior_CN extends MessageBase<FriendBehaviorRpt, {}> {
   /** 请求消息号：FRIEND_BEHAVIOR_RPT (15024) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.FRIEND_BEHAVIOR_RPT;
-  /** 响应消息号：-1 */
-  readonly recId: number = -1;
+  reqId: MESSAGE_ID = MESSAGE_ID.FRIEND_BEHAVIOR_RPT;
+  /** 响应消息号：NETWORK_MESSAGE_BEGIN (0) */
+  recId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
 
-  Handle(req: FriendBehaviorRpt): {} {
-    throw new Error('Handle not implemented: NetMsg_FriendBehavior_CN');
+  override Handle(req: FriendBehaviorRpt): {} {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_FriendBehavior_CN');
+    }
+    return resobj
   }
 }

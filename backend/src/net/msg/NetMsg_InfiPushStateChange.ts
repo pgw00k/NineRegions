@@ -1,27 +1,29 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_PushStateChange
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
-  PlayerInfoSimple,
   InfiStateChangePush,
 } from 'mc-local-share';
 
 /**
  * Infi_PushStateChange
- * REQ = PlayerInfoSimple（reqProto 缺失，回退）
+ * REQ = {}
  * RES = InfiStateChangePush
- * 说明：REQ 使用 PlayerInfoSimple 作为占位。（未声明 reqProto）
- * 注册：reqId=-1、recId=15015
+ * 注册：reqId=0、recId=15015
  */
-export class NetMsg_InfiPushStateChange implements IHandle<PlayerInfoSimple, InfiStateChangePush> {
-  /** 请求消息号：-1 */
-  readonly reqId: number = -1;
+export class NetMsg_InfiPushStateChange extends MessageBase<{}, InfiStateChangePush> {
+  /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
+  reqId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
   /** 响应消息号：INFI_STATE_CHANGE_PUSH (15015) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.INFI_STATE_CHANGE_PUSH;
+  recId: MESSAGE_ID = MESSAGE_ID.INFI_STATE_CHANGE_PUSH;
 
-  Handle(req: PlayerInfoSimple): InfiStateChangePush {
-    throw new Error('Handle not implemented: Infi_PushStateChange');
+  override Handle(req: {}): InfiStateChangePush {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: Infi_PushStateChange');
+    }
+    return resobj
   }
 }

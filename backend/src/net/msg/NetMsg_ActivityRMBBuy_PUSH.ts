@@ -1,27 +1,29 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_ActivityRMBBuy_PUSH
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
-  PlayerInfoSimple,
   GetActivityRewardResponse,
 } from 'mc-local-share';
 
 /**
  * NetMsg_ActivityRMBBuy_PUSH
- * REQ = PlayerInfoSimple（reqProto 缺失，回退）
+ * REQ = {}
  * RES = GetActivityRewardResponse
- * 说明：REQ 使用 PlayerInfoSimple 作为占位。（未声明 reqProto）
- * 注册：reqId=-1、recId=15048
+ * 注册：reqId=0、recId=15048
  */
-export class NetMsg_ActivityRMBBuy_PUSH implements IHandle<PlayerInfoSimple, GetActivityRewardResponse> {
-  /** 请求消息号：-1 */
-  readonly reqId: number = -1;
+export class NetMsg_ActivityRMBBuy_PUSH extends MessageBase<{}, GetActivityRewardResponse> {
+  /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
+  reqId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
   /** 响应消息号：ACT_RMB_BUY_PUSH (15048) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.ACT_RMB_BUY_PUSH;
+  recId: MESSAGE_ID = MESSAGE_ID.ACT_RMB_BUY_PUSH;
 
-  Handle(req: PlayerInfoSimple): GetActivityRewardResponse {
-    throw new Error('Handle not implemented: NetMsg_ActivityRMBBuy_PUSH');
+  override Handle(req: {}): GetActivityRewardResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_ActivityRMBBuy_PUSH');
+    }
+    return resobj
   }
 }

@@ -4,8 +4,8 @@ import fs from "fs";
 import { Logger } from "../core/Logger";
 
 export class MessageBase<REQ, RES> implements IHandle<REQ, RES>, IResponderPair {
-  reqId: MESSAGE_ID = MESSAGE_ID.NONE;
-  recId: MESSAGE_ID = MESSAGE_ID.NONE;
+  reqId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
+  recId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
   Handle(req: REQ): RES {
     let fp = `mocks/${this.recId}.json`
     if (this.recId > MESSAGE_ID.NETWORK_MESSAGE_END && fs.existsSync(fp)) {

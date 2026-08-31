@@ -5,4 +5,6 @@ import { FieldType, WireType } from '../common';
 import { define, FieldSchema } from '../schema';
 import { MESSAGE_ID } from '../MESSAGE_ID';
 
-{{DEFINE_LINES}}
+<% defines.forEach(d => { %><%- d %>
+
+<% }) %>

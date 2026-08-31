@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_FixPay_CN
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   QueryFailChargeOrderIDReq,
@@ -10,17 +10,20 @@ import {
 /**
  * NetMsg_FixPay_CN
  * REQ = QueryFailChargeOrderIDReq
- * RES = {}（recvProto 缺失，回退）
- * 说明：RES 使用 {} 作为占位。（未声明 recvProto）
- * 注册：reqId=10385、recId=-1
+ * RES = {}
+ * 注册：reqId=10385、recId=0
  */
-export class NetMsg_FixPay_CN implements IHandle<QueryFailChargeOrderIDReq, {}> {
+export class NetMsg_FixPay_CN extends MessageBase<QueryFailChargeOrderIDReq, {}> {
   /** 请求消息号：QUERY_FAIL_CHARGE_ORDERID_REQ (10385) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.QUERY_FAIL_CHARGE_ORDERID_REQ;
-  /** 响应消息号：-1 */
-  readonly recId: number = -1;
+  reqId: MESSAGE_ID = MESSAGE_ID.QUERY_FAIL_CHARGE_ORDERID_REQ;
+  /** 响应消息号：NETWORK_MESSAGE_BEGIN (0) */
+  recId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
 
-  Handle(req: QueryFailChargeOrderIDReq): {} {
-    throw new Error('Handle not implemented: NetMsg_FixPay_CN');
+  override Handle(req: QueryFailChargeOrderIDReq): {} {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_FixPay_CN');
+    }
+    return resobj
   }
 }

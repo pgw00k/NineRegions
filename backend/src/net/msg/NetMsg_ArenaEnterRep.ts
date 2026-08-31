@@ -1,27 +1,29 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_ArenaEnterRep
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
-  PlayerInfoSimple,
   ArenaEnterResponse,
 } from 'mc-local-share';
 
 /**
  * NetMsg_ArenaEnterRep
- * REQ = PlayerInfoSimple（reqProto 缺失，回退）
+ * REQ = {}
  * RES = ArenaEnterResponse
- * 说明：REQ 使用 PlayerInfoSimple 作为占位。（未声明 reqProto）
- * 注册：reqId=-1、recId=10061
+ * 注册：reqId=0、recId=10061
  */
-export class NetMsg_ArenaEnterRep implements IHandle<PlayerInfoSimple, ArenaEnterResponse> {
-  /** 请求消息号：-1 */
-  readonly reqId: number = -1;
+export class NetMsg_ArenaEnterRep extends MessageBase<{}, ArenaEnterResponse> {
+  /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
+  reqId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
   /** 响应消息号：ARENA_ENTER_REP (10061) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.ARENA_ENTER_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.ARENA_ENTER_REP;
 
-  Handle(req: PlayerInfoSimple): ArenaEnterResponse {
-    throw new Error('Handle not implemented: NetMsg_ArenaEnterRep');
+  override Handle(req: {}): ArenaEnterResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_ArenaEnterRep');
+    }
+    return resobj
   }
 }

@@ -2928,4 +2928,3 @@ define(MESSAGE_ID.DLC4_FORGING_REP, 'DLC4ForgingRep', [
     { name: 'equipments', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
     { name: 'costInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
   ]);
-

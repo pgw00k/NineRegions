@@ -35,7 +35,7 @@ export class HttpContext {
     this.pathname = this.url.pathname;
     this.logger = logger;
 
-    console.log('req', req.url);
+    // console.log('req', req.url);
   }
 
   /** 完整读取请求体（幂等：重复调用返回同一份缓存）。 */

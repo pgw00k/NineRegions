@@ -1,27 +1,29 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_BattleEmojiRsp
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
-  PlayerInfoSimple,
   BattleEmojiResponse,
 } from 'mc-local-share';
 
 /**
  * NetMsg_BattleEmojiRsp
- * REQ = PlayerInfoSimple（reqProto 缺失，回退）
+ * REQ = {}
  * RES = BattleEmojiResponse
- * 说明：REQ 使用 PlayerInfoSimple 作为占位。（未声明 reqProto）
- * 注册：reqId=-1、recId=25017
+ * 注册：reqId=0、recId=25017
  */
-export class NetMsg_BattleEmoji_SN implements IHandle<PlayerInfoSimple, BattleEmojiResponse> {
-  /** 请求消息号：-1 */
-  readonly reqId: number = -1;
+export class NetMsg_BattleEmoji_SN extends MessageBase<{}, BattleEmojiResponse> {
+  /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
+  reqId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
   /** 响应消息号：BATTLE_EMOJI_REP (25017) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.BATTLE_EMOJI_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.BATTLE_EMOJI_REP;
 
-  Handle(req: PlayerInfoSimple): BattleEmojiResponse {
-    throw new Error('Handle not implemented: NetMsg_BattleEmojiRsp');
+  override Handle(req: {}): BattleEmojiResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_BattleEmojiRsp');
+    }
+    return resobj
   }
 }

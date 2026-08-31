@@ -1,27 +1,29 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: ChallengeHeroComplete
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
-  PlayerInfoSimple,
   ChallengeHeroComplete,
 } from 'mc-local-share';
 
 /**
  * ChallengeHeroComplete
- * REQ = PlayerInfoSimple（reqProto 缺失，回退）
+ * REQ = {}
  * RES = ChallengeHeroComplete
- * 说明：REQ 使用 PlayerInfoSimple 作为占位。（未声明 reqProto）
- * 注册：reqId=-1、recId=15022
+ * 注册：reqId=0、recId=15022
  */
-export class NetMsg_ChallengeHeroComplete implements IHandle<PlayerInfoSimple, ChallengeHeroComplete> {
-  /** 请求消息号：-1 */
-  readonly reqId: number = -1;
+export class NetMsg_ChallengeHeroComplete extends MessageBase<{}, ChallengeHeroComplete> {
+  /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
+  reqId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
   /** 响应消息号：CHALLENGE_HERO_COMPLETE (15022) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.CHALLENGE_HERO_COMPLETE;
+  recId: MESSAGE_ID = MESSAGE_ID.CHALLENGE_HERO_COMPLETE;
 
-  Handle(req: PlayerInfoSimple): ChallengeHeroComplete {
-    throw new Error('Handle not implemented: ChallengeHeroComplete');
+  override Handle(req: {}): ChallengeHeroComplete {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: ChallengeHeroComplete');
+    }
+    return resobj
   }
 }
