@@ -1,0 +1,8 @@
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
+// 字段号/种类静态表：模块加载时经 schema.define 登记，供 codec 运行期编解码。
+
+import { FieldType, WireType } from '../common';
+import { define, FieldSchema } from '../schema';
+import { MESSAGE_ID } from '../MESSAGE_ID';
+
+{{DEFINE_LINES}}

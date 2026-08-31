@@ -1,0 +1,26 @@
+// 由 mc-local-share generate_res 自动生成，请勿手改。
+// tagName: GetRankDetail
+
+import { IHandle } from '../IHandle';
+import {
+  MESSAGE_ID,
+  GetRankDetailRequest,
+} from 'mc-local-share';
+
+/**
+ * GetRankDetail
+ * REQ = GetRankDetailRequest
+ * RES = {}（recvProto 缺失，回退）
+ * 说明：RES 使用 {} 作为占位。（未声明 recvProto）
+ * 注册：reqId=10242、recId=-1
+ */
+export class NetMsg_GetRankDetailReq implements IHandle<GetRankDetailRequest, {}> {
+  /** 请求消息号：GET_RANK_DETAIL_REQ (10242) */
+  readonly reqId: MESSAGE_ID = MESSAGE_ID.GET_RANK_DETAIL_REQ;
+  /** 响应消息号：-1 */
+  readonly recId: number = -1;
+
+  Handle(req: GetRankDetailRequest): {} {
+    throw new Error('Handle not implemented: GetRankDetail');
+  }
+}

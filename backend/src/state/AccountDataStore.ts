@@ -156,10 +156,56 @@ export class AccountDataStore {
   archive(userId: string): AccountArchive {
     let a = this.archives.get(userId);
     if (!a) {
-      a = this.generate(userId);
+      // a = this.generate(userId);
+      a = this.test(userId);
       this.archives.set(userId, a);
     }
     return a;
+  }
+
+  private test(userId: string) {
+    const data = loadGameData();
+    const heroes = new Map<number, HeroState>([
+      [1, { hero: 1, unlockState: 2, favor: 0, favorLv: 1, curSkin: 0 }],
+      [2, { hero: 2, unlockState: 2, favor: 0, favorLv: 1, curSkin: 0 }],
+      [3, { hero: 3, unlockState: 2, favor: 0, favorLv: 1, curSkin: 0 }],
+    ]);
+
+    let cards = new Map<number, number>([
+      [10001, 3],
+      [10002, 3],
+      [10017, 3],
+      [10018, 3],
+      [10019, 3],
+      [10020, 3],
+      [10021, 3],
+      [10022, 3],
+      [10023, 3],
+      [10025, 3],
+      [10026, 3],
+      [10028, 3],
+      [10112, 3],
+      [10113, 3],
+      [10122, 3],
+      [10024, 3],
+    ]);
+
+    let decks = new Map<number, DeckState>([
+      // [1, this.makeDeck(1, DEFAULT_DECK_NAME, 1, 1, [])],
+    ]);
+    let did = 1;
+
+    return {
+      userId,
+      cards,
+      cardBacks: [1], // 默认卡背 kabei_01（carddeck/kabei_01.dat 实证）
+      defaultCardBack: 1,
+      heroes,
+      decks,
+      shop: new Map(),
+      money: { gold: 5000, sliver: 0, diamond: 500, ash: 0, jade: 0 },
+      nextDid: did,
+    };
   }
 
   // -------------------------------------------------------------------------
