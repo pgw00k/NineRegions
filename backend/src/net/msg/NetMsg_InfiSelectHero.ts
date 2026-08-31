@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_SelectHero
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   InfiSelectHeroRequest,
@@ -14,13 +14,17 @@ import {
  * RES = InfiSelectHeroResponse
  * 注册：reqId=10084、recId=10085
  */
-export class NetMsg_InfiSelectHero implements IHandle<InfiSelectHeroRequest, InfiSelectHeroResponse> {
+export class NetMsg_InfiSelectHero extends MessageBase<InfiSelectHeroRequest, InfiSelectHeroResponse> {
   /** 请求消息号：INFI_SELECT_HERO_REQ (10084) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_HERO_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_HERO_REQ;
   /** 响应消息号：INFI_SELECT_HERO_REP (10085) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_HERO_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_HERO_REP;
 
-  Handle(req: InfiSelectHeroRequest): InfiSelectHeroResponse {
-    throw new Error('Handle not implemented: Infi_SelectHero');
+  override Handle(req: InfiSelectHeroRequest): InfiSelectHeroResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: Infi_SelectHero');
+    }
+    return resobj
   }
 }

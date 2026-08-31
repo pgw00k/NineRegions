@@ -26,3 +26,7 @@ export interface IHandle<REQ, REP> extends IHandleBase {
   Handle(req: REQ): REP;
 }
 
+export interface IResponderPair {
+  reqId: number;
+  recId: number;
+}

@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: ChallengeHero
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   ChallengeHeroRequest,
@@ -14,13 +14,17 @@ import {
  * RES = ChallengeHeroResponse
  * 注册：reqId=10260、recId=10261
  */
-export class NetMsg_ChallengeHero implements IHandle<ChallengeHeroRequest, ChallengeHeroResponse> {
+export class NetMsg_ChallengeHero extends MessageBase<ChallengeHeroRequest, ChallengeHeroResponse> {
   /** 请求消息号：CHALLENGE_HERO_REQ (10260) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.CHALLENGE_HERO_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.CHALLENGE_HERO_REQ;
   /** 响应消息号：CHALLENGE_HERO_REP (10261) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.CHALLENGE_HERO_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.CHALLENGE_HERO_REP;
 
-  Handle(req: ChallengeHeroRequest): ChallengeHeroResponse {
-    throw new Error('Handle not implemented: ChallengeHero');
+  override Handle(req: ChallengeHeroRequest): ChallengeHeroResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: ChallengeHero');
+    }
+    return resobj
   }
 }

@@ -6,7 +6,7 @@
  *   - 外围：HttpServer（客户端登录仿真）随服务一起启动。
  */
 import { Logger } from './core/Logger';
-import { MessageRouter2 } from './messages/MessageRouter2';
+import { MessageRouter } from './messages/MessageRouter';
 import { WsGateway } from './net/WsGateway';
 import { HttpServer } from './http/HttpServer';
 
@@ -26,8 +26,8 @@ process.on('unhandledRejection', (e) => {
 async function main(): Promise<void> {
   const logger = new Logger('boot');
 
-  // 核心链路：C2S 解密（gateway）→ 路由应答（MessageRouter2）→ S2C。
-  const router = new MessageRouter2(logger);
+  // 核心链路：C2S 解密（gateway）→ 路由应答（MessageRouter）→ S2C。
+  const router = new MessageRouter(logger);
   const gateway = new WsGateway(logger);
   gateway.setOnC2S((connId, frame) => router.route(connId, frame.msgId, frame.order, frame.body));
   await gateway.start();

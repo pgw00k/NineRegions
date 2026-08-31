@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Mission_Reward
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   TaskRewardRequest,
@@ -14,13 +14,17 @@ import {
  * RES = TaskRewardResponse
  * 注册：reqId=10030、recId=10031
  */
-export class NetMsg_MissionReward implements IHandle<TaskRewardRequest, TaskRewardResponse> {
+export class NetMsg_MissionReward extends MessageBase<TaskRewardRequest, TaskRewardResponse> {
   /** 请求消息号：TASK_REWARD_REQ (10030) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.TASK_REWARD_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.TASK_REWARD_REQ;
   /** 响应消息号：TASK_REWARD_REP (10031) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.TASK_REWARD_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.TASK_REWARD_REP;
 
-  Handle(req: TaskRewardRequest): TaskRewardResponse {
-    throw new Error('Handle not implemented: Mission_Reward');
+  override Handle(req: TaskRewardRequest): TaskRewardResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: Mission_Reward');
+    }
+    return resobj
   }
 }

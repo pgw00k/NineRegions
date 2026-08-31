@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_StartShopRefresh
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   InfiRefreshOpenShopReq,
@@ -14,13 +14,17 @@ import {
  * RES = InfiRefreshOpenShopRep
  * 注册：reqId=10120、recId=10121
  */
-export class NetMsg_InfiStartShopRefresh implements IHandle<InfiRefreshOpenShopReq, InfiRefreshOpenShopRep> {
+export class NetMsg_InfiStartShopRefresh extends MessageBase<InfiRefreshOpenShopReq, InfiRefreshOpenShopRep> {
   /** 请求消息号：INFI_REFRESH_OPENSHOP_REQ (10120) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.INFI_REFRESH_OPENSHOP_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.INFI_REFRESH_OPENSHOP_REQ;
   /** 响应消息号：INFI_REFRESH_OPENSHOP_REP (10121) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.INFI_REFRESH_OPENSHOP_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.INFI_REFRESH_OPENSHOP_REP;
 
-  Handle(req: InfiRefreshOpenShopReq): InfiRefreshOpenShopRep {
-    throw new Error('Handle not implemented: Infi_StartShopRefresh');
+  override Handle(req: InfiRefreshOpenShopReq): InfiRefreshOpenShopRep {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: Infi_StartShopRefresh');
+    }
+    return resobj
   }
 }

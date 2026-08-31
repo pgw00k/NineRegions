@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_ShopBuyItem
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   InfiBuyItemRequest,
@@ -14,13 +14,17 @@ import {
  * RES = InfiBuyItemResponse
  * 注册：reqId=10093、recId=10094
  */
-export class NetMsg_InfiShopBuyItem implements IHandle<InfiBuyItemRequest, InfiBuyItemResponse> {
+export class NetMsg_InfiShopBuyItem extends MessageBase<InfiBuyItemRequest, InfiBuyItemResponse> {
   /** 请求消息号：INFI_BUY_ITEM_REQ (10093) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.INFI_BUY_ITEM_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.INFI_BUY_ITEM_REQ;
   /** 响应消息号：INFI_BUY_ITEM_REP (10094) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.INFI_BUY_ITEM_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.INFI_BUY_ITEM_REP;
 
-  Handle(req: InfiBuyItemRequest): InfiBuyItemResponse {
-    throw new Error('Handle not implemented: Infi_ShopBuyItem');
+  override Handle(req: InfiBuyItemRequest): InfiBuyItemResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: Infi_ShopBuyItem');
+    }
+    return resobj
   }
 }

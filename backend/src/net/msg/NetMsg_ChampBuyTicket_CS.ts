@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_ChampBuyTicket_CS
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   ChampBuyTicketRequest,
@@ -14,13 +14,17 @@ import {
  * RES = ChampBuyTicketResponse
  * 注册：reqId=10402、recId=10403
  */
-export class NetMsg_ChampBuyTicket_CS implements IHandle<ChampBuyTicketRequest, ChampBuyTicketResponse> {
+export class NetMsg_ChampBuyTicket_CS extends MessageBase<ChampBuyTicketRequest, ChampBuyTicketResponse> {
   /** 请求消息号：CHAMP_BUYTICKET_REQ (10402) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.CHAMP_BUYTICKET_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.CHAMP_BUYTICKET_REQ;
   /** 响应消息号：CHAMP_BUYTICKET_REP (10403) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.CHAMP_BUYTICKET_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.CHAMP_BUYTICKET_REP;
 
-  Handle(req: ChampBuyTicketRequest): ChampBuyTicketResponse {
-    throw new Error('Handle not implemented: NetMsg_ChampBuyTicket_CS');
+  override Handle(req: ChampBuyTicketRequest): ChampBuyTicketResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_ChampBuyTicket_CS');
+    }
+    return resobj
   }
 }

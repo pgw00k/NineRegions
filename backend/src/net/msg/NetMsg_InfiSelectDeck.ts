@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_SelectDeck
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   InfiSelectDeckRequest,
@@ -14,13 +14,17 @@ import {
  * RES = InfiSelectDeckResponse
  * 注册：reqId=10105、recId=10106
  */
-export class NetMsg_InfiSelectDeck implements IHandle<InfiSelectDeckRequest, InfiSelectDeckResponse> {
+export class NetMsg_InfiSelectDeck extends MessageBase<InfiSelectDeckRequest, InfiSelectDeckResponse> {
   /** 请求消息号：INFI_SELECT_DECK_REQ (10105) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_DECK_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_DECK_REQ;
   /** 响应消息号：INFI_SELECT_DECK_REP (10106) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_DECK_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_DECK_REP;
 
-  Handle(req: InfiSelectDeckRequest): InfiSelectDeckResponse {
-    throw new Error('Handle not implemented: Infi_SelectDeck');
+  override Handle(req: InfiSelectDeckRequest): InfiSelectDeckResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: Infi_SelectDeck');
+    }
+    return resobj
   }
 }

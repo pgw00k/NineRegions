@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_SetUserTitle
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   SetUserTitleReq,
@@ -14,13 +14,17 @@ import {
  * RES = SetUserTitleRsp
  * 注册：reqId=10372、recId=10373
  */
-export class NetMsg_SetUserTitle implements IHandle<SetUserTitleReq, SetUserTitleRsp> {
+export class NetMsg_SetUserTitle extends MessageBase<SetUserTitleReq, SetUserTitleRsp> {
   /** 请求消息号：SET_USERTITLE_REQ (10372) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.SET_USERTITLE_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.SET_USERTITLE_REQ;
   /** 响应消息号：SET_USERTITLE_RSP (10373) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.SET_USERTITLE_RSP;
+  recId: MESSAGE_ID = MESSAGE_ID.SET_USERTITLE_RSP;
 
-  Handle(req: SetUserTitleReq): SetUserTitleRsp {
-    throw new Error('Handle not implemented: NetMsg_SetUserTitle');
+  override Handle(req: SetUserTitleReq): SetUserTitleRsp {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_SetUserTitle');
+    }
+    return resobj
   }
 }
