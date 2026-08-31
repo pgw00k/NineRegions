@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_BuyClue
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   InfiBuyMessageReq,
@@ -14,13 +14,17 @@ import {
  * RES = InfiBuyMessageRep
  * 注册：reqId=10112、recId=10113
  */
-export class NetMsg_InfiBuyClue implements IHandle<InfiBuyMessageReq, InfiBuyMessageRep> {
+export class NetMsg_InfiBuyClue extends MessageBase<InfiBuyMessageReq, InfiBuyMessageRep> {
   /** 请求消息号：INFI_BUY_MESSAGE_REQ (10112) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.INFI_BUY_MESSAGE_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.INFI_BUY_MESSAGE_REQ;
   /** 响应消息号：INFI_BUY_MESSAGE_REP (10113) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.INFI_BUY_MESSAGE_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.INFI_BUY_MESSAGE_REP;
 
-  Handle(req: InfiBuyMessageReq): InfiBuyMessageRep {
-    throw new Error('Handle not implemented: Infi_BuyClue');
+  override Handle(req: InfiBuyMessageReq): InfiBuyMessageRep {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: Infi_BuyClue');
+    }
+    return resobj
   }
 }

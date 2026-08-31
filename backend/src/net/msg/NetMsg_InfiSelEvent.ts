@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_SelectEvent
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   InfiSelectEventRequest,
@@ -14,13 +14,17 @@ import {
  * RES = InfiSelectEventResponse
  * 注册：reqId=10086、recId=10087
  */
-export class NetMsg_InfiSelEvent implements IHandle<InfiSelectEventRequest, InfiSelectEventResponse> {
+export class NetMsg_InfiSelEvent extends MessageBase<InfiSelectEventRequest, InfiSelectEventResponse> {
   /** 请求消息号：INFI_SELECT_EVENT_REQ (10086) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_EVENT_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_EVENT_REQ;
   /** 响应消息号：INFI_SELECT_EVENT_REP (10087) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_EVENT_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_EVENT_REP;
 
-  Handle(req: InfiSelectEventRequest): InfiSelectEventResponse {
-    throw new Error('Handle not implemented: Infi_SelectEvent');
+  override Handle(req: InfiSelectEventRequest): InfiSelectEventResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: Infi_SelectEvent');
+    }
+    return resobj
   }
 }

@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_DLC4SetTAlent
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   DLC4SetTalentReq,
@@ -14,13 +14,17 @@ import {
  * RES = DLC4SetTalentRep
  * 注册：reqId=10478、recId=10479
  */
-export class NetMsg_DLC4SetTAlent implements IHandle<DLC4SetTalentReq, DLC4SetTalentRep> {
+export class NetMsg_DLC4SetTAlent extends MessageBase<DLC4SetTalentReq, DLC4SetTalentRep> {
   /** 请求消息号：DLC4_SETTALENT_REQ (10478) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.DLC4_SETTALENT_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.DLC4_SETTALENT_REQ;
   /** 响应消息号：DLC4_SETTALENT_REP (10479) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.DLC4_SETTALENT_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.DLC4_SETTALENT_REP;
 
-  Handle(req: DLC4SetTalentReq): DLC4SetTalentRep {
-    throw new Error('Handle not implemented: NetMsg_DLC4SetTAlent');
+  override Handle(req: DLC4SetTalentReq): DLC4SetTalentRep {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_DLC4SetTAlent');
+    }
+    return resobj
   }
 }

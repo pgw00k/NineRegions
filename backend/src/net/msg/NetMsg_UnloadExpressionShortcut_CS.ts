@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_UnloadExpressionShortcut
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   UnloadExpressionShortcutReq,
@@ -14,13 +14,17 @@ import {
  * RES = UnloadExpressionShortcutRsp
  * 注册：reqId=10358、recId=10359
  */
-export class NetMsg_UnloadExpressionShortcut_CS implements IHandle<UnloadExpressionShortcutReq, UnloadExpressionShortcutRsp> {
+export class NetMsg_UnloadExpressionShortcut_CS extends MessageBase<UnloadExpressionShortcutReq, UnloadExpressionShortcutRsp> {
   /** 请求消息号：UNLOAD_EXPRESSION_SHORTCUT_REQ (10358) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.UNLOAD_EXPRESSION_SHORTCUT_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.UNLOAD_EXPRESSION_SHORTCUT_REQ;
   /** 响应消息号：UNLOAD_EXPRESSION_SHORTCUT_RSP (10359) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.UNLOAD_EXPRESSION_SHORTCUT_RSP;
+  recId: MESSAGE_ID = MESSAGE_ID.UNLOAD_EXPRESSION_SHORTCUT_RSP;
 
-  Handle(req: UnloadExpressionShortcutReq): UnloadExpressionShortcutRsp {
-    throw new Error('Handle not implemented: NetMsg_UnloadExpressionShortcut');
+  override Handle(req: UnloadExpressionShortcutReq): UnloadExpressionShortcutRsp {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_UnloadExpressionShortcut');
+    }
+    return resobj
   }
 }

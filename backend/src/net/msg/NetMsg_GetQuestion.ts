@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_GetQuestion
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   GetQuestionnaireRequest,
@@ -14,13 +14,17 @@ import {
  * RES = GetQuestionnaireResponse
  * 注册：reqId=10220、recId=10221
  */
-export class NetMsg_GetQuestion implements IHandle<GetQuestionnaireRequest, GetQuestionnaireResponse> {
+export class NetMsg_GetQuestion extends MessageBase<GetQuestionnaireRequest, GetQuestionnaireResponse> {
   /** 请求消息号：GET_QUESTION_REQ (10220) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.GET_QUESTION_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.GET_QUESTION_REQ;
   /** 响应消息号：GET_QUESTION_REP (10221) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.GET_QUESTION_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.GET_QUESTION_REP;
 
-  Handle(req: GetQuestionnaireRequest): GetQuestionnaireResponse {
-    throw new Error('Handle not implemented: NetMsg_GetQuestion');
+  override Handle(req: GetQuestionnaireRequest): GetQuestionnaireResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_GetQuestion');
+    }
+    return resobj
   }
 }

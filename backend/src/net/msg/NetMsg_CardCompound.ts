@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_CardCompound
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   CardCompoundRequest,
@@ -14,13 +14,17 @@ import {
  * RES = CardCompoundResponse
  * 注册：reqId=10043、recId=10044
  */
-export class NetMsg_CardCompound implements IHandle<CardCompoundRequest, CardCompoundResponse> {
+export class NetMsg_CardCompound extends MessageBase<CardCompoundRequest, CardCompoundResponse> {
   /** 请求消息号：CARD_COMPOUND_REQ (10043) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.CARD_COMPOUND_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.CARD_COMPOUND_REQ;
   /** 响应消息号：CARD_COMPOUND_REP (10044) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.CARD_COMPOUND_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.CARD_COMPOUND_REP;
 
-  Handle(req: CardCompoundRequest): CardCompoundResponse {
-    throw new Error('Handle not implemented: NetMsg_CardCompound');
+  override Handle(req: CardCompoundRequest): CardCompoundResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_CardCompound');
+    }
+    return resobj
   }
 }

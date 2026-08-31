@@ -21,12 +21,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import {
-  FieldType,
   Label,
   ParsedDescriptor,
   ParsedField,
   loadPackMsg,
 } from './parsePackMsg';
+
+import { FieldType } from '../src/common';
 
 /** 消息配对 JSON 的结构（与 generate_res 输出对齐）。 */
 interface NetJson {
@@ -108,15 +109,15 @@ function fieldLine(f: ParsedField, ctx: NameCtx): string {
 // ---------------------------------------------------------------------------
 /** 重写 share/src/proto/index.ts：导出定义 + 副作用导入 fields（触发字段登记）。 */
 function genProtoIndex(indexOutFile: string): void {
-  const lines = [
-    '// 由 mc-local-share generate_ts 自动生成，请勿手改。',
-    "export * from './enums';",
-    "export * from './messages';",
-    "import './fields'; // 副作用：模块加载即登记字段静态表",
-    "export * from './fields';",
-    '',
-  ];
-  fs.writeFileSync(indexOutFile, lines.join('\n'), 'utf-8');
+  // const lines = [
+  //   '// 由 mc-local-share generate_ts 自动生成，请勿手改。',
+  //   "export * from './enums';",
+  //   "export * from './messages';",
+  //   "import './fields'; // 副作用：模块加载即登记字段静态表",
+  //   "export * from './fields';",
+  //   '',
+  // ];
+  // fs.writeFileSync(indexOutFile, lines.join('\n'), 'utf-8');
 }
 
 function genFieldsTs(
@@ -124,6 +125,7 @@ function genFieldsTs(
   ctx: NameCtx,
   nets: NetJson[],
   msgIdNameToNum: Map<string, number>,
+  scriptDir: string,
 ): string {
   // 短名 proto -> 首次出现且合法的 MESSAGE_ID 枚举名（请求优先，其次响应）。
   const idByFlat = new Map<string, string>();
@@ -140,28 +142,19 @@ function genFieldsTs(
     }
   }
 
-  const lines: string[] = [];
-  lines.push('// 由 mc-local-share generate_ts 自动生成，请勿手改。');
-  lines.push('// 字段号/种类静态表：模块加载时经 schema.define 登记，供 codec 运行期编解码。');
-  lines.push('');
-  lines.push("import { FieldType, WireType } from '../common';");
-  lines.push("import { define, FieldSchema } from '../schema';");
-  lines.push("import { MESSAGE_ID } from '../MESSAGE_ID';");
-  lines.push('');
-
+  // 循环块：按消息逐条生成 define(...) 行（含内联 FieldSchema 数组），块间以空行分隔。
   const seen = new Set<string>();
+  const defineLines: string[] = [];
   for (const m of desc.messages) {
     const flat = ctx.fullToFlat.get(m.fullName)!;
     if (seen.has(flat)) continue;
     seen.add(flat);
     const idName = idByFlat.get(flat);
     const idRef = idName ? `MESSAGE_ID.${idName}` : '0';
-    lines.push(`define(${idRef}, '${flat}', ${genFieldArrayDecl(m, ctx)});`);
-    lines.push('');
+    defineLines.push(`define(${idRef}, '${flat}', ${genFieldArrayDecl(m, ctx)});`);
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  void desc;
-  return lines.join('\n');
+
+  return renderTemplate(loadFieldsTemplate(scriptDir), { DEFINE_LINES: defineLines.join('\n\n') }) + '\n';
 }
 
 /** 生成 FieldSchema[] 的元素数组文本（内联），供 define 使用。 */
@@ -187,11 +180,37 @@ interface HandlerResult {
   content?: string;
 }
 
-function genHandler(n: NetJson, base: string, ctx: NameCtx, msgIdNameToNum: Map<string, number>): HandlerResult {
+/** 缓存模板内容，避免每次生成重复读盘。 */
+let cachedHandlerTemplate: string | null = null;
+
+/**
+ * 读取处理器模板文件（share/scripts/templates/NetMsg.ts.tpl），
+ * 便于直接编辑模板来调整生成内容，而无需改动本脚本。
+ */
+function loadHandlerTemplate(scriptDir: string): string {
+  if (cachedHandlerTemplate === null) {
+    const tpl = path.join(scriptDir, 'templates', 'NetMsg.ts.tpl');
+    cachedHandlerTemplate = fs.readFileSync(tpl, 'utf-8');
+  }
+  return cachedHandlerTemplate;
+}
+
+/** 把模板里的 {{KEY}} 占位符替换成实际值；未命中的占位符予以保留。 */
+function renderTemplate(tpl: string, vars: Record<string, string>): string {
+  return tpl.replace(/\{\{(\w+)\}\}/g, (m, key: string) => vars[key] ?? m);
+}
+
+function genHandler(
+  n: NetJson,
+  base: string,
+  ctx: NameCtx,
+  msgIdNameToNum: Map<string, number>,
+  scriptDir: string,
+): HandlerResult {
   const reqType = n.reqProto ? ctx.shortToFlat.get(n.reqProto) : undefined;
   const resType = n.recvProto ? ctx.shortToFlat.get(n.recvProto) : undefined;
-  const reqIdName = msgIdNameToNum.has(n.reqId) ? n.reqId : '';
-  const recIdName = msgIdNameToNum.has(n.recId) ? n.recId : '';
+  const reqIdName = msgIdNameToNum.has(n.reqId) ? n.reqId : 'NONE';
+  const recIdName = msgIdNameToNum.has(n.recId) ? n.recId : 'NONE';
   const register = Boolean(n.needParseLua && reqType && resType && reqIdName && recIdName);
   if (!register) return { base, className: base, reqIdName: '', register: false };
 
@@ -199,34 +218,17 @@ function genHandler(n: NetJson, base: string, ctx: NameCtx, msgIdNameToNum: Map<
   const recIdNum = msgIdNameToNum.get(recIdName)!;
   const tag = n.TageName || base;
 
-  const lines: string[] = [];
-  lines.push('// 由 mc-local-share generate_ts 自动生成，请勿手改。');
-  lines.push(`// tagName: ${tag}`);
-  lines.push('');
-  lines.push("import { IHandle } from '../IHandle';");
-  lines.push('import {');
-  lines.push('  MESSAGE_ID,');
-  lines.push(`  ${reqType},`);
-  lines.push(`  ${resType},`);
-  lines.push("} from 'mc-local-share';");
-  lines.push('');
-  lines.push('/**');
-  lines.push(` * ${tag}`);
-  lines.push(` * REQ = ${reqType}`);
-  lines.push(` * RES = ${resType}`);
-  lines.push(` * 注册：reqId=${reqIdNum}、recId=${recIdNum}`);
-  lines.push(' */');
-  lines.push(`export class ${base} implements IHandle<${reqType}, ${resType}> {`);
-  lines.push(`  /** 请求消息号：${reqIdName} (${reqIdNum}) */`);
-  lines.push(`  readonly reqId: MESSAGE_ID = MESSAGE_ID.${reqIdName};`);
-  lines.push(`  /** 响应消息号：${recIdName} (${recIdNum}) */`);
-  lines.push(`  readonly recId: MESSAGE_ID = MESSAGE_ID.${recIdName};`);
-  lines.push('');
-  lines.push(`  Handle(req: ${reqType}): ${resType} {`);
-  lines.push(`    throw new Error('Handle not implemented: ${tag}');`);
-  lines.push('  }');
-  lines.push('}');
-  return { base, className: base, reqIdName, register: true, content: lines.join('\n') + '\n' };
+  const content = renderTemplate(loadHandlerTemplate(scriptDir), {
+    TAG: tag,
+    REQ_TYPE: reqType!,
+    RES_TYPE: resType!,
+    REQ_ID_NAME: reqIdName,
+    REC_ID_NAME: recIdName,
+    REQ_ID_NUM: String(reqIdNum),
+    REC_ID_NUM: String(recIdNum),
+    CLASS_NAME: base,
+  });
+  return { base, className: base, reqIdName, register: true, content: content.endsWith('\n') ? content : content + '\n' };
 }
 
 // ---------------------------------------------------------------------------
@@ -286,17 +288,19 @@ function main(): void {
   const desc = loadPackMsg(packPath);
   const ctx = buildNames(desc);
   const msgIdNameToNum = parseMessageIdEnum(messageIdFile);
+  const forceReplace = true;
 
   // ① 生成处理器文件（已存在则跳过，保留手写 Handle）与 Controller 注册数据
   fs.mkdirSync(msgOutDir, { recursive: true });
   const handlers: HandlerResult[] = [];
   let created = 0;
+  const scriptDir = __dirname;
   for (const { base, n } of nets) {
-    const h = genHandler(n, base, ctx, msgIdNameToNum);
+    const h = genHandler(n, base, ctx, msgIdNameToNum, scriptDir);
     handlers.push(h);
     if (h.register && h.content) {
       const file = path.join(msgOutDir, `${h.className}.ts`);
-      if (!fs.existsSync(file)) {
+      if (!fs.existsSync(file) || forceReplace) {
         fs.writeFileSync(file, h.content, 'utf-8');
         created++;
       }
@@ -305,12 +309,12 @@ function main(): void {
 
   // ② 始终重写 MessageController.ts（注册行按类名排序，越界占位由生成函数内联修正）
   fs.mkdirSync(msgOutDir, { recursive: true });
-  const controller = genMessageControllerWithIds(handlers, msgIdNameToNum);
+  const controller = genMessageControllerWithIds(handlers, msgIdNameToNum, scriptDir);
   fs.writeFileSync(path.join(msgOutDir, 'MessageController.ts'), controller, 'utf-8');
 
   // ③ 生成 fields.ts（share/src/proto）
   fs.mkdirSync(path.dirname(fieldsOutFile), { recursive: true });
-  const fields = genFieldsTs(desc, ctx, nets.map((x) => x.n), msgIdNameToNum);
+  const fields = genFieldsTs(desc, ctx, nets.map((x) => x.n), msgIdNameToNum, scriptDir);
   fs.writeFileSync(fieldsOutFile, fields + '\n', 'utf-8');
 
   // ④ 重写 share/src/proto/index.ts：导出所有 + 导入 fields（触发 define 副作用）
@@ -323,25 +327,56 @@ function main(): void {
   console.log(`[gen-ts] proto index 重写: ${indexOutFile}`);
 }
 
-/** 组装 MessageController：直接以内联 reqId 枚举名注册，避免占位替换。 */
-function genMessageControllerWithIds(handlers: HandlerResult[], msgIdNameToNum: Map<string, number>): string {
-  const lines: string[] = [];
-  lines.push('// 由 mc-local-share generate_ts 自动生成，请勿手改。');
-  lines.push('');
-  lines.push("import { MessageControllerBase } from '../MessageControllerBase';");
-  lines.push("import { MESSAGE_ID } from 'mc-local-share';");
-  const sorted = [...handlers].filter((h) => h.register).sort((a, b) => a.className.localeCompare(b.className));
-  for (const h of sorted) lines.push(`import { ${h.className} } from './${h.className}';`);
-  lines.push('');
-  lines.push('export class MessageController extends MessageControllerBase {');
-  lines.push('  constructor() {');
-  lines.push('    super();');
-  for (const h of sorted) {
-    lines.push(`    this.AutoResponser[MESSAGE_ID.${h.reqIdName}] = new ${h.className}();`);
+/** 缓存 fields 模板内容，避免每次生成重复读盘。 */
+let cachedFieldsTemplate: string | null = null;
+
+/**
+ * 读取 fields 模板文件（share/scripts/templates/Fields.ts.tpl）。
+ * 模板内嵌 {{DEFINE_LINES}} 循环块占位符，由 genFieldsTs 生成 define 行后替换。
+ */
+function loadFieldsTemplate(scriptDir: string): string {
+  if (cachedFieldsTemplate === null) {
+    const tpl = path.join(scriptDir, 'templates', 'Fields.ts.tpl');
+    cachedFieldsTemplate = fs.readFileSync(tpl, 'utf-8');
   }
-  lines.push('  }');
-  lines.push('}');
-  return lines.join('\n') + '\n';
+  return cachedFieldsTemplate;
+}
+
+/** 缓存控制器模板内容，避免每次生成重复读盘。 */
+let cachedControllerTemplate: string | null = null;
+
+/**
+ * 读取控制器模板文件（share/scripts/templates/MessageController.ts.tpl）。
+ * 模板内嵌 {{IMPORTS_LINES}} / {{REGISTER_LINES}} 两个循环块占位符，
+ * 由本函数按注册清单动态生成行集合后替换。
+ */
+function loadControllerTemplate(scriptDir: string): string {
+  if (cachedControllerTemplate === null) {
+    const tpl = path.join(scriptDir, 'templates', 'MessageController.ts.tpl');
+    cachedControllerTemplate = fs.readFileSync(tpl, 'utf-8');
+  }
+  return cachedControllerTemplate;
+}
+
+/** 组装 MessageController：直接以内联 reqId 枚举名注册，避免占位替换。 */
+function genMessageControllerWithIds(
+  handlers: HandlerResult[],
+  msgIdNameToNum: Map<string, number>,
+  scriptDir: string,
+): string {
+  const sorted = [...handlers].filter((h) => h.register).sort((a, b) => a.className.localeCompare(b.className));
+  // 循环块①：按类名逐个 import 处理器
+  const importsLines = sorted.map((h) => `import { ${h.className} } from './${h.className}';`).join('\n');
+  // 循环块②：按类名逐个注册到 AutoResponser
+  const regLines = sorted
+    .map((h) => `    this.AutoResponser[MESSAGE_ID.${h.reqIdName}] = new ${h.className}();`)
+    .join('\n');
+  return (
+    renderTemplate(loadControllerTemplate(scriptDir), {
+      IMPORTS_LINES: importsLines,
+      REGISTER_LINES: regLines,
+    }) + '\n'
+  );
 }
 
 if (require.main === module) {

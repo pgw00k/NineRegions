@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_CS_StartMatchPVP
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   MatchLadderRoomRequest,
@@ -14,13 +14,17 @@ import {
  * RES = MatchLadderRoomResponse
  * 注册：reqId=10015、recId=10016
  */
-export class NetMsg_StartMatchPVP_CS implements IHandle<MatchLadderRoomRequest, MatchLadderRoomResponse> {
+export class NetMsg_StartMatchPVP_CS extends MessageBase<MatchLadderRoomRequest, MatchLadderRoomResponse> {
   /** 请求消息号：MATCH_LADDERROOM_REQ (10015) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.MATCH_LADDERROOM_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.MATCH_LADDERROOM_REQ;
   /** 响应消息号：MATCH_LADDERROOM_REP (10016) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.MATCH_LADDERROOM_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.MATCH_LADDERROOM_REP;
 
-  Handle(req: MatchLadderRoomRequest): MatchLadderRoomResponse {
-    throw new Error('Handle not implemented: NetMsg_CS_StartMatchPVP');
+  override Handle(req: MatchLadderRoomRequest): MatchLadderRoomResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_CS_StartMatchPVP');
+    }
+    return resobj
   }
 }

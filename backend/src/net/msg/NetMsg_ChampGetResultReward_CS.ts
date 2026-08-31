@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_ChampGetResultReward_CS
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   ChampGetRankRewardRequest,
@@ -14,13 +14,17 @@ import {
  * RES = ChampGetRankRewardResponse
  * 注册：reqId=10408、recId=10409
  */
-export class NetMsg_ChampGetResultReward_CS implements IHandle<ChampGetRankRewardRequest, ChampGetRankRewardResponse> {
+export class NetMsg_ChampGetResultReward_CS extends MessageBase<ChampGetRankRewardRequest, ChampGetRankRewardResponse> {
   /** 请求消息号：CHAMP_GET_RANKREWARD_REQ (10408) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.CHAMP_GET_RANKREWARD_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.CHAMP_GET_RANKREWARD_REQ;
   /** 响应消息号：CHAMP_GET_RANKREWARD_REP (10409) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.CHAMP_GET_RANKREWARD_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.CHAMP_GET_RANKREWARD_REP;
 
-  Handle(req: ChampGetRankRewardRequest): ChampGetRankRewardResponse {
-    throw new Error('Handle not implemented: NetMsg_ChampGetResultReward_CS');
+  override Handle(req: ChampGetRankRewardRequest): ChampGetRankRewardResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_ChampGetResultReward_CS');
+    }
+    return resobj
   }
 }

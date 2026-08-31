@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_DLC4Forging
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   DLC4ForgingReq,
@@ -14,13 +14,17 @@ import {
  * RES = DLC4ForgingRep
  * 注册：reqId=10482、recId=10483
  */
-export class NetMsg_DLC4Forging implements IHandle<DLC4ForgingReq, DLC4ForgingRep> {
+export class NetMsg_DLC4Forging extends MessageBase<DLC4ForgingReq, DLC4ForgingRep> {
   /** 请求消息号：DLC4_FORGING_REQ (10482) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.DLC4_FORGING_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.DLC4_FORGING_REQ;
   /** 响应消息号：DLC4_FORGING_REP (10483) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.DLC4_FORGING_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.DLC4_FORGING_REP;
 
-  Handle(req: DLC4ForgingReq): DLC4ForgingRep {
-    throw new Error('Handle not implemented: NetMsg_DLC4Forging');
+  override Handle(req: DLC4ForgingReq): DLC4ForgingRep {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_DLC4Forging');
+    }
+    return resobj
   }
 }

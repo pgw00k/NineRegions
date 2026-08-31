@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_FirstPayReward
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   FirstChargeRewardReq,
@@ -14,13 +14,17 @@ import {
  * RES = FirstChargeRewardRep
  * 注册：reqId=10381、recId=10382
  */
-export class NetMsg_FirstPayReward implements IHandle<FirstChargeRewardReq, FirstChargeRewardRep> {
+export class NetMsg_FirstPayReward extends MessageBase<FirstChargeRewardReq, FirstChargeRewardRep> {
   /** 请求消息号：FIRSTCHARGEREWARD_REQ (10381) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.FIRSTCHARGEREWARD_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.FIRSTCHARGEREWARD_REQ;
   /** 响应消息号：FIRSTCHARGEREWARD_REP (10382) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.FIRSTCHARGEREWARD_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.FIRSTCHARGEREWARD_REP;
 
-  Handle(req: FirstChargeRewardReq): FirstChargeRewardRep {
-    throw new Error('Handle not implemented: NetMsg_FirstPayReward');
+  override Handle(req: FirstChargeRewardReq): FirstChargeRewardRep {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_FirstPayReward');
+    }
+    return resobj
   }
 }

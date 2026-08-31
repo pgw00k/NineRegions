@@ -11,22 +11,14 @@
  *  - 解码/编码/处理任一环节失败即静默丢弃该请求。
  */
 import { Buffer } from 'buffer';
-import type { MESSAGE_ID } from 'mc-local-share';
-import { get, encodeMessage, decodeMessage } from 'mc-local-share';
+import { get, encodeMessage, decodeMessage, MESSAGE_ID } from 'mc-local-share';
 import { Logger } from '../core/Logger';
-import { MessageController } from '../net/msg/MessageController';
 import { wrapDynProtoAuto } from '../net/FrameCodec';
 import { S2CFrame } from './types';
+import { MessageControllerMod } from '../net/msg_mod/MessageControllerMod';
 
-/** Auto 应答器在路由视角的最小契约。 */
-interface AutoResponder {
-  reqId: number;
-  recId: number;
-  Handle(req: Record<string, unknown>): Record<string, unknown>;
-}
-
-export class MessageRouter2 {
-  private readonly controller = new MessageController();
+export class MessageRouter {
+  private readonly controller = new MessageControllerMod();
 
   constructor(private readonly logger?: Logger) {}
 
@@ -38,7 +30,13 @@ export class MessageRouter2 {
    * @returns 要下发的 S2C 帧（0 或 1 条）。
    */
   route(connId: string, msgId: number, order: number, body: Buffer): S2CFrame[] {
-    const responder = this.controller.AutoResponser[msgId as MESSAGE_ID] as AutoResponder | undefined;
+    // 心跳 PINGPONG：无 protobuf → 用 wrapDynProtoAuto 生成 8B 空体（符合客户端约定），
+    // order 沿 C2S order + 1；若直接返回 Buffer.alloc(0)，客户端判 MsgBodyExists=False 拒读。
+    if (msgId === MESSAGE_ID.PINGPONG) {
+      return [{ msgId, order: order + 1, body: wrapDynProtoAuto(Buffer.alloc(0)) }];
+    }
+
+    const responder = this.controller.AutoResponser[msgId as MESSAGE_ID] as any | undefined;
     if (!responder) {
       // Auto 未注册 → 不应答
       return [];

@@ -21,6 +21,7 @@ const LEVEL_WEIGHT: Record<LogLevel, number> = {
 
 export class Logger {
   private static fileFd: number | null = null;
+  protected static _Instance: Logger | null = null;
 
   private minLevel: number;
 
@@ -29,6 +30,12 @@ export class Logger {
     minLevel: LogLevel = 'info',
   ) {
     this.minLevel = LEVEL_WEIGHT[minLevel];
+    if(Logger._Instance === null) {
+      Logger._Instance = this;
+    }else
+    {
+      throw new Error('Logger instance already created');
+    }
   }
 
   /** 惰性打开日志文件（<cwd>/logs/server.log，追加）。失败静默降级为仅控制台。 */
@@ -41,6 +48,10 @@ export class Logger {
     } catch {
       Logger.fileFd = -1;
     }
+  }
+
+  public static LogInfo(msg: string, extra?: unknown): void {
+    Logger._Instance?.info(msg, extra);
   }
 
   private now(): string {
@@ -94,3 +105,5 @@ function safeStringify(v: unknown): string {
     return String(v);
   }
 }
+
+

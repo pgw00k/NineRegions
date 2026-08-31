@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_ChangeDefaultCardBack
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   ChangeDefaultCardBackRequest,
@@ -14,13 +14,17 @@ import {
  * RES = ChangeDefaultCardBackResponse
  * 注册：reqId=10131、recId=10132
  */
-export class NetMsg_ChangeDefaultCardBack implements IHandle<ChangeDefaultCardBackRequest, ChangeDefaultCardBackResponse> {
+export class NetMsg_ChangeDefaultCardBack extends MessageBase<ChangeDefaultCardBackRequest, ChangeDefaultCardBackResponse> {
   /** 请求消息号：CHANGE_DEFAULT_CARDBACK_REQ (10131) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.CHANGE_DEFAULT_CARDBACK_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.CHANGE_DEFAULT_CARDBACK_REQ;
   /** 响应消息号：CHANGE_DEFAULT_CARDBACK_REP (10132) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.CHANGE_DEFAULT_CARDBACK_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.CHANGE_DEFAULT_CARDBACK_REP;
 
-  Handle(req: ChangeDefaultCardBackRequest): ChangeDefaultCardBackResponse {
-    throw new Error('Handle not implemented: NetMsg_ChangeDefaultCardBack');
+  override Handle(req: ChangeDefaultCardBackRequest): ChangeDefaultCardBackResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_ChangeDefaultCardBack');
+    }
+    return resobj
   }
 }

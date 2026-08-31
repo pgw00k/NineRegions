@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: BP_LevelReward
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   BattlePassRewardRequest,
@@ -14,13 +14,17 @@ import {
  * RES = BattlePassRewardResponse
  * 注册：reqId=10282、recId=10283
  */
-export class NetMsg_BPLevelReward implements IHandle<BattlePassRewardRequest, BattlePassRewardResponse> {
+export class NetMsg_BPLevelReward extends MessageBase<BattlePassRewardRequest, BattlePassRewardResponse> {
   /** 请求消息号：BATTLEPASS_REWARD_REQ (10282) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_REWARD_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_REWARD_REQ;
   /** 响应消息号：BATTLEPASS_REWARD_REP (10283) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_REWARD_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_REWARD_REP;
 
-  Handle(req: BattlePassRewardRequest): BattlePassRewardResponse {
-    throw new Error('Handle not implemented: BP_LevelReward');
+  override Handle(req: BattlePassRewardRequest): BattlePassRewardResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: BP_LevelReward');
+    }
+    return resobj
   }
 }

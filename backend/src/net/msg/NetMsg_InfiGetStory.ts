@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_GetStory
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   GetInfiStoryRequest,
@@ -14,13 +14,17 @@ import {
  * RES = GetInfiStoryResponse
  * 注册：reqId=10124、recId=10125
  */
-export class NetMsg_InfiGetStory implements IHandle<GetInfiStoryRequest, GetInfiStoryResponse> {
+export class NetMsg_InfiGetStory extends MessageBase<GetInfiStoryRequest, GetInfiStoryResponse> {
   /** 请求消息号：INFI_GET_STORY_REQ (10124) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.INFI_GET_STORY_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.INFI_GET_STORY_REQ;
   /** 响应消息号：INFI_GET_STORY_REP (10125) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.INFI_GET_STORY_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.INFI_GET_STORY_REP;
 
-  Handle(req: GetInfiStoryRequest): GetInfiStoryResponse {
-    throw new Error('Handle not implemented: Infi_GetStory');
+  override Handle(req: GetInfiStoryRequest): GetInfiStoryResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: Infi_GetStory');
+    }
+    return resobj
   }
 }

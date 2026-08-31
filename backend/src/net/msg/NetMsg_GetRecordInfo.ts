@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Msg_GetRecordInfo
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   GetRecordListRequest,
@@ -14,13 +14,17 @@ import {
  * RES = GetRecordListResponse
  * 注册：reqId=10440、recId=10441
  */
-export class NetMsg_GetRecordInfo implements IHandle<GetRecordListRequest, GetRecordListResponse> {
+export class NetMsg_GetRecordInfo extends MessageBase<GetRecordListRequest, GetRecordListResponse> {
   /** 请求消息号：GET_RECORDLIST_REQ (10440) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.GET_RECORDLIST_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.GET_RECORDLIST_REQ;
   /** 响应消息号：GET_RECORDLIST_REP (10441) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.GET_RECORDLIST_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.GET_RECORDLIST_REP;
 
-  Handle(req: GetRecordListRequest): GetRecordListResponse {
-    throw new Error('Handle not implemented: Msg_GetRecordInfo');
+  override Handle(req: GetRecordListRequest): GetRecordListResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: Msg_GetRecordInfo');
+    }
+    return resobj
   }
 }

@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: BP_BuyLevel
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   BattlePassBuyExpRequest,
@@ -14,13 +14,17 @@ import {
  * RES = BattlePassBuyExpResponse
  * 注册：reqId=10284、recId=10285
  */
-export class NetMsg_BPBuyLevel implements IHandle<BattlePassBuyExpRequest, BattlePassBuyExpResponse> {
+export class NetMsg_BPBuyLevel extends MessageBase<BattlePassBuyExpRequest, BattlePassBuyExpResponse> {
   /** 请求消息号：BATTLEPASS_BUY_EXP_REQ (10284) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_BUY_EXP_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_BUY_EXP_REQ;
   /** 响应消息号：BATTLEPASS_BUY_EXP_REP (10285) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_BUY_EXP_REP;
+  recId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_BUY_EXP_REP;
 
-  Handle(req: BattlePassBuyExpRequest): BattlePassBuyExpResponse {
-    throw new Error('Handle not implemented: BP_BuyLevel');
+  override Handle(req: BattlePassBuyExpRequest): BattlePassBuyExpResponse {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: BP_BuyLevel');
+    }
+    return resobj
   }
 }

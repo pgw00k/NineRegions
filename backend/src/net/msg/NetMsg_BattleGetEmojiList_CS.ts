@@ -1,7 +1,7 @@
-// 由 mc-local-share generate_res 自动生成，请勿手改。
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_BattleGetEmojiList
 
-import { IHandle } from '../IHandle';
+import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
   QueryExpressionShortcutReq,
@@ -14,13 +14,17 @@ import {
  * RES = QueryExpressionShortcutRsp
  * 注册：reqId=10374、recId=10375
  */
-export class NetMsg_BattleGetEmojiList_CS implements IHandle<QueryExpressionShortcutReq, QueryExpressionShortcutRsp> {
+export class NetMsg_BattleGetEmojiList_CS extends MessageBase<QueryExpressionShortcutReq, QueryExpressionShortcutRsp> {
   /** 请求消息号：QUERY_EXPRESSION_SHORECUT_REQ (10374) */
-  readonly reqId: MESSAGE_ID = MESSAGE_ID.QUERY_EXPRESSION_SHORECUT_REQ;
+  reqId: MESSAGE_ID = MESSAGE_ID.QUERY_EXPRESSION_SHORECUT_REQ;
   /** 响应消息号：QUERY_EXPRESSION_SHORECUT_RSP (10375) */
-  readonly recId: MESSAGE_ID = MESSAGE_ID.QUERY_EXPRESSION_SHORECUT_RSP;
+  recId: MESSAGE_ID = MESSAGE_ID.QUERY_EXPRESSION_SHORECUT_RSP;
 
-  Handle(req: QueryExpressionShortcutReq): QueryExpressionShortcutRsp {
-    throw new Error('Handle not implemented: NetMsg_BattleGetEmojiList');
+  override Handle(req: QueryExpressionShortcutReq): QueryExpressionShortcutRsp {
+    let resobj = super.Handle(req)
+    if(!resobj) {
+      throw new Error('Handle not implemented: NetMsg_BattleGetEmojiList');
+    }
+    return resobj
   }
 }
