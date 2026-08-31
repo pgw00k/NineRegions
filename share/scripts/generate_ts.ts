@@ -233,7 +233,7 @@ function genHandler(
   const resType = n.recvProto ? ctx.shortToFlat.get(n.recvProto) : "{}";
   const reqIdName = msgIdNameToNum.has(n.reqId) ? n.reqId : 'NETWORK_MESSAGE_BEGIN';
   const recIdName = msgIdNameToNum.has(n.recId) ? n.recId : 'NETWORK_MESSAGE_BEGIN';
-  const register = Boolean(reqIdName || recIdName);
+  const register = Boolean(n.reqProto &&  n.recvProto);
   
   if (!register) return { base, className: base, reqIdName: '', register: false };
 
