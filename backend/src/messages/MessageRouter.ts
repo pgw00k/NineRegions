@@ -11,38 +11,52 @@
  *  - 解码/编码/处理任一环节失败即静默丢弃该请求。
  */
 import { Buffer } from 'buffer';
-import { get, encodeMessage, decodeMessage, MESSAGE_ID } from 'mc-local-share';
+import { get, decodeMessage, MESSAGE_ID } from 'mc-local-share';
 import { Logger } from '../core/Logger';
-import { wrapDynProtoAuto } from '../net/FrameCodec';
 import { S2CFrame } from './types';
 import { MessageControllerMod } from '../net/msg_mod/MessageControllerMod';
+import { ConnManager } from '../net/ConnManager';
+import { Client } from '../net/Client';
+import { UserStateStore } from '../state/UserState';
 
 export class MessageRouter {
   private readonly controller = new MessageControllerMod();
 
-  constructor(private readonly logger?: Logger) {}
+  /**
+   * @param conns  多客户端连接管理器（按 connId/uid 定位 Client）。
+   * @param logger 日志器。
+   */
+  constructor(
+    private readonly conns: ConnManager,
+    private readonly logger?: Logger,
+  ) {}
 
   /**
    * 路由一条已解密的 C2S。
+   * @param connId 来源连接（据此定位该客户的 Client）。
    * @param msgId 解密后的请求消息号（reqId）。
    * @param order C2S 的 order；应答帧使用 order + 1。
    * @param body  解密后、含 NetBitStream 前缀的业务体。
    * @returns 要下发的 S2C 帧（0 或 1 条）。
    */
   route(connId: string, msgId: number, order: number, body: Buffer): S2CFrame[] {
-    // 心跳 PINGPONG：无 protobuf → 用 wrapDynProtoAuto 生成 8B 空体（符合客户端约定），
-    // order 沿 C2S order + 1；若直接返回 Buffer.alloc(0)，客户端判 MsgBodyExists=False 拒读。
+    // 定位当前客户端上下文；若首条消息已带 uid，则绑定到 Client。
+    // 该 Client 持有本次请求的应答器处理、order 记账与 S2C 帧队列（见 Client.process）。
+    const client = this.conns.get(connId);
+    this.prebindUid(connId, client, body);
+
+    // 第一层过滤：无需进入 Client 应答处理的消息（如心跳 PINGPONG）。
+    // 无 protobuf、无应答器 → 直接往 Client 队列推 8B 空体
+    // （若 Buffer.alloc(0)，客户端判 MsgBodyExists=False 拒读），order 不变。
     if (msgId === MESSAGE_ID.PINGPONG) {
-      return [{ msgId, order: order + 1, body: wrapDynProtoAuto(Buffer.alloc(0)) }];
+      if (client) {
+        client.beginRequest(order);
+        client.pushFrame(msgId, Buffer.alloc(8));
+      }
+      return client ? client.drainPending() : [{ msgId, order: order, body: Buffer.alloc(8) }];
     }
 
-    const responder = this.controller.AutoResponser[msgId as MESSAGE_ID] as any | undefined;
-    if (!responder) {
-      // Auto 未注册 → 不应答
-      return [];
-    }
-
-    // ① 解码 REQ：按请求消息号取静态 schema（字段号/类型表）→ 字段名对象
+    // 解码 REQ：按请求消息号取静态 schema → 字段名对象
     let req: Record<string, unknown> = {};
     const reqSchema = get(msgId);
     if (reqSchema) {
@@ -50,28 +64,26 @@ export class MessageRouter {
         req = decodeMessage(reqSchema, stripNetBitStream(body)) as Record<string, unknown>;
       } catch (e) {
         this.logger?.warn('router', `[${connId}] 解码 req#${msgId} 失败: ${(e as Error).message}`);
+        return [];
       }
     }
 
-    // ② 交给 Auto 处理，取得返回对象
-    let rep: Record<string, unknown>;
-    try {
-      rep = responder.Handle(req) ?? {};
-    } catch (e) {
-      this.logger?.warn('router', `[${connId}] 处理 req#${msgId} 异常: ${(e as Error).message}`);
-      return [];
-    }
+    // 交给 Client 判断应答器并处理（dispatch / Handle / 编码 / 记账 / 排队都在 Client 内完成），
+    // 返回待下发帧。事件驱动：请求处理完成即取帧，无定时遍历。
+    if (!client) return [];
+    return client.process(req, msgId, order, this.controller);
+  }
 
-    // ③ 编码 REP → dynproto 体 → 生成 S2C 帧（应答号用应答器 recId，order = C2S order + 1）
-    const repSchema = get(Number(responder.recId));
-    if (!repSchema) return [];
-    try {
-      const inner = encodeMessage(repSchema, rep);
-      return [{ msgId: Number(responder.recId), order: order + 1, body: wrapDynProtoAuto(inner) }];
-    } catch (e) {
-      this.logger?.warn('router', `[${connId}] 编码 rec#${responder.recId} 失败: ${(e as Error).message}`);
-      return [];
-    }
+  /**
+   * 从首条消息的 NetBitStream 信封里提取 userID 绑到 Client（一次绑定后不再重复提取）。
+   * 这样后续每条消息都能用 `client.uid` / `ConnManager.byUidLookup` 定位玩家。
+   */
+  private prebindUid(connId: string, client: Client | undefined, body: Buffer): void {
+    if (!client || client.uid) return;
+    const uid = UserStateStore.extractUserId(body);
+    if (!uid) return;
+    this.conns.bind(connId, uid);
+    this.logger?.info('router', `[${connId}] 绑定玩家 uid=${uid}`);
   }
 }
 

@@ -8,6 +8,7 @@
 import { Logger } from './core/Logger';
 import { MessageRouter } from './messages/MessageRouter';
 import { WsGateway } from './net/WsGateway';
+import { ConnManager } from './net/ConnManager';
 import { HttpServer } from './http/HttpServer';
 
 process.title = 'nine-regions-backend';
@@ -27,8 +28,12 @@ async function main(): Promise<void> {
   const logger = new Logger('boot');
 
   // 核心链路：C2S 解密（gateway）→ 路由应答（MessageRouter）→ S2C。
-  const router = new MessageRouter(logger);
+  // 多客户端：ConnManager 统一登记每个连接的 Client，路由按 connId 定位上下文。
+  const conns = new ConnManager(logger);
+  const router = new MessageRouter(conns, logger);
   const gateway = new WsGateway(logger);
+  gateway.setOnConnCreate((connId) => conns.create(connId));
+  gateway.setOnConnClose((connId) => conns.remove(connId));
   gateway.setOnC2S((connId, frame) => router.route(connId, frame.msgId, frame.order, frame.body));
   await gateway.start();
 

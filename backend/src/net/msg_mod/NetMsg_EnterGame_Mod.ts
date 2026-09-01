@@ -9,6 +9,7 @@ import {
 } from 'mc-local-share';
 import { NetMsg_EnterGame } from '../msg/NetMsg_EnterGame';
 import { Logger } from '../../core/Logger';
+import { Client } from '../Client';
 
 /**
  * NetMsg_EnterGame
@@ -17,8 +18,8 @@ import { Logger } from '../../core/Logger';
  * 注册：reqId=10001、recId=10002
  */
 export class NetMsg_EnterGame_Mod extends NetMsg_EnterGame {
-  override Handle(req: EnterGameRequest): EnterGameResponse {
-    Logger.LogInfo('EnterGame_Mod.Handle', req);
+  override Handle(req: EnterGameRequest, client?: Client): EnterGameResponse {
+    Logger.LogInfo('EnterGame_Mod.Handle', client ? { ...req, uid: client.uid } : req);
     return super.Handle(req);
   }
 }

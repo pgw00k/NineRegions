@@ -19,7 +19,9 @@ export class NetMsg_Heartbeat implements IHandle<HeartbeatReq, HeartbeatRep> {
 
   Handle(req: HeartbeatReq): HeartbeatRep {
     return {
-        moduleFlags: [],
+      timestamp: {
+      },
+      moduleFlags: [],
     };
   }
 }
