@@ -31,14 +31,16 @@ const WS_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
 export class WsGateway extends Server {
   private server?: net.Server;
-  private activeSocket: net.Socket | null = null;
-  private activeConnId = '';
+  /** connId → socket（多客户端：每条连接各自独立，互不影响）。 */
+  private readonly sockets = new Map<string, net.Socket>();
   private connCounter = 0;
   private recorder: FrameRecorder;
-  /** 本进程是否曾有过成功连接（用于跨重启识别「重连会话」的兜底信号）。 */
+  /** 本进程是否曾有过成功连接（仅用于日志标记「重连会话」）。 */
   private hadPriorSession = false;
   private readonly markerPath = path.join(os.tmpdir(), 'nineregions.reconnect');
-  /** 连接断开回调（由 index.ts 注入，清理 PVE 结算状态等）。 */
+  /** 连接建立回调（由 index.ts 注入，创建 Client 并登记入 ConnManager）。 */
+  private onConnCreate?: (connId: string) => void;
+  /** 连接断开回调（由 index.ts 注入，清理 Client / PVE 结算状态等）。 */
   private onConnClose?: (connId: string) => void;
   /** C2S 解密后回调（由 index.ts 注入，路由应答）。返回要下发的 S2C 帧。 */
   private onC2S?: (connId: string, frame: DecodedC2S) => S2CFrame[];
@@ -51,6 +53,11 @@ export class WsGateway extends Server {
     } catch {
       this.hadPriorSession = false;
     }
+  }
+
+  /** 注册连接建立回调（创建 Client 登记入 ConnManager）。 */
+  setOnConnCreate(cb: (connId: string) => void): void {
+    this.onConnCreate = cb;
   }
 
   /** 注册连接断开回调（清理 PVE 结算状态等）。 */
@@ -74,10 +81,6 @@ export class WsGateway extends Server {
     }
   }
 
-  getActiveConnId(): string {
-    return this.activeConnId;
-  }
-
   async start(): Promise<void> {
     this.server = net.createServer((sock) => this.onConnect(sock));
     this.server.on('error', (e) => this.logger.error('ws', `server error: ${(e as Error).message}`));
@@ -94,36 +97,31 @@ export class WsGateway extends Server {
 
   async stop(): Promise<void> {
     this.setRunning(false);
-    if (this.activeSocket) {
-      try { this.activeSocket.destroy(); } catch { /* ignore */ }
+    for (const sock of this.sockets.values()) {
+      try { sock.destroy(); } catch { /* ignore */ }
     }
+    this.sockets.clear();
     if (this.server) {
       await new Promise<void>((r) => this.server!.close(() => r()));
     }
-    this.activeSocket = null;
-    this.activeConnId = '';
     this.recorder.close();
   }
 
   private onConnect(sock: net.Socket): void {
     const connId = `c${String(++this.connCounter).padStart(3, '0')}`;
-    // 重连识别：本进程此前已有连接（跨重启持久标记命中）或当前仍有旧连接活跃 → 视为重连会话。
-    const isReconnect = this.hadPriorSession || this.activeConnId !== '';
-    this.activeSocket = sock;
-    this.activeConnId = connId;
+    // 多连接场景不再有「单活跃连接」概念；「重连会话」仅用于日志标记。
+    const isReconnect = this.hadPriorSession;
+    this.sockets.set(connId, sock);
     this.logger.info(
       'ws',
-      `[${connId}] 新连接 ${sock.remoteAddress}:${sock.remotePort}${isReconnect ? ' (重连会话)' : ' (首连)'}`,
+      `[${connId}] 新连接 ${sock.remoteAddress}:${sock.remotePort}${isReconnect ? ' (重连会话)' : ' (首连)'} 在线=${this.sockets.size}`,
     );
 
     sock.on('error', (e) => this.logger.warn('ws', `[${connId}] socket error: ${(e as Error).message}`));
     sock.on('close', () => {
-      this.logger.info('ws', `[${connId}] 断开`);
+      this.sockets.delete(connId);
+      this.logger.info('ws', `[${connId}] 断开 在线=${this.sockets.size}`);
       if (this.onConnClose) this.onConnClose(connId);
-      if (this.activeSocket === sock) {
-        this.activeSocket = null;
-        this.activeConnId = '';
-      }
     });
 
     this.handshake(sock, connId)
@@ -132,8 +130,10 @@ export class WsGateway extends Server {
           sock.destroy();
           return;
         }
-        // 标记本进程已有过连接（跨重启重连识别的兜底信号）
+        // 标记本进程已有过连接（日志用）
         this.markPriorSession();
+        // 登记 Client（仅握手成功后才视为有效连接）
+        if (this.onConnCreate) this.onConnCreate(connId);
         // 下发 CONNECTION_REQUEST_ACCEPTED (msg1)
         this.sendFrame(sock, 0x2, buildConnectionAccepted());
         this.logger.info('ws', `[${connId}] 已下发 CONNECTION_REQUEST_ACCEPTED`);
@@ -277,7 +277,7 @@ export class WsGateway extends Server {
       isrecorded=true;
       if (this.onC2S) {
         const frames = this.onC2S(connId, dec);
-        for (const f of frames) this.sendS2C(f);
+        for (const f of frames) this.sendS2C(connId, f);
       }
     } else {
       this.logger.warn(
@@ -293,15 +293,16 @@ export class WsGateway extends Server {
     
   }
 
-  /** 下发一条 S2C 帧到活跃连接（无活跃连接则丢弃并告警）。 */
-  sendS2C(frame: S2CFrame): void {
-    if (!this.activeSocket) {
-      this.logger.warn('ws', `sendS2C 无活跃连接，丢弃 msgId=${frame.msgId}`);
+  /** 下发一条 S2C 帧到指定连接（目标连接不存在则丢弃并告警）。 */
+  sendS2C(connId: string, frame: S2CFrame): void {
+    const sock = this.sockets.get(connId);
+    if (!sock) {
+      this.logger.warn('ws', `[${connId}] sendS2C 连接已不存在，丢弃 msgId=${frame.msgId}`);
       return;
     }
     const bytes = buildS2C(frame.msgId, frame.order, frame.body);
-    this.recorder.record(this.activeConnId, 'S2C', bytes,{msgId: frame.msgId, order: frame.order});
-    this.sendFrame(this.activeSocket, 0x2, bytes);
+    this.recorder.record(connId, 'S2C', bytes,{msgId: frame.msgId, order: frame.order});
+    this.sendFrame(sock, 0x2, bytes);
   }
 
   /** 发送 RFC6455 帧（server→client，FIN=1，不加 mask）。 */
