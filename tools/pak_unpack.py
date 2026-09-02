@@ -5,9 +5,9 @@
 """
 import ctypes, os, sys
 
-XLUA = u'D:/Games/Steam/steamapps/common/The Nine Regions/MC_Data/Plugins/xlua.dll'
-PAK_DIR = u'D:/Games/Steam/steamapps/common/The Nine Regions/File/dat/Pak'
-OUT = u'D:/Projects/Rep-Unpack/仙剑奇侠传九野/local_server/pak_out'
+XLUA = u'D:/Project/NineRegions/LUA/xlua.dll'
+PAK_DIR = u'I:/SteamLibrary/steamapps/common/The Nine Regions/File/dat/Pak'
+OUT = u'D:/Project/NineRegions/LUA'
 KEY = u'2E6C0F69-3263-4BED-B73A-324E9B5D2788'
 PAKS = [u'LuaScripts.pak', u'Message.pak', u'Config.pak', u'Table.pak', u'Rec.pak', u'iFix.pak']
 
