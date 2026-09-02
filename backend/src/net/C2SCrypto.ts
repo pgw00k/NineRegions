@@ -14,17 +14,9 @@
  */
 import { Buffer } from 'buffer';
 import { C2S_HASH, C2S_T1, C2S_T2INV } from './c2s_tables';
+import { MESSAGE_ID } from 'mc-local-share';
+import { Logger } from '../core/Logger';
 
-/** 已知消息号白名单（防解密误报：错误 key 解出的随机 msgId 直接拒绝）。 */
-const KNOWN_MSG_IDS = new Set<number>([
-  1, 7,
-  9050, 9051,
-  10001, 10003, 10004, 10011, 10012, 10019, 10020, 10047, 10048, 10050,
-  10204, 10205, 10280, 10281,
-  15017, 15018, 15027, 15028, 15031, 15032, 15040, 15041,
-  20001, 20002,
-  25001, 25002, 25003, 25004, 25006, 25007, 25009, 25012, 25014,
-]);
 
 export interface DecodedC2S {
   msgId: number;
@@ -101,7 +93,10 @@ function tryDecrypt(ws: Buffer, fast: boolean): DecodedC2S | null {
               if (n - valid < 8) continue;
               if (!padZero(plain, valid)) continue;
               const msgId = plain.readUInt16LE(8);
-              if (!KNOWN_MSG_IDS.has(msgId)) continue;
+              if (!MESSAGE_ID[msgId]) {
+                Logger.LogWarn('decryptC2S', `msgId(${msgId}) is not a MESSAGE_ID`);
+                continue;
+              };
               return { msgId, order: plain.readUInt32LE(4), body: plain.subarray(10, valid) };
             }
           }
@@ -152,7 +147,10 @@ function tryDecrypt(ws: Buffer, fast: boolean): DecodedC2S | null {
               if (n - valid < 8) continue;
               if (!padZero(plain, valid)) continue;
               const msgId = plain.readUInt16LE(8);
-              if (!KNOWN_MSG_IDS.has(msgId)) continue;
+              if (!MESSAGE_ID[msgId]) {
+                Logger.LogWarn('decryptC2S', `msgId(${msgId}) is not a MESSAGE_ID`);
+                continue;
+              };
               return { msgId, order: plain.readUInt32LE(4), body: plain.subarray(10, valid) };
             }
           }

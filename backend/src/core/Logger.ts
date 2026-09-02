@@ -54,6 +54,14 @@ export class Logger {
     Logger._Instance?.info(msg, extra);
   }
 
+  public static LogError(msg: string, extra?: unknown): void {
+    Logger._Instance?.error(msg, extra);
+  }
+
+  public static LogWarn(msg: string, extra?: unknown): void {
+    Logger._Instance?.warn(msg, extra);
+  }
+
   private now(): string {
     // 与参考网关一致：ISO 微秒，便于对照客户端日志时间线
     return new Date().toISOString().replace('Z', '');
