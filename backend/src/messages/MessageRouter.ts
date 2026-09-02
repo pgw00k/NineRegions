@@ -48,7 +48,7 @@ export class MessageRouter {
     // 第一层过滤：无需进入 Client 应答处理的消息（如心跳 PINGPONG）。
     // 无 protobuf、无应答器 → 直接往 Client 队列推 8B 空体
     // （若 Buffer.alloc(0)，客户端判 MsgBodyExists=False 拒读），order 不变。
-    if (msgId === MESSAGE_ID.PINGPONG) {
+    if (msgId == MESSAGE_ID.PINGPONG) {
       if (client) {
         client.beginRequest(order);
         client.pushFrame(msgId, Buffer.alloc(8));

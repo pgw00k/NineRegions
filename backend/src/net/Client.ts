@@ -14,6 +14,12 @@ import { Logger } from '../core/Logger';
 import { wrapDynProtoAuto } from './FrameCodec';
 import { MessageController } from './msg/MessageController';
 
+export const CONNECT_MESSAGE_IDS=[
+  MESSAGE_ID.ENTER_GAME_REQ,
+  MESSAGE_ID.LOGIC_RECONNECTION_REQ,
+  MESSAGE_ID.BATTLE_RECONNECTION_REQ,
+]
+
 export class Client {
   readonly connId: string;
   /** 日志器（可选：用于记录客户端侧处理告警）。 */
@@ -26,6 +32,9 @@ export class Client {
   private base = 0;
   /** 当前请求已产出的帧数。 */
   private seq = 0;
+
+  /** 当前服务端的 order ，会根据请求耦合规则自动增加或者重置。 */
+  protected order = 0;
   /** 本连接待下发的 S2C 帧队列（一个 C2S 可产出多条；由调用方处理完请求后取走）。 */
   private readonly pending: S2CFrame[] = [];
 
@@ -53,11 +62,16 @@ export class Client {
    * @param body 已 wrap 好 dynproto 头的业务体。
    * @returns 本次为这条帧分配的 order。
    */
-  pushFrame(msgId: number, body: Buffer): number {
+  pushFrame(msgId: number, body: Buffer,order?:number): number {
     this.seq += 1;
-    const order = this.base + this.seq;
-    this.pending.push({ msgId, order, body });
-    return order;
+    // const order = this.base + this.seq;
+    // this.order += 1;
+    let newOrder = this.order;
+    if(order){
+      newOrder = order;
+    }
+    this.pending.push({ msgId, order: newOrder, body });
+    return newOrder;
   }
 
   /** 以显式 order 入队（特殊帧，如心跳 PINGPONG 沿用约定 order，不走 +1）。 */
@@ -106,7 +120,17 @@ export class Client {
   ): S2CFrame[] {
     // 应答器判断：未注册该消息号 → 不应答
     const responder = controller.AutoResponser[msgId as MESSAGE_ID] as any | undefined;
-    if (!responder) return [];
+    if (!responder){
+      this.logger?.warn('client', `[${this.connId}] 处理 req#${msgId} 异常: 未注册应答器`);
+      return [];
+    };
+
+    /**
+     * 对重连或者首次连入，同步Order
+     */
+    if(CONNECT_MESSAGE_IDS.includes(msgId)){
+      // this.order = order;
+    }
 
     // ① Handle：取得返回对象（返回对象可能依赖/修改本客户端状态）
     let rep: Record<string, unknown>;
@@ -123,7 +147,7 @@ export class Client {
     try {
       const inner = encodeMessage(repSchema, rep);
       this.beginRequest(order);
-      this.pushFrame(Number(responder.recId), wrapDynProtoAuto(inner));
+      this.pushFrame(Number(responder.recId), wrapDynProtoAuto(inner),order+1);
       return this.drainPending();
     } catch (e) {
       this.logger?.warn('client', `[${this.connId}] 编码 rec#${responder.recId} 失败: ${(e as Error).message}`);
