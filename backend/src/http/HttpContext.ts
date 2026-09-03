@@ -166,7 +166,11 @@ export class HttpContext {
   logStatistics(form: Record<string, string>): void {
     const step = form['loginstep'] ?? '?';
     const user = form['userid'] ?? form['userId'] ?? form['uid'] ?? '?';
-    this.logger.info('http', `statistics: loginstep=${step} userid=${user}`);
+
+    /**
+     * 打点日志
+     */
+    // this.logger.info('http', `statistics: loginstep=${step} userid=${user}`);
   }
 
   /** 路由 handler 抛错时的统一兜底（HttpRouter 捕获后调用）。 */
