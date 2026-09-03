@@ -14,7 +14,11 @@
     "resolveJsonModule": true,
     "declaration": false,
     "sourceMap": false,
-    "types": ["node"]
+    "types": ["node"],
+    
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
   },
   "include": ["src/**/*.ts", "tools/**/*.ts"]
 }

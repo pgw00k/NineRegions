@@ -22,7 +22,10 @@
     "node": ">=18"
   },
   "dependencies": {
-    "mc-local-share": "workspace:*"
+    "mc-local-share": "workspace:*",
+    "pg": "^8.23.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
