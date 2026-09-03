@@ -15,7 +15,7 @@ import { Client } from '../Client';
  * NetMsg_EnterGame
  * REQ = EnterGameRequest
  * RES = EnterGameResponse
- * 注册：reqId=10001、recId=10002
+ * 注册：reqId=10001,recId=10002
  */
 export class NetMsg_EnterGame_Mod extends NetMsg_EnterGame {
   override Handle(req: EnterGameRequest, client?: Client): EnterGameResponse {
