@@ -10,6 +10,7 @@ import { MessageRouter } from './messages/MessageRouter';
 import { WsGateway } from './net/WsGateway';
 import { ConnManager } from './net/ConnManager';
 import { HttpServer } from './http/HttpServer';
+import { AppDataSource } from './data/DataSource';
 
 process.title = 'nine-regions-backend';
 
@@ -35,13 +36,27 @@ async function main(): Promise<void> {
   gateway.setOnConnCreate((connId) => conns.create(connId));
   gateway.setOnConnClose((connId) => conns.remove(connId));
   gateway.setOnC2S((connId, frame) => router.route(connId, frame.msgId, frame.order, frame.body));
-  await gateway.start();
 
   // 外围：客户端登录 HTTP 仿真层。
   const http = new HttpServer(logger);
-  await http.start();
 
-  logger.info('boot', '服务装配完成');
+    // 初始化数据库连接并启动服务器
+  AppDataSource.initialize()
+    .then(() => {
+      logger.info('boot', '数据库已连接');
+      return gateway.start();
+    })
+    .then(() => {
+      logger.info('boot', 'WS服务已启动');
+      return http.start();
+    })
+    .then(() => {
+      logger.info('boot', 'HTTP服务已启动');
+      logger.info('boot', '服务装配完成');
+    })
+    .catch((err) => {
+      logger.error('boot', `初始化失败:${err}`);
+    })
 }
 
 main().catch((e) => {

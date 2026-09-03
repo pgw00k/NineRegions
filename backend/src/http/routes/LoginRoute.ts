@@ -12,8 +12,8 @@ const UID = '76561198124119613';
 const TOKEN = 'localtoken123';
 
 export async function loginHandler(ctx: HttpContext): Promise<void> {
-  // 读取并丢弃请求体（正式流程会带账号密码，本地 mock 无需校验）
-  await ctx.readBody();
+
+  let body = await ctx.readBody();
 
   const resp = {
     error: 0,
@@ -23,9 +23,6 @@ export async function loginHandler(ctx: HttpContext): Promise<void> {
     port: String(Config.gamePort),
     Error: 0,
     Index: '0',
-    Token: TOKEN,
-    Host: Config.gameHost,
-    Port: String(Config.gamePort),
     uid: UID,
     userid: UID,
     session: TOKEN,
