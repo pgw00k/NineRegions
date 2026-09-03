@@ -109,12 +109,11 @@ export class WsGateway extends Server {
 
   private onConnect(sock: net.Socket): void {
     const connId = `c${String(++this.connCounter).padStart(3, '0')}`;
-    // 多连接场景不再有「单活跃连接」概念；「重连会话」仅用于日志标记。
-    const isReconnect = this.hadPriorSession;
+    
     this.sockets.set(connId, sock);
     this.logger.info(
       'ws',
-      `[${connId}] 新连接 ${sock.remoteAddress}:${sock.remotePort}${isReconnect ? ' (重连会话)' : ' (首连)'} 在线=${this.sockets.size}`,
+      `[${connId}] 连接建立 ${sock.remoteAddress}:${sock.remotePort},在线=${this.sockets.size}`,
     );
 
     sock.on('error', (e) => this.logger.warn('ws', `[${connId}] socket error: ${(e as Error).message}`));
