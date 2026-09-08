@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_QueryExpressionInfo
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * NetMsg_QueryExpressionInfo
  * REQ = QueryExpressionInfoReq
  * RES = QueryExpressionInfoRsp
- * 注册：reqId=10350、recId=10351
+ * 注册：reqId=10350,recId=10351
  */
 export class NetMsg_QueryExpressionInfo_CS extends MessageBase<QueryExpressionInfoReq, QueryExpressionInfoRsp> {
   /** 请求消息号：QUERY_EXPRESSION_INFO_REQ (10350) */
@@ -20,10 +21,10 @@ export class NetMsg_QueryExpressionInfo_CS extends MessageBase<QueryExpressionIn
   /** 响应消息号：QUERY_EXPRESSION_INFO_RSP (10351) */
   recId: MESSAGE_ID = MESSAGE_ID.QUERY_EXPRESSION_INFO_RSP;
 
-  override Handle(req: QueryExpressionInfoReq): QueryExpressionInfoRsp {
-    let resobj = super.Handle(req)
+  override HandleSync(req: QueryExpressionInfoReq, client?: Client): QueryExpressionInfoRsp {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_QueryExpressionInfo');
+      throw new Error('HandleSync not implemented: NetMsg_QueryExpressionInfo');
     }
     return resobj
   }

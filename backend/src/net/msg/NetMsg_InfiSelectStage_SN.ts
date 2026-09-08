@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_SelectStage_SN
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * Infi_SelectStage_SN
  * REQ = {}
  * RES = InfiSelectStageResponse
- * 注册：reqId=0、recId=10089
+ * 注册：reqId=0,recId=10089
  */
 export class NetMsg_InfiSelectStage_SN extends MessageBase<{}, InfiSelectStageResponse> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_InfiSelectStage_SN extends MessageBase<{}, InfiSelectStageRe
   /** 响应消息号：INFI_SELECT_STAGE_REP (10089) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_STAGE_REP;
 
-  override Handle(req: {}): InfiSelectStageResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): InfiSelectStageResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: Infi_SelectStage_SN');
+      throw new Error('HandleSync not implemented: Infi_SelectStage_SN');
     }
     return resobj
   }

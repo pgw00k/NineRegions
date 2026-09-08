@@ -6,7 +6,7 @@ export class HeroLibrary {
     @PrimaryColumn({ type: 'bigint', comment: '角色ID' })
     id: number;
 
-    @Column({ type: 'int', comment: '解锁状态（0：未解锁，1：已解锁）' })
+    @Column({ type: 'int', comment: '解锁状态（0：未设置，1：待解锁，2：已解锁）' })
     unlockState: number;
 
     @Column({ type: 'int', comment: '好感度' })

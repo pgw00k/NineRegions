@@ -7,6 +7,8 @@ import { NetMsg_BPInfoReq_Mod } from './NetMsg_BPInfoReq_Mod';
 import { NetMsg_FriendInfo_CN_Mod } from './NetMsg_FriendInfo_CN_Mod';
 import { NetMsg_ChatInfo_CN_Mod } from './NetMsg_ChatInfo_CN_Mod';
 import { NetMsg_LogicReconnection_Mod } from './NetMsg_LogicReconnection_Mod';
+import { NetMsg_EditDeck_Mod } from './NetMsg_EditDeck_Mod';
+import { NetMsg_DeleteDeck_Mod } from './NetMsg_DeleteDeck_Mod';
 export class MessageControllerMod extends MessageController {
   constructor() {
     super();
@@ -17,6 +19,10 @@ export class MessageControllerMod extends MessageController {
     this.AutoResponser[MESSAGE_ID.BATTLEPASS_REQ] = new NetMsg_BPInfoReq_Mod();
     this.AutoResponser[MESSAGE_ID.FRIEND_INFO_RPT] = new NetMsg_FriendInfo_CN_Mod();
     this.AutoResponser[MESSAGE_ID.CHAT_INFO_RPT] = new NetMsg_ChatInfo_CN_Mod();
+    
+    // 套牌相关操作
+    this.AutoResponser[MESSAGE_ID.EDIT_DECK_REQ] = new NetMsg_EditDeck_Mod();
+    this.AutoResponser[MESSAGE_ID.DELETE_DECK_REQ] = new NetMsg_DeleteDeck_Mod();
 
     // 逻辑重新连接
     this.AutoResponser[MESSAGE_ID.LOGIC_RECONNECTION_REQ] = new NetMsg_LogicReconnection_Mod();

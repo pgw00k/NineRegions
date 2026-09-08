@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_UseSharedDeck_NT
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * NetMsg_UseSharedDeck_NT
  * REQ = UseSharedDeckNt
  * RES = {}
- * 注册：reqId=15043、recId=0
+ * 注册：reqId=15043,recId=0
  */
 export class NetMsg_UseSharedDeck_NT extends MessageBase<UseSharedDeckNt, {}> {
   /** 请求消息号：USE_SHAREDDECK_NT (15043) */
@@ -19,10 +20,10 @@ export class NetMsg_UseSharedDeck_NT extends MessageBase<UseSharedDeckNt, {}> {
   /** 响应消息号：NETWORK_MESSAGE_BEGIN (0) */
   recId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
 
-  override Handle(req: UseSharedDeckNt): {} {
-    let resobj = super.Handle(req)
+  override HandleSync(req: UseSharedDeckNt, client?: Client): {} {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_UseSharedDeck_NT');
+      throw new Error('HandleSync not implemented: NetMsg_UseSharedDeck_NT');
     }
     return resobj
   }

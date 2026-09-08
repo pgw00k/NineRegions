@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_ChampGetMatchReward_CS
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * NetMsg_ChampGetMatchReward_CS
  * REQ = ChampGetWinRewardRequest
  * RES = ChampGetWinRewardResponse
- * 注册：reqId=10406、recId=10407
+ * 注册：reqId=10406,recId=10407
  */
 export class NetMsg_ChampGetMatchReward_CS extends MessageBase<ChampGetWinRewardRequest, ChampGetWinRewardResponse> {
   /** 请求消息号：CHAMP_GET_WINREWARD_REQ (10406) */
@@ -20,10 +21,10 @@ export class NetMsg_ChampGetMatchReward_CS extends MessageBase<ChampGetWinReward
   /** 响应消息号：CHAMP_GET_WINREWARD_REP (10407) */
   recId: MESSAGE_ID = MESSAGE_ID.CHAMP_GET_WINREWARD_REP;
 
-  override Handle(req: ChampGetWinRewardRequest): ChampGetWinRewardResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: ChampGetWinRewardRequest, client?: Client): ChampGetWinRewardResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_ChampGetMatchReward_CS');
+      throw new Error('HandleSync not implemented: NetMsg_ChampGetMatchReward_CS');
     }
     return resobj
   }

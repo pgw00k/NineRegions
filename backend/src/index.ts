@@ -10,7 +10,7 @@ import { MessageRouter } from './messages/MessageRouter';
 import { WsGateway } from './net/WsGateway';
 import { ConnManager } from './net/ConnManager';
 import { HttpServer } from './http/HttpServer';
-import { AppDataSource } from './data/DataSource';
+import { AppDataSource, PostDBInit } from './database/DataSource';
 
 process.title = 'nine-regions-backend';
 
@@ -44,6 +44,7 @@ async function main(): Promise<void> {
   AppDataSource.initialize()
     .then(() => {
       logger.info('boot', '数据库已连接');
+      PostDBInit();
       return gateway.start();
     })
     .then(() => {

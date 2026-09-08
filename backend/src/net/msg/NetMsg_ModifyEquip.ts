@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_ModifyEquip
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * NetMsg_ModifyEquip
  * REQ = ModifyEquipRequest
  * RES = ModifyEquipResponse
- * 注册：reqId=10300、recId=10301
+ * 注册：reqId=10300,recId=10301
  */
 export class NetMsg_ModifyEquip extends MessageBase<ModifyEquipRequest, ModifyEquipResponse> {
   /** 请求消息号：MODIFY_EQUIP_REQ (10300) */
@@ -20,10 +21,10 @@ export class NetMsg_ModifyEquip extends MessageBase<ModifyEquipRequest, ModifyEq
   /** 响应消息号：MODIFY_EQUIP_REP (10301) */
   recId: MESSAGE_ID = MESSAGE_ID.MODIFY_EQUIP_REP;
 
-  override Handle(req: ModifyEquipRequest): ModifyEquipResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: ModifyEquipRequest, client?: Client): ModifyEquipResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_ModifyEquip');
+      throw new Error('HandleSync not implemented: NetMsg_ModifyEquip');
     }
     return resobj
   }

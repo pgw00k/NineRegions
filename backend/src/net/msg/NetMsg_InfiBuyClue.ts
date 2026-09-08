@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_BuyClue
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * Infi_BuyClue
  * REQ = InfiBuyMessageReq
  * RES = InfiBuyMessageRep
- * 注册：reqId=10112、recId=10113
+ * 注册：reqId=10112,recId=10113
  */
 export class NetMsg_InfiBuyClue extends MessageBase<InfiBuyMessageReq, InfiBuyMessageRep> {
   /** 请求消息号：INFI_BUY_MESSAGE_REQ (10112) */
@@ -20,10 +21,10 @@ export class NetMsg_InfiBuyClue extends MessageBase<InfiBuyMessageReq, InfiBuyMe
   /** 响应消息号：INFI_BUY_MESSAGE_REP (10113) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_BUY_MESSAGE_REP;
 
-  override Handle(req: InfiBuyMessageReq): InfiBuyMessageRep {
-    let resobj = super.Handle(req)
+  override HandleSync(req: InfiBuyMessageReq, client?: Client): InfiBuyMessageRep {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: Infi_BuyClue');
+      throw new Error('HandleSync not implemented: Infi_BuyClue');
     }
     return resobj
   }

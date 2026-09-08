@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_GetDeckCode
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * NetMsg_GetDeckCode
  * REQ = GetDeckCodeReq
  * RES = GetDeckCodeRep
- * 注册：reqId=10321、recId=10322
+ * 注册：reqId=10321,recId=10322
  */
 export class NetMsg_GetDeckCode extends MessageBase<GetDeckCodeReq, GetDeckCodeRep> {
   /** 请求消息号：GET_DECKCODE_REQ (10321) */
@@ -20,10 +21,10 @@ export class NetMsg_GetDeckCode extends MessageBase<GetDeckCodeReq, GetDeckCodeR
   /** 响应消息号：GET_DECKCODE_REP (10322) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_DECKCODE_REP;
 
-  override Handle(req: GetDeckCodeReq): GetDeckCodeRep {
-    let resobj = super.Handle(req)
+  override HandleSync(req: GetDeckCodeReq, client?: Client): GetDeckCodeRep {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_GetDeckCode');
+      throw new Error('HandleSync not implemented: NetMsg_GetDeckCode');
     }
     return resobj
   }

@@ -8,17 +8,11 @@
  * Client，共享的 MessageController 应答器通过它访问各自的游戏状态。
  */
 import { Buffer } from 'buffer';
-import { MESSAGE_ID, get, encodeMessage } from 'mc-local-share';
+import { get, encodeMessage, MESSAGE_ID } from 'mc-local-share';
 import { S2CFrame } from '../messages/types';
 import { Logger } from '../core/Logger';
 import { wrapDynProtoAuto } from './FrameCodec';
 import { MessageController } from './msg/MessageController';
-
-export const CONNECT_MESSAGE_IDS=[
-  MESSAGE_ID.ENTER_GAME_REQ,
-  MESSAGE_ID.LOGIC_RECONNECTION_REQ,
-  MESSAGE_ID.BATTLE_RECONNECTION_REQ,
-]
 
 export class Client {
   readonly connId: string;
@@ -112,12 +106,12 @@ export class Client {
    * @param controller 共享应答器表。
    * @returns 本次处理产出的待下发帧（0 或多条）。
    */
-  process(
+  async process(
     req: Record<string, unknown>,
     msgId: number,
     order: number,
     controller: MessageController,
-  ): S2CFrame[] {
+  ): Promise<S2CFrame[]> {
     // 应答器判断：未注册该消息号 → 不应答
     const responder = controller.AutoResponser[msgId as MESSAGE_ID] as any | undefined;
     if (!responder){
@@ -125,17 +119,10 @@ export class Client {
       return [];
     };
 
-    /**
-     * 对重连或者首次连入，同步Order
-     */
-    if(CONNECT_MESSAGE_IDS.includes(msgId)){
-      // this.order = order;
-    }
-
-    // ① Handle：取得返回对象（返回对象可能依赖/修改本客户端状态）
+    // ① Handle：取得返回对象（可能 async 查询数据库，统一 await 以支持 DB 填充）
     let rep: Record<string, unknown>;
     try {
-      rep = responder.Handle(req, this) ?? {};
+      rep = (await responder.Handle(req, this)) ?? {};
     } catch (e) {
       this.logger?.warn('client', `[${this.connId}] 处理 req#${msgId} 异常: ${(e as Error).message}`);
       return [];

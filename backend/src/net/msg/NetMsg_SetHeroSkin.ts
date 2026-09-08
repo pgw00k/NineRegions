@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: SetHeroSkin
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * SetHeroSkin
  * REQ = SetHeroSkinRequest
  * RES = SetHeroSkinResponse
- * 注册：reqId=10266、recId=10266
+ * 注册：reqId=10266,recId=10266
  */
 export class NetMsg_SetHeroSkin extends MessageBase<SetHeroSkinRequest, SetHeroSkinResponse> {
   /** 请求消息号：SET_HERO_SKIN_REQ (10266) */
@@ -20,10 +21,10 @@ export class NetMsg_SetHeroSkin extends MessageBase<SetHeroSkinRequest, SetHeroS
   /** 响应消息号：SET_HERO_SKIN_REQ (10266) */
   recId: MESSAGE_ID = MESSAGE_ID.SET_HERO_SKIN_REQ;
 
-  override Handle(req: SetHeroSkinRequest): SetHeroSkinResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: SetHeroSkinRequest, client?: Client): SetHeroSkinResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: SetHeroSkin');
+      throw new Error('HandleSync not implemented: SetHeroSkin');
     }
     return resobj
   }

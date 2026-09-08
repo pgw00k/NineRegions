@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Msg_RecordCollect
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * Msg_RecordCollect
  * REQ = FavorRecordRequest
  * RES = FavorRecordResponse
- * 注册：reqId=10442、recId=10443
+ * 注册：reqId=10442,recId=10443
  */
 export class NetMsg_RecordCollect extends MessageBase<FavorRecordRequest, FavorRecordResponse> {
   /** 请求消息号：FAVOR_RECORD_REQ (10442) */
@@ -20,10 +21,10 @@ export class NetMsg_RecordCollect extends MessageBase<FavorRecordRequest, FavorR
   /** 响应消息号：FAVOR_RECORD_REP (10443) */
   recId: MESSAGE_ID = MESSAGE_ID.FAVOR_RECORD_REP;
 
-  override Handle(req: FavorRecordRequest): FavorRecordResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: FavorRecordRequest, client?: Client): FavorRecordResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: Msg_RecordCollect');
+      throw new Error('HandleSync not implemented: Msg_RecordCollect');
     }
     return resobj
   }

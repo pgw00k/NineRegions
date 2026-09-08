@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_BattleGetEmojiList
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * NetMsg_BattleGetEmojiList
  * REQ = QueryExpressionShortcutReq
  * RES = QueryExpressionShortcutRsp
- * 注册：reqId=10374、recId=10375
+ * 注册：reqId=10374,recId=10375
  */
 export class NetMsg_BattleGetEmojiList_CS extends MessageBase<QueryExpressionShortcutReq, QueryExpressionShortcutRsp> {
   /** 请求消息号：QUERY_EXPRESSION_SHORECUT_REQ (10374) */
@@ -20,10 +21,10 @@ export class NetMsg_BattleGetEmojiList_CS extends MessageBase<QueryExpressionSho
   /** 响应消息号：QUERY_EXPRESSION_SHORECUT_RSP (10375) */
   recId: MESSAGE_ID = MESSAGE_ID.QUERY_EXPRESSION_SHORECUT_RSP;
 
-  override Handle(req: QueryExpressionShortcutReq): QueryExpressionShortcutRsp {
-    let resobj = super.Handle(req)
+  override HandleSync(req: QueryExpressionShortcutReq, client?: Client): QueryExpressionShortcutRsp {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_BattleGetEmojiList');
+      throw new Error('HandleSync not implemented: NetMsg_BattleGetEmojiList');
     }
     return resobj
   }

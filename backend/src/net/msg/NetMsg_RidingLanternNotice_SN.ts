@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: RidingLanternNotice
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * RidingLanternNotice
  * REQ = {}
  * RES = AnnounceLamp
- * 注册：reqId=0、recId=10226
+ * 注册：reqId=0,recId=10226
  */
 export class NetMsg_RidingLanternNotice_SN extends MessageBase<{}, AnnounceLamp> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_RidingLanternNotice_SN extends MessageBase<{}, AnnounceLamp>
   /** 响应消息号：ANNOUNCE_LAMP_PUSH (10226) */
   recId: MESSAGE_ID = MESSAGE_ID.ANNOUNCE_LAMP_PUSH;
 
-  override Handle(req: {}): AnnounceLamp {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): AnnounceLamp {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: RidingLanternNotice');
+      throw new Error('HandleSync not implemented: RidingLanternNotice');
     }
     return resobj
   }

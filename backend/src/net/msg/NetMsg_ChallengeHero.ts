@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: ChallengeHero
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * ChallengeHero
  * REQ = ChallengeHeroRequest
  * RES = ChallengeHeroResponse
- * 注册：reqId=10260、recId=10261
+ * 注册：reqId=10260,recId=10261
  */
 export class NetMsg_ChallengeHero extends MessageBase<ChallengeHeroRequest, ChallengeHeroResponse> {
   /** 请求消息号：CHALLENGE_HERO_REQ (10260) */
@@ -20,10 +21,10 @@ export class NetMsg_ChallengeHero extends MessageBase<ChallengeHeroRequest, Chal
   /** 响应消息号：CHALLENGE_HERO_REP (10261) */
   recId: MESSAGE_ID = MESSAGE_ID.CHALLENGE_HERO_REP;
 
-  override Handle(req: ChallengeHeroRequest): ChallengeHeroResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: ChallengeHeroRequest, client?: Client): ChallengeHeroResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: ChallengeHero');
+      throw new Error('HandleSync not implemented: ChallengeHero');
     }
     return resobj
   }

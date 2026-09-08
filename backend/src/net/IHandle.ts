@@ -1,6 +1,4 @@
 import { Client } from './Client';
-export { Client };
-
 /**
  * 基础应答器
  * @template REQ - 请求类型
@@ -28,7 +26,8 @@ export interface IHandle<REQ, REP> extends IHandleBase {
    * @param client - 当前客户端上下文（受控于 ConnManager，非必传）
    * @returns 响应
    */
-  Handle(req: REQ, client?: Client): REP;
+  Handle(req: REQ, client?: Client): Promise<REP>;
+  HandleSync(req: REQ, client?: Client): REP;
 }
 
 export interface IResponderPair {

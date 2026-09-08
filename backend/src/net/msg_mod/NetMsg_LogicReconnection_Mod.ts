@@ -21,9 +21,4 @@ export class NetMsg_LogicReconnection_Mod extends MessageBase<LogicReconnectionR
 
   recId: MESSAGE_ID = MESSAGE_ID.LOGIC_RECONNECTION_REP;
   reqId: MESSAGE_ID = MESSAGE_ID.LOGIC_RECONNECTION_REQ;
-
-  override Handle(req: LogicReconnectionRequest, client?: Client): LogicReconnectionResponse {
-    Logger.LogInfo('LogicReconnection_Mod.Handle', client ? { ...req, uid: client.uid } : req);
-    return super.Handle(req);
-  }
 }

@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_FirstPayPush
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * NetMsg_FirstPayPush
  * REQ = {}
  * RES = FirstChargePush
- * 注册：reqId=0、recId=15047
+ * 注册：reqId=0,recId=15047
  */
 export class NetMsg_FirstPayPush extends MessageBase<{}, FirstChargePush> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_FirstPayPush extends MessageBase<{}, FirstChargePush> {
   /** 响应消息号：FIRSTCHARGE_PUSH (15047) */
   recId: MESSAGE_ID = MESSAGE_ID.FIRSTCHARGE_PUSH;
 
-  override Handle(req: {}): FirstChargePush {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): FirstChargePush {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_FirstPayPush');
+      throw new Error('HandleSync not implemented: NetMsg_FirstPayPush');
     }
     return resobj
   }

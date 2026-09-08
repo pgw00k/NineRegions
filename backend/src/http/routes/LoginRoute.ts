@@ -6,6 +6,7 @@
  *  - 同时返回驼峰与帕斯卡大小写变体字段，防 NRE。
  */
 import { Config } from '../../config/env';
+import { UserLibraryService } from '../../database/service/UserLibrary.service';
 import { HttpContext } from '../HttpContext';
 
 export async function loginHandler(ctx: HttpContext): Promise<void> {
@@ -14,8 +15,13 @@ export async function loginHandler(ctx: HttpContext): Promise<void> {
 
   /**
    * 此处应当根据传入的 userid 进行验证，返回对应的 token、session、uid
-   * 这里先不处理，直接用userid作为uid
+   * uid 使用数据库真实玩家 ID（长度不要求固定，信封按 [u16 len][uid] 动态解析）。
    */
+  let uid = body['userid'];
+  let userLibrary = await UserLibraryService.Instance.GetByUID(uid);
+  if (userLibrary && userLibrary.id) {
+    uid = String(userLibrary.id);
+  }
   const resp = {
     error: 0,
     index: '0',
@@ -23,7 +29,7 @@ export async function loginHandler(ctx: HttpContext): Promise<void> {
     port: String(Config.gamePort),
     token: 'TOKEN-395085356',
     session: 'session-395085356',
-    uid: body['userid'],
+    uid: uid,
   };
   ctx.json(resp);
 }
