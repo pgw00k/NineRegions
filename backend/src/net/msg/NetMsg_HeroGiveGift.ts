@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: HeroGiveGift
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * HeroGiveGift
  * REQ = HeroGiveGiftRequest
  * RES = HeroGiveGiftResponse
- * 注册：reqId=10262、recId=10263
+ * 注册：reqId=10262,recId=10263
  */
 export class NetMsg_HeroGiveGift extends MessageBase<HeroGiveGiftRequest, HeroGiveGiftResponse> {
   /** 请求消息号：HERO_GIVE_GIFT_REQ (10262) */
@@ -20,10 +21,10 @@ export class NetMsg_HeroGiveGift extends MessageBase<HeroGiveGiftRequest, HeroGi
   /** 响应消息号：HERO_GIVE_GIFT_REP (10263) */
   recId: MESSAGE_ID = MESSAGE_ID.HERO_GIVE_GIFT_REP;
 
-  override Handle(req: HeroGiveGiftRequest): HeroGiveGiftResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: HeroGiveGiftRequest, client?: Client): HeroGiveGiftResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: HeroGiveGift');
+      throw new Error('HandleSync not implemented: HeroGiveGift');
     }
     return resobj
   }

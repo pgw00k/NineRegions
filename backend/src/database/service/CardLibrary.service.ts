@@ -1,5 +1,5 @@
 import { DataSource, Repository } from 'typeorm';
-import { CardLibrary } from './CardLibrary';
+import { CardLibrary } from '../data/CardLibrary';
 
 export class CardLibraryService {
     protected _Repo: Repository<CardLibrary>;

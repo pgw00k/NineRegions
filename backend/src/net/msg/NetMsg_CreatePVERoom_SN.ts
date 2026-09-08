@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_CreatePVERoom_SN
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * NetMsg_CreatePVERoom_SN
  * REQ = {}
  * RES = CreatePVERoomResponse
- * 注册：reqId=0、recId=10010
+ * 注册：reqId=0,recId=10010
  */
 export class NetMsg_CreatePVERoom_SN extends MessageBase<{}, CreatePVERoomResponse> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_CreatePVERoom_SN extends MessageBase<{}, CreatePVERoomRespon
   /** 响应消息号：CREATE_PVEROOM_REP (10010) */
   recId: MESSAGE_ID = MESSAGE_ID.CREATE_PVEROOM_REP;
 
-  override Handle(req: {}): CreatePVERoomResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): CreatePVERoomResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_CreatePVERoom_SN');
+      throw new Error('HandleSync not implemented: NetMsg_CreatePVERoom_SN');
     }
     return resobj
   }

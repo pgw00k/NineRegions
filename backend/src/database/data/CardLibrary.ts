@@ -1,6 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { Player } from "./Player";
-import { Card } from "./Card";
 
 @Entity()
 @Unique('UQ_PLAYER_CARD', ['pid', 'cid'])
@@ -21,8 +20,4 @@ export class CardLibrary {
     @ManyToOne(() => Player, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'pid' })
     player: Player;
-
-    @ManyToOne(() => Card, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'cid' })
-    card: Card;
 }

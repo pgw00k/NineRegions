@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_PushNotice_SN
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * NetMsg_PushNotice_SN
  * REQ = {}
  * RES = PushNoticeRsp
- * 注册：reqId=0、recId=15042
+ * 注册：reqId=0,recId=15042
  */
 export class NetMsg_PushNotice_SN extends MessageBase<{}, PushNoticeRsp> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_PushNotice_SN extends MessageBase<{}, PushNoticeRsp> {
   /** 响应消息号：PUSH_NOTICE_RSP (15042) */
   recId: MESSAGE_ID = MESSAGE_ID.PUSH_NOTICE_RSP;
 
-  override Handle(req: {}): PushNoticeRsp {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): PushNoticeRsp {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_PushNotice_SN');
+      throw new Error('HandleSync not implemented: NetMsg_PushNotice_SN');
     }
     return resobj
   }

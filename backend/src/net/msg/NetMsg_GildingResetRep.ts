@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_GildingResetRep
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * NetMsg_GildingResetRep
  * REQ = {}
  * RES = GildingResetResponse
- * 注册：reqId=0、recId=10433
+ * 注册：reqId=0,recId=10433
  */
 export class NetMsg_GildingResetRep extends MessageBase<{}, GildingResetResponse> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_GildingResetRep extends MessageBase<{}, GildingResetResponse
   /** 响应消息号：GILDING_RESET_REP (10433) */
   recId: MESSAGE_ID = MESSAGE_ID.GILDING_RESET_REP;
 
-  override Handle(req: {}): GildingResetResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): GildingResetResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_GildingResetRep');
+      throw new Error('HandleSync not implemented: NetMsg_GildingResetRep');
     }
     return resobj
   }

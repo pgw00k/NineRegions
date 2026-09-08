@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Notice_Push
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * Notice_Push
  * REQ = {}
  * RES = TipsNotice
- * 注册：reqId=0、recId=10273
+ * 注册：reqId=0,recId=10273
  */
 export class NetMsg_NoticePush extends MessageBase<{}, TipsNotice> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_NoticePush extends MessageBase<{}, TipsNotice> {
   /** 响应消息号：TIPS_NOTICE (10273) */
   recId: MESSAGE_ID = MESSAGE_ID.TIPS_NOTICE;
 
-  override Handle(req: {}): TipsNotice {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): TipsNotice {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: Notice_Push');
+      throw new Error('HandleSync not implemented: Notice_Push');
     }
     return resobj
   }

@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_GetGiftInfo_SN
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * NetMsg_GetGiftInfo_SN
  * REQ = {}
  * RES = GetGiftInfoResponse
- * 注册：reqId=0、recId=10023
+ * 注册：reqId=0,recId=10023
  */
 export class NetMsg_GetGiftInfo_SN extends MessageBase<{}, GetGiftInfoResponse> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_GetGiftInfo_SN extends MessageBase<{}, GetGiftInfoResponse> 
   /** 响应消息号：GET_GIFTINFO_REP (10023) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_GIFTINFO_REP;
 
-  override Handle(req: {}): GetGiftInfoResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): GetGiftInfoResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_GetGiftInfo_SN');
+      throw new Error('HandleSync not implemented: NetMsg_GetGiftInfo_SN');
     }
     return resobj
   }

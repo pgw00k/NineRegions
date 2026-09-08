@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_CS_CancelMatch
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * NetMsg_CS_CancelMatch
  * REQ = CancelMatchRequest
  * RES = CancelMatchResponse
- * 注册：reqId=10013、recId=10014
+ * 注册：reqId=10013,recId=10014
  */
 export class NetMsg_CancelMatch_CS extends MessageBase<CancelMatchRequest, CancelMatchResponse> {
   /** 请求消息号：CANCEL_MATCH_REQ (10013) */
@@ -20,10 +21,10 @@ export class NetMsg_CancelMatch_CS extends MessageBase<CancelMatchRequest, Cance
   /** 响应消息号：CANCEL_MATCH_REP (10014) */
   recId: MESSAGE_ID = MESSAGE_ID.CANCEL_MATCH_REP;
 
-  override Handle(req: CancelMatchRequest): CancelMatchResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: CancelMatchRequest, client?: Client): CancelMatchResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_CS_CancelMatch');
+      throw new Error('HandleSync not implemented: NetMsg_CS_CancelMatch');
     }
     return resobj
   }

@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_ActivityRMBBuy_PUSH
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * NetMsg_ActivityRMBBuy_PUSH
  * REQ = {}
  * RES = GetActivityRewardResponse
- * 注册：reqId=0、recId=15048
+ * 注册：reqId=0,recId=15048
  */
 export class NetMsg_ActivityRMBBuy_PUSH extends MessageBase<{}, GetActivityRewardResponse> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_ActivityRMBBuy_PUSH extends MessageBase<{}, GetActivityRewar
   /** 响应消息号：ACT_RMB_BUY_PUSH (15048) */
   recId: MESSAGE_ID = MESSAGE_ID.ACT_RMB_BUY_PUSH;
 
-  override Handle(req: {}): GetActivityRewardResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): GetActivityRewardResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_ActivityRMBBuy_PUSH');
+      throw new Error('HandleSync not implemented: NetMsg_ActivityRMBBuy_PUSH');
     }
     return resobj
   }

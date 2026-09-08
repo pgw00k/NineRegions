@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Guide_RecordRep
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * Guide_RecordRep
  * REQ = {}
  * RES = GuiderUpdateResponse
- * 注册：reqId=0、recId=10311
+ * 注册：reqId=0,recId=10311
  */
 export class NetMsg_GuideRecordRep extends MessageBase<{}, GuiderUpdateResponse> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_GuideRecordRep extends MessageBase<{}, GuiderUpdateResponse>
   /** 响应消息号：GUIDER_UPDATE_REP (10311) */
   recId: MESSAGE_ID = MESSAGE_ID.GUIDER_UPDATE_REP;
 
-  override Handle(req: {}): GuiderUpdateResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): GuiderUpdateResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: Guide_RecordRep');
+      throw new Error('HandleSync not implemented: Guide_RecordRep');
     }
     return resobj
   }

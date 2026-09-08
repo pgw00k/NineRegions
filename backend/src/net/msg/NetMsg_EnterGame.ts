@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_EnterGame
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * NetMsg_EnterGame
  * REQ = EnterGameRequest
  * RES = EnterGameResponse
- * 注册：reqId=10001、recId=10002
+ * 注册：reqId=10001,recId=10002
  */
 export class NetMsg_EnterGame extends MessageBase<EnterGameRequest, EnterGameResponse> {
   /** 请求消息号：ENTER_GAME_REQ (10001) */
@@ -20,10 +21,10 @@ export class NetMsg_EnterGame extends MessageBase<EnterGameRequest, EnterGameRes
   /** 响应消息号：ENTER_GAME_REP (10002) */
   recId: MESSAGE_ID = MESSAGE_ID.ENTER_GAME_REP;
 
-  override Handle(req: EnterGameRequest): EnterGameResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: EnterGameRequest, client?: Client): EnterGameResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_EnterGame');
+      throw new Error('HandleSync not implemented: NetMsg_EnterGame');
     }
     return resobj
   }

@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_SetHeadPicReq
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * NetMsg_SetHeadPicReq
  * REQ = SetHeadPicReq
  * RES = {}
- * 注册：reqId=10344、recId=0
+ * 注册：reqId=10344,recId=0
  */
 export class NetMsg_SetHeadPicReq extends MessageBase<SetHeadPicReq, {}> {
   /** 请求消息号：SET_HEAD_PIC_REQ (10344) */
@@ -19,10 +20,10 @@ export class NetMsg_SetHeadPicReq extends MessageBase<SetHeadPicReq, {}> {
   /** 响应消息号：NETWORK_MESSAGE_BEGIN (0) */
   recId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
 
-  override Handle(req: SetHeadPicReq): {} {
-    let resobj = super.Handle(req)
+  override HandleSync(req: SetHeadPicReq, client?: Client): {} {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_SetHeadPicReq');
+      throw new Error('HandleSync not implemented: NetMsg_SetHeadPicReq');
     }
     return resobj
   }

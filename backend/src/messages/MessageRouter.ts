@@ -18,6 +18,7 @@ import { MessageControllerMod } from '../net/msg_mod/MessageControllerMod';
 import { ConnManager } from '../net/ConnManager';
 import { Client } from '../net/Client';
 import { UserStateStore } from '../state/UserState';
+import { MESSAGE_SET_CONNECT } from './MESSAGE_ID.SET';
 
 export class MessageRouter {
   private readonly controller = new MessageControllerMod();
@@ -29,7 +30,7 @@ export class MessageRouter {
   constructor(
     private readonly conns: ConnManager,
     private readonly logger?: Logger,
-  ) {}
+  ) { }
 
   /**
    * 路由一条已解密的 C2S。
@@ -48,12 +49,13 @@ export class MessageRouter {
     // 第一层过滤：无需进入 Client 应答处理的消息（如心跳 PINGPONG）。
     // 无 protobuf、无应答器 → 直接往 Client 队列推 8B 空体
     // （若 Buffer.alloc(0)，客户端判 MsgBodyExists=False 拒读），order 不变。
-    if (msgId == MESSAGE_ID.PINGPONG) {
+    if (msgId < MESSAGE_ID.ACCOUNT_MESSAGE_BEGIN) {
       if (client) {
-        client.beginRequest(order);
-        client.pushFrame(msgId, Buffer.alloc(8));
+        // client.beginRequest(order);
+        // client.pushFrame(msgId, Buffer.alloc(8));
       }
-      return client ? client.drainPending() : [{ msgId, order: order, body: Buffer.alloc(8) }];
+      // 原样返回
+      return client ? client.drainPending() : [{ msgId, order: order, body: body }];
     }
 
     // 解码 REQ：按请求消息号取静态 schema → 字段名对象
@@ -61,7 +63,19 @@ export class MessageRouter {
     const reqSchema = get(msgId);
     if (reqSchema) {
       try {
+        // 解码业务体
         req = decodeMessage(reqSchema, stripNetBitStream(body)) as Record<string, unknown>;
+
+        // 连接请求，绑定UID
+        if (MESSAGE_SET_CONNECT[msgId]) {
+          let uid = req.uid as string;
+          if (uid){
+            this.conns.bind(connId, uid);
+            this.logger?.info('router', `[${connId}] 绑定玩家 uid=${uid}`);
+          }else{
+            this.logger?.warn('router', `[${connId}] 绑定玩家 req#${msgId} 失败: 未包含 uid`);
+          } 
+        }
       } catch (e) {
         this.logger?.warn('router', `[${connId}] 解码 req#${msgId} 失败: ${(e as Error).message}`);
         return Promise.resolve([]);

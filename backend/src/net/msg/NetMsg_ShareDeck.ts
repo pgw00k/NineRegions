@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_ShareDeck
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * NetMsg_ShareDeck
  * REQ = ShareDeckReq
  * RES = ShareDeckRep
- * 注册：reqId=10362、recId=10363
+ * 注册：reqId=10362,recId=10363
  */
 export class NetMsg_ShareDeck extends MessageBase<ShareDeckReq, ShareDeckRep> {
   /** 请求消息号：SHAREDECK_REQ (10362) */
@@ -20,10 +21,10 @@ export class NetMsg_ShareDeck extends MessageBase<ShareDeckReq, ShareDeckRep> {
   /** 响应消息号：SHAREDECK_REP (10363) */
   recId: MESSAGE_ID = MESSAGE_ID.SHAREDECK_REP;
 
-  override Handle(req: ShareDeckReq): ShareDeckRep {
-    let resobj = super.Handle(req)
+  override HandleSync(req: ShareDeckReq, client?: Client): ShareDeckRep {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_ShareDeck');
+      throw new Error('HandleSync not implemented: NetMsg_ShareDeck');
     }
     return resobj
   }

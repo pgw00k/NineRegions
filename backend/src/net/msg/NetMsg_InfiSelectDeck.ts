@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_SelectDeck
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * Infi_SelectDeck
  * REQ = InfiSelectDeckRequest
  * RES = InfiSelectDeckResponse
- * 注册：reqId=10105、recId=10106
+ * 注册：reqId=10105,recId=10106
  */
 export class NetMsg_InfiSelectDeck extends MessageBase<InfiSelectDeckRequest, InfiSelectDeckResponse> {
   /** 请求消息号：INFI_SELECT_DECK_REQ (10105) */
@@ -20,10 +21,10 @@ export class NetMsg_InfiSelectDeck extends MessageBase<InfiSelectDeckRequest, In
   /** 响应消息号：INFI_SELECT_DECK_REP (10106) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_DECK_REP;
 
-  override Handle(req: InfiSelectDeckRequest): InfiSelectDeckResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: InfiSelectDeckRequest, client?: Client): InfiSelectDeckResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: Infi_SelectDeck');
+      throw new Error('HandleSync not implemented: Infi_SelectDeck');
     }
     return resobj
   }

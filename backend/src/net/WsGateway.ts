@@ -42,8 +42,8 @@ export class WsGateway extends Server {
   private onConnCreate?: (connId: string) => void;
   /** 连接断开回调（由 index.ts 注入，清理 Client / PVE 结算状态等）。 */
   private onConnClose?: (connId: string) => void;
-  /** C2S 解密后回调（由 index.ts 注入，路由应答）。返回要下发的 S2C 帧。 */
-  private onC2S?: (connId: string, frame: DecodedC2S) => S2CFrame[];
+  /** C2S 解密后回调（由 index.ts 注入，路由应答）。返回要下发的 S2C 帧（可能 async 查询 DB）。 */
+  private onC2S?: (connId: string, frame: DecodedC2S) => S2CFrame[] | Promise<S2CFrame[]>;
 
   constructor(logger: Logger) {
     super('ws', logger);
@@ -66,7 +66,7 @@ export class WsGateway extends Server {
   }
 
   /** 注册 C2S 解密回调（脱离 Frida：直接解析 WS 线上密文并应答）。 */
-  setOnC2S(cb: (connId: string, frame: DecodedC2S) => S2CFrame[]): void {
+  setOnC2S(cb: (connId: string, frame: DecodedC2S) => S2CFrame[] | Promise<S2CFrame[]>): void {
     this.onC2S = cb;
   }
 
@@ -243,7 +243,7 @@ export class WsGateway extends Server {
     });
   }
 
-  private onClientFrame(sock: net.Socket, connId: string, opcode: number, payload: Buffer): void {
+  private async onClientFrame(sock: net.Socket, connId: string, opcode: number, payload: Buffer): Promise<void> {
     if (opcode === 0x8) {
       // close
       try { this.sendFrame(sock, 0x8, Buffer.alloc(0)); } catch { /* ignore */ }
@@ -275,7 +275,7 @@ export class WsGateway extends Server {
       this.recorder.record(connId, 'C2S', dec.body,recData);
       isrecorded=true;
       if (this.onC2S) {
-        const frames = this.onC2S(connId, dec);
+        const frames = await this.onC2S(connId, dec);
         for (const f of frames) this.sendS2C(connId, f);
       }
     } else {

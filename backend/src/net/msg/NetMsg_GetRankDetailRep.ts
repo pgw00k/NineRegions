@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: GetRankDetail
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * GetRankDetail
  * REQ = {}
  * RES = GetRankDetailResponse
- * 注册：reqId=0、recId=10243
+ * 注册：reqId=0,recId=10243
  */
 export class NetMsg_GetRankDetailRep extends MessageBase<{}, GetRankDetailResponse> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_GetRankDetailRep extends MessageBase<{}, GetRankDetailRespon
   /** 响应消息号：GET_RANK_DETAIL_REP (10243) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_RANK_DETAIL_REP;
 
-  override Handle(req: {}): GetRankDetailResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): GetRankDetailResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: GetRankDetail');
+      throw new Error('HandleSync not implemented: GetRankDetail');
     }
     return resobj
   }

@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_ArenaBattleComplete
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * NetMsg_ArenaBattleComplete
  * REQ = {}
  * RES = ArenaBattleComplete
- * 注册：reqId=0、recId=15013
+ * 注册：reqId=0,recId=15013
  */
 export class NetMsg_ArenaBattleComplete extends MessageBase<{}, ArenaBattleComplete> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_ArenaBattleComplete extends MessageBase<{}, ArenaBattleCompl
   /** 响应消息号：ARENA_BATTLE_COMPLETE (15013) */
   recId: MESSAGE_ID = MESSAGE_ID.ARENA_BATTLE_COMPLETE;
 
-  override Handle(req: {}): ArenaBattleComplete {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): ArenaBattleComplete {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_ArenaBattleComplete');
+      throw new Error('HandleSync not implemented: NetMsg_ArenaBattleComplete');
     }
     return resobj
   }

@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_FriendRefreshScenes_CN
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * NetMsg_FriendRefreshScenes_CN
  * REQ = FriendRefreshScenceRpt
  * RES = {}
- * 注册：reqId=15040、recId=0
+ * 注册：reqId=15040,recId=0
  */
 export class NetMsg_FriendRefreshScenes_CN extends MessageBase<FriendRefreshScenceRpt, {}> {
   /** 请求消息号：FRIEND_REFRESH_SCENE_RPT (15040) */
@@ -19,10 +20,10 @@ export class NetMsg_FriendRefreshScenes_CN extends MessageBase<FriendRefreshScen
   /** 响应消息号：NETWORK_MESSAGE_BEGIN (0) */
   recId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
 
-  override Handle(req: FriendRefreshScenceRpt): {} {
-    let resobj = super.Handle(req)
+  override HandleSync(req: FriendRefreshScenceRpt, client?: Client): {} {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_FriendRefreshScenes_CN');
+      throw new Error('HandleSync not implemented: NetMsg_FriendRefreshScenes_CN');
     }
     return resobj
   }

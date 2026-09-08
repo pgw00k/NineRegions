@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_Pay_SN
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -11,7 +12,7 @@ import {
  * NetMsg_Pay_SN
  * REQ = {}
  * RES = PayResponse
- * 注册：reqId=0、recId=10380
+ * 注册：reqId=0,recId=10380
  */
 export class NetMsg_Pay_SN extends MessageBase<{}, PayResponse> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -19,10 +20,10 @@ export class NetMsg_Pay_SN extends MessageBase<{}, PayResponse> {
   /** 响应消息号：PAY_REP (10380) */
   recId: MESSAGE_ID = MESSAGE_ID.PAY_REP;
 
-  override Handle(req: {}): PayResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): PayResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_Pay_SN');
+      throw new Error('HandleSync not implemented: NetMsg_Pay_SN');
     }
     return resobj
   }

@@ -17,8 +17,8 @@ import { NetMsg_QueryFriendInfo } from '../msg/NetMsg_QueryFriendInfo';
  */
 export class NetMsg_QueryFriendInfo_Mod extends NetMsg_QueryFriendInfo {
 
-  override Handle(req: QueryFriendInfoReq): QueryFriendInfoRsp {
-    let resobj = super.Handle(req)
+  override HandleSync(req: QueryFriendInfoReq): QueryFriendInfoRsp {
+    let resobj = super.HandleSync(req)
     if(!resobj) {
       throw new Error('Handle not implemented: NetMsg_QueryFriendInfo');
     }

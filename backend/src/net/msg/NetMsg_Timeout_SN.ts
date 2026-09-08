@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_Timeout_SN
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -10,7 +11,7 @@ import {
  * NetMsg_Timeout_SN
  * REQ = {}
  * RES = {}
- * 注册：reqId=0、recId=8
+ * 注册：reqId=0,recId=8
  */
 export class NetMsg_Timeout_SN extends MessageBase<{}, {}> {
   /** 请求消息号：NETWORK_MESSAGE_BEGIN (0) */
@@ -18,10 +19,10 @@ export class NetMsg_Timeout_SN extends MessageBase<{}, {}> {
   /** 响应消息号：TIMEOUT (8) */
   recId: MESSAGE_ID = MESSAGE_ID.TIMEOUT;
 
-  override Handle(req: {}): {} {
-    let resobj = super.Handle(req)
+  override HandleSync(req: {}, client?: Client): {} {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_Timeout_SN');
+      throw new Error('HandleSync not implemented: NetMsg_Timeout_SN');
     }
     return resobj
   }

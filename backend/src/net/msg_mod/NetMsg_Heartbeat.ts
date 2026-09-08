@@ -17,7 +17,11 @@ export class NetMsg_Heartbeat implements IHandle<HeartbeatReq, HeartbeatRep> {
   /** 响应消息号：HEARTBEAT_REP (10004) */
   readonly recId: MESSAGE_ID = MESSAGE_ID.HEARTBEAT_REP;
 
-  Handle(req: HeartbeatReq): HeartbeatRep {
+  Handle(req: HeartbeatReq): Promise<HeartbeatRep> {
+    return Promise.resolve(this.HandleSync(req));
+  }
+
+  HandleSync(req: HeartbeatReq): HeartbeatRep {
     return {
       timestamp: {
       },

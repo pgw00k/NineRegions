@@ -1,9 +1,13 @@
-import { Entity, Column, OneToMany, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToMany, PrimaryColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { Player } from './Player';
 
 @Entity()
+@Unique('UQ_PLAYER_DECK', ['pid', 'did'])
 export class Deck {
-    @PrimaryColumn({ type: 'bigint', comment: '卡片ID' })
+    @PrimaryColumn({ type: 'bigint', comment: '组牌ID-数据库内联使用' })
+    id: number = 0;
+
+    @Column({ type: 'bigint', default: 0, comment: '组牌ID-客户端使用' })
     did: number = 0;
 
     @Column({ length: 64 })

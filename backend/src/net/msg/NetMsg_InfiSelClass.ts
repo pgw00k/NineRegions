@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: Infi_SelClass
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * Infi_SelClass
  * REQ = InfiSelectJobRequest
  * RES = InfiSelectJobResponse
- * 注册：reqId=10082、recId=10083
+ * 注册：reqId=10082,recId=10083
  */
 export class NetMsg_InfiSelClass extends MessageBase<InfiSelectJobRequest, InfiSelectJobResponse> {
   /** 请求消息号：INFI_SELECT_JOB_REQ (10082) */
@@ -20,10 +21,10 @@ export class NetMsg_InfiSelClass extends MessageBase<InfiSelectJobRequest, InfiS
   /** 响应消息号：INFI_SELECT_JOB_REP (10083) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_JOB_REP;
 
-  override Handle(req: InfiSelectJobRequest): InfiSelectJobResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: InfiSelectJobRequest, client?: Client): InfiSelectJobResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: Infi_SelClass');
+      throw new Error('HandleSync not implemented: Infi_SelClass');
     }
     return resobj
   }

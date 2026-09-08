@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_DeleteDeck
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -12,7 +13,7 @@ import {
  * NetMsg_DeleteDeck
  * REQ = DeleteDeckRequest
  * RES = DeleteDeckResponse
- * 注册：reqId=10007、recId=10008
+ * 注册：reqId=10007,recId=10008
  */
 export class NetMsg_DeleteDeck extends MessageBase<DeleteDeckRequest, DeleteDeckResponse> {
   /** 请求消息号：DELETE_DECK_REQ (10007) */
@@ -20,10 +21,10 @@ export class NetMsg_DeleteDeck extends MessageBase<DeleteDeckRequest, DeleteDeck
   /** 响应消息号：DELETE_DECK_REP (10008) */
   recId: MESSAGE_ID = MESSAGE_ID.DELETE_DECK_REP;
 
-  override Handle(req: DeleteDeckRequest): DeleteDeckResponse {
-    let resobj = super.Handle(req)
+  override HandleSync(req: DeleteDeckRequest, client?: Client): DeleteDeckResponse {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_DeleteDeck');
+      throw new Error('HandleSync not implemented: NetMsg_DeleteDeck');
     }
     return resobj
   }
