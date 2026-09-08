@@ -9,7 +9,7 @@ import * as path from 'path';
 import { LOG_DIR_ABS } from '../config/env';
 import { Logger } from '../core/Logger';
 
-export type FrameDir = 'C2S' | 'S2C' | 'WS_HANDSHAKE' | 'RAW' | 'FIRST_C2S';
+export type FrameDir = 'C2S' | 'S2C' | 'WS_HANDSHAKE' | 'RAW' | 'FIRST_C2S' | 'C2S_Error';
 
 export class FrameRecorder {
   private stream: fs.WriteStream | null = null;

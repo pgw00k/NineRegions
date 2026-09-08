@@ -21,8 +21,8 @@ export class NetMsg_StartMatchPVP_CS extends MessageBase<MatchLadderRoomRequest,
   /** 响应消息号：MATCH_LADDERROOM_REP (10016) */
   recId: MESSAGE_ID = MESSAGE_ID.MATCH_LADDERROOM_REP;
 
-  override HandleSync(req: MatchLadderRoomRequest, client?: Client): MatchLadderRoomResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: MatchLadderRoomRequest, client?: Client, uid?: string, token?: string,exData?:any): MatchLadderRoomResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_CS_StartMatchPVP');
     }

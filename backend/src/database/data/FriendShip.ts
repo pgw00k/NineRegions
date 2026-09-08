@@ -2,19 +2,19 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique }
 import { Player } from "./Player";
 
 @Entity()
-@Unique('UQ_PLAYER_FRIEND', ['pid', 'fid'])
+@Unique('UQ_PLAYER_FRIEND', ['uid', 'fid'])
 export class FriendShip {
     @PrimaryGeneratedColumn({ type: 'bigint', comment: '关系ID' })
     id: number;
 
     @Column({ type:'bigint',comment:'关联玩家ID' })
-    pid: number;
+    uid: number;
 
     @Column({ type:'bigint',comment:'好友ID' })
     fid: number;
 
     @ManyToOne(() => Player, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'pid' })
+    @JoinColumn({ name: 'uid' })
     player: Player;
 
     @ManyToOne(() => Player, { onDelete: 'CASCADE' })

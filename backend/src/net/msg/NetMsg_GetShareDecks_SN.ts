@@ -20,8 +20,8 @@ export class NetMsg_GetShareDecks_SN extends MessageBase<{}, GetSharedDecksRep> 
   /** 响应消息号：GET_SHAREDDECKS_REP (10361) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_SHAREDDECKS_REP;
 
-  override HandleSync(req: {}, client?: Client): GetSharedDecksRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): GetSharedDecksRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_GetShareDecks_SN');
     }

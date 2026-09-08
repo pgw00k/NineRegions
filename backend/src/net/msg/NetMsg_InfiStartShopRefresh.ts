@@ -21,8 +21,8 @@ export class NetMsg_InfiStartShopRefresh extends MessageBase<InfiRefreshOpenShop
   /** 响应消息号：INFI_REFRESH_OPENSHOP_REP (10121) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_REFRESH_OPENSHOP_REP;
 
-  override HandleSync(req: InfiRefreshOpenShopReq, client?: Client): InfiRefreshOpenShopRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiRefreshOpenShopReq, client?: Client, uid?: string, token?: string,exData?:any): InfiRefreshOpenShopRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_StartShopRefresh');
     }

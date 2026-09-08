@@ -21,8 +21,8 @@ export class NetMsg_Buy_PVE extends MessageBase<PveBuyRequest, PveBuyResponse> {
   /** 响应消息号：PVE_BUY_REP (10391) */
   recId: MESSAGE_ID = MESSAGE_ID.PVE_BUY_REP;
 
-  override HandleSync(req: PveBuyRequest, client?: Client): PveBuyResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: PveBuyRequest, client?: Client, uid?: string, token?: string,exData?:any): PveBuyResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_Buy_PVE');
     }

@@ -21,8 +21,8 @@ export class NetMsg_QueryExpressionInfo_CS extends MessageBase<QueryExpressionIn
   /** 响应消息号：QUERY_EXPRESSION_INFO_RSP (10351) */
   recId: MESSAGE_ID = MESSAGE_ID.QUERY_EXPRESSION_INFO_RSP;
 
-  override HandleSync(req: QueryExpressionInfoReq, client?: Client): QueryExpressionInfoRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: QueryExpressionInfoReq, client?: Client, uid?: string, token?: string,exData?:any): QueryExpressionInfoRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_QueryExpressionInfo');
     }

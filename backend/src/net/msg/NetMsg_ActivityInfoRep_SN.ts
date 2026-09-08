@@ -20,8 +20,8 @@ export class NetMsg_ActivityInfoRep_SN extends MessageBase<{}, GetActitiviesResp
   /** 响应消息号：GET_ACTIVITIES_REP (10205) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_ACTIVITIES_REP;
 
-  override HandleSync(req: {}, client?: Client): GetActitiviesResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): GetActitiviesResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ActivityInfoRep_SN');
     }

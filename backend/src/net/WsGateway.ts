@@ -25,7 +25,8 @@ import { Config } from '../config/env';
 import { buildS2C, buildConnectionAccepted } from './FrameCodec';
 import { FrameRecorder } from './FrameRecorder';
 import { S2CFrame } from '../messages/types';
-import { decryptC2S, DecodedC2S } from './C2SCrypto';
+import { decryptC2S } from './C2SCrypto';
+import { DecodedC2S } from '../messages/types';
 
 const WS_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
@@ -266,12 +267,12 @@ export class WsGateway extends Server {
       const cost = Date.now() - started;
       this.logger.info(
         'ws',
-        `[${connId}] C2S解密 msgId=${dec.msgId} order=${dec.order} body=${dec.body
+        `[${connId}] C2S解密 msgId=${dec.header.msgId} order=${dec.header.order} uid=${dec.envelope.uid}${dec.envelope.token !== undefined ? ` token=${dec.envelope.token}` : ''} body=${dec.body
           .slice(0, 24)
           .toString('hex')} (${cost}ms)`,
       );
-      recData.msgId=dec.msgId;
-      recData.order=dec.order;
+      recData.msgId=dec.header.msgId;
+      recData.order=dec.header.order;
       this.recorder.record(connId, 'C2S', dec.body,recData);
       isrecorded=true;
       if (this.onC2S) {
@@ -283,6 +284,7 @@ export class WsGateway extends Server {
         'ws',
         `[${connId}] C2S解密失败 len=${payload.length} hex=${payload.slice(0, 24).toString('hex')} (${Date.now() - started}ms)`,
       );
+      this.recorder.record(connId, 'C2S_Error', payload);
     }
 
     if (!isrecorded) {

@@ -18,9 +18,9 @@ export async function loginHandler(ctx: HttpContext): Promise<void> {
    * uid 使用数据库真实玩家 ID（长度不要求固定，信封按 [u16 len][uid] 动态解析）。
    */
   let uid = body['userid'];
-  let userLibrary = await UserLibraryService.Instance.GetByUID(uid);
-  if (userLibrary && userLibrary.id) {
-    uid = String(userLibrary.id);
+  let userLibrary = await UserLibraryService.Instance.GetBySdkID(uid);
+  if (userLibrary && userLibrary.uid) {
+    uid = String(userLibrary.uid);
   }
   const resp = {
     error: 0,

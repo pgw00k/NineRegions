@@ -21,8 +21,8 @@ export class NetMsg_PullActRewardReq extends MessageBase<PullActRewardReq, PullA
   /** 响应消息号：PULL_ACT_REWARD_REP (10473) */
   recId: MESSAGE_ID = MESSAGE_ID.PULL_ACT_REWARD_REP;
 
-  override HandleSync(req: PullActRewardReq, client?: Client): PullActRewardRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: PullActRewardReq, client?: Client, uid?: string, token?: string,exData?:any): PullActRewardRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_PullActRewardReq');
     }

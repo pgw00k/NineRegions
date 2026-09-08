@@ -21,8 +21,8 @@ export class NetMsg_InfiEventUnlock extends MessageBase<InfiUnlockEventReq, Infi
   /** 响应消息号：INFI_UNLOCK_EVENT_REP (10129) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_UNLOCK_EVENT_REP;
 
-  override HandleSync(req: InfiUnlockEventReq, client?: Client): InfiUnlockEventRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiUnlockEventReq, client?: Client, uid?: string, token?: string,exData?:any): InfiUnlockEventRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: InfiEventUnlock');
     }

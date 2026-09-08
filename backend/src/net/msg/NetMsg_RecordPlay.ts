@@ -21,8 +21,8 @@ export class NetMsg_RecordPlay extends MessageBase<GetRecordDataRequest, GetReco
   /** 响应消息号：GET_RECORDDATA_REP (10449) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_RECORDDATA_REP;
 
-  override HandleSync(req: GetRecordDataRequest, client?: Client): GetRecordDataResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetRecordDataRequest, client?: Client, uid?: string, token?: string,exData?:any): GetRecordDataResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Msg_PlayRecByID');
     }

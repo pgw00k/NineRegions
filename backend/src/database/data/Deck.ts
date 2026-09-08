@@ -1,14 +1,11 @@
-import { Entity, Column, OneToMany, PrimaryColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
+import { Entity, Column, OneToMany, PrimaryColumn, ManyToOne, JoinColumn, Unique, PrimaryGeneratedColumn } from 'typeorm';
 import { Player } from './Player';
+import { SNumericTransformer } from '../../utils/SNumericTransformer';
 
 @Entity()
-@Unique('UQ_PLAYER_DECK', ['pid', 'did'])
 export class Deck {
-    @PrimaryColumn({ type: 'bigint', comment: '组牌ID-数据库内联使用' })
-    id: number = 0;
-
-    @Column({ type: 'bigint', default: 0, comment: '组牌ID-客户端使用' })
-    did: number = 0;
+    @PrimaryGeneratedColumn({ type: 'bigint', comment: '组牌ID' })
+    did: number;
 
     @Column({ length: 64 })
     name: string = '';
@@ -22,7 +19,7 @@ export class Deck {
     @Column({ type: 'bigint', default: 0 })
     skill: number;
 
-    @Column({ type: 'bigint', default: 0, array: true })
+    @Column({ type: 'bigint', array: true })
     cards: number[] = [];
 
     @Column({ type: 'int', default: 0 })
@@ -46,11 +43,10 @@ export class Deck {
     @Column({ type: 'boolean', default: false })
     shared: boolean = false;
 
-
-    @Column({ type:'bigint',comment:'关联玩家ID' })
-    pid: number;
+    @Column({ type:'bigint',comment:'关联玩家ID',transformer: SNumericTransformer,default: 0 })
+    uid: string = '0';
 
     @ManyToOne(() => Player, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'pid' })
+    @JoinColumn({ name: 'uid' })
     player: Player;
 }

@@ -1,10 +1,14 @@
-import { Entity, Column, OneToMany, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToMany, PrimaryColumn, ManyToOne, JoinColumn, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { Player } from './Player';
 
 @Entity()
+@Unique('UQ_PLAYER_HERO', ['uid', 'hero'])
 export class HeroLibrary {
-    @PrimaryColumn({ type: 'bigint', comment: '角色ID' })
+    @PrimaryGeneratedColumn({ type: 'bigint', comment: '角色关系，数据库内联ID' })
     id: number;
+
+    @Column({ type: 'int', comment: '角色ID' })
+    hero: number;
 
     @Column({ type: 'int', comment: '解锁状态（0：未设置，1：待解锁，2：已解锁）' })
     unlockState: number;
@@ -28,10 +32,10 @@ export class HeroLibrary {
     battleFavor: number;
 
     @Column({ type:'bigint',comment:'关联玩家ID' })
-    pid: number;
+    uid: number;
 
     // ---------- ORM 关联（仅用于连表查询，不用于更新） ----------
     @ManyToOne(() => Player, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'pid' })
+    @JoinColumn({ name: 'uid' })
     player: Player;
 }

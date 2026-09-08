@@ -21,8 +21,8 @@ export class NetMsg_InfiTakeChest extends MessageBase<InfiGetBoxRequest, InfiGet
   /** 响应消息号：INFI_GET_BOX_REP (10104) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_GET_BOX_REP;
 
-  override HandleSync(req: InfiGetBoxRequest, client?: Client): InfiGetBoxResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiGetBoxRequest, client?: Client, uid?: string, token?: string,exData?:any): InfiGetBoxResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_TakeChest');
     }

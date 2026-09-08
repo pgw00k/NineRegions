@@ -20,8 +20,8 @@ export class NetMsg_NoticePush extends MessageBase<{}, TipsNotice> {
   /** 响应消息号：TIPS_NOTICE (10273) */
   recId: MESSAGE_ID = MESSAGE_ID.TIPS_NOTICE;
 
-  override HandleSync(req: {}, client?: Client): TipsNotice {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): TipsNotice {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Notice_Push');
     }

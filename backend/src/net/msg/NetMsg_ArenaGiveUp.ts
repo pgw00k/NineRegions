@@ -21,8 +21,8 @@ export class NetMsg_ArenaGiveUp extends MessageBase<ArenaGiveUpRequest, ArenaGiv
   /** 响应消息号：ARENA_GIVEUP_REP (10076) */
   recId: MESSAGE_ID = MESSAGE_ID.ARENA_GIVEUP_REP;
 
-  override HandleSync(req: ArenaGiveUpRequest, client?: Client): ArenaGiveUpResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ArenaGiveUpRequest, client?: Client, uid?: string, token?: string,exData?:any): ArenaGiveUpResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ArenaGiveUp');
     }

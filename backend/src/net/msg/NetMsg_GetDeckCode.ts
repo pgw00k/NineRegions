@@ -21,8 +21,8 @@ export class NetMsg_GetDeckCode extends MessageBase<GetDeckCodeReq, GetDeckCodeR
   /** 响应消息号：GET_DECKCODE_REP (10322) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_DECKCODE_REP;
 
-  override HandleSync(req: GetDeckCodeReq, client?: Client): GetDeckCodeRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetDeckCodeReq, client?: Client, uid?: string, token?: string,exData?:any): GetDeckCodeRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_GetDeckCode');
     }

@@ -20,8 +20,8 @@ export class NetMsg_GetSignInInfo_SN extends MessageBase<{}, GetSignInInfoRespon
   /** 响应消息号：GET_SIGNIN_INFO_REP (10203) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_SIGNIN_INFO_REP;
 
-  override HandleSync(req: {}, client?: Client): GetSignInInfoResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): GetSignInInfoResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_GetSignInInfo_SN');
     }

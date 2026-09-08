@@ -20,8 +20,8 @@ export class NetMsg_PushNotice_SN extends MessageBase<{}, PushNoticeRsp> {
   /** 响应消息号：PUSH_NOTICE_RSP (15042) */
   recId: MESSAGE_ID = MESSAGE_ID.PUSH_NOTICE_RSP;
 
-  override HandleSync(req: {}, client?: Client): PushNoticeRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): PushNoticeRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_PushNotice_SN');
     }

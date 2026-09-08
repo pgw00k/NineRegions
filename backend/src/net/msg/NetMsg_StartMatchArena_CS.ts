@@ -21,8 +21,8 @@ export class NetMsg_StartMatchArena_CS extends MessageBase<ArenaBattleRequest, A
   /** 响应消息号：ARENA_BATTLE_REP (10071) */
   recId: MESSAGE_ID = MESSAGE_ID.ARENA_BATTLE_REP;
 
-  override HandleSync(req: ArenaBattleRequest, client?: Client): ArenaBattleResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ArenaBattleRequest, client?: Client, uid?: string, token?: string,exData?:any): ArenaBattleResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_CS_StartMatchArena');
     }

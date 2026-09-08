@@ -20,8 +20,8 @@ export class NetMsg_FriendRefresh_SN extends MessageBase<{}, FriendRefreshRearch
   /** 响应消息号：FRIEND_REFRESH_SREARCH_NTF (15039) */
   recId: MESSAGE_ID = MESSAGE_ID.FRIEND_REFRESH_SREARCH_NTF;
 
-  override HandleSync(req: {}, client?: Client): FriendRefreshRearchNtf {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): FriendRefreshRearchNtf {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_FriendRefresh_SN');
     }

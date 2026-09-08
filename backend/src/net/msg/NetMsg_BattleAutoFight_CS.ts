@@ -21,8 +21,8 @@ export class NetMsg_BattleAutoFight_CS extends MessageBase<SetAutoDeployRequest,
   /** 响应消息号：SET_AUTODEPLOY_REP (20004) */
   recId: MESSAGE_ID = MESSAGE_ID.SET_AUTODEPLOY_REP;
 
-  override HandleSync(req: SetAutoDeployRequest, client?: Client): SetAutoDeployResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: SetAutoDeployRequest, client?: Client, uid?: string, token?: string,exData?:any): SetAutoDeployResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_BattleAutoFight_CS');
     }

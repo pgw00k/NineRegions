@@ -21,8 +21,8 @@ export class NetMsg_ChampDeleteDeck_CS extends MessageBase<ChampDelDeckRequest, 
   /** 响应消息号：CHAMP_DEL_DECK_REP (10413) */
   recId: MESSAGE_ID = MESSAGE_ID.CHAMP_DEL_DECK_REP;
 
-  override HandleSync(req: ChampDelDeckRequest, client?: Client): ChampDelDeckResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ChampDelDeckRequest, client?: Client, uid?: string, token?: string,exData?:any): ChampDelDeckResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ChampDeleteDeck_CS');
     }

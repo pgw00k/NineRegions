@@ -21,8 +21,8 @@ export class NetMsg_GetFavorReward extends MessageBase<GetFavorRewardRequest, Ge
   /** 响应消息号：GET_FAVOR_REWARD_REP (10265) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_FAVOR_REWARD_REP;
 
-  override HandleSync(req: GetFavorRewardRequest, client?: Client): GetFavorRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetFavorRewardRequest, client?: Client, uid?: string, token?: string,exData?:any): GetFavorRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: GetFavorReward');
     }

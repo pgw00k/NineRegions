@@ -9,7 +9,7 @@
  */
 import { Buffer } from 'buffer';
 import { get, encodeMessage, MESSAGE_ID } from 'mc-local-share';
-import { S2CFrame } from '../messages/types';
+import { DecodedC2S, S2CFrame } from '../messages/types';
 import { Logger } from '../core/Logger';
 import { wrapDynProtoAuto } from './FrameCodec';
 import { MessageController } from './msg/MessageController';
@@ -108,10 +108,16 @@ export class Client {
    */
   async process(
     req: Record<string, unknown>,
-    msgId: number,
     order: number,
-    controller: MessageController,
+    msgId: number,
+    uid?: string,
+    token?: string,
+    controller?: MessageController,
   ): Promise<S2CFrame[]> {
+    if (!controller) {
+      this.logger?.error('client', `[${this.connId}] 处理 req#${msgId} 异常: 未注入 MessageController`);
+      return [];
+    }
     // 应答器判断：未注册该消息号 → 不应答
     const responder = controller.AutoResponser[msgId as MESSAGE_ID] as any | undefined;
     if (!responder){
@@ -122,7 +128,7 @@ export class Client {
     // ① Handle：取得返回对象（可能 async 查询数据库，统一 await 以支持 DB 填充）
     let rep: Record<string, unknown>;
     try {
-      rep = (await responder.Handle(req, this)) ?? {};
+      rep = (await responder.Handle(req, this, uid, token)) ?? {};
     } catch (e) {
       this.logger?.warn('client', `[${this.connId}] 处理 req#${msgId} 异常: ${(e as Error).message}`);
       return [];

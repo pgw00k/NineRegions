@@ -20,8 +20,8 @@ export class NetMsg_QueryPersonInfoRsp extends MessageBase<{}, QueryPersonalInfo
   /** 响应消息号：QUERY_PERSONAL_INFO_RSP (10349) */
   recId: MESSAGE_ID = MESSAGE_ID.QUERY_PERSONAL_INFO_RSP;
 
-  override HandleSync(req: {}, client?: Client): QueryPersonalInfoRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): QueryPersonalInfoRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_QueryPersonInfoRsp');
     }

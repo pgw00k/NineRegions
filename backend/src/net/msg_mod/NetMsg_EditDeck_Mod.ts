@@ -28,12 +28,14 @@ export class NetMsg_EditDeck_Mod extends MessageBase<EditDeckRequest, EditDeckRe
   }
 
   override async Handle(req: EditDeckRequest, client?: Client): Promise<EditDeckResponse> {
-    Logger.LogInfo('NetMsg_EditDeck_Mod.Handle', { ...req, uid: client?.uid });
-    
+    console.log('EditDeckRequest:', client);
+    let deck: any = {
+      pid: client!.uid,
+      ...req.deck,
+    }
     try {
-      // 在这里实现编辑套牌的逻辑
-      let deck;
-      if (req.deck && req.deck.did) {
+      // 在这里实现编辑套牌的逻辑  
+      if (req.deck?.did) {
         // 更新现有套牌
         deck = await this.deckService.updateDeck(req.deck.did, req.deck);
       } else {

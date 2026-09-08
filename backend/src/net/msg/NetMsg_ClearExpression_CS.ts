@@ -21,8 +21,8 @@ export class NetMsg_ClearExpression_CS extends MessageBase<ClearExpressionShortc
   /** 响应消息号：CLEAR_EXPRESSION_SHORTCUT_RSP (10355) */
   recId: MESSAGE_ID = MESSAGE_ID.CLEAR_EXPRESSION_SHORTCUT_RSP;
 
-  override HandleSync(req: ClearExpressionShortcutReq, client?: Client): ClearExpressionShortcutRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ClearExpressionShortcutReq, client?: Client, uid?: string, token?: string,exData?:any): ClearExpressionShortcutRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ClearExpression');
     }

@@ -21,8 +21,8 @@ export class NetMsg_ActivityInfo_CS extends MessageBase<GetActitiviesRequest, Ge
   /** 响应消息号：GET_ACTIVITIES_REP (10205) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_ACTIVITIES_REP;
 
-  override HandleSync(req: GetActitiviesRequest, client?: Client): GetActitiviesResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetActitiviesRequest, client?: Client, uid?: string, token?: string,exData?:any): GetActitiviesResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ActivityInfo_CS');
     }

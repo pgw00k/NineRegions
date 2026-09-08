@@ -20,8 +20,8 @@ export class NetMsg_SetHeadInfo_SN extends MessageBase<{}, SetHeadInfoRsp> {
   /** 响应消息号：SET_HEAD_INFO_RSP (10377) */
   recId: MESSAGE_ID = MESSAGE_ID.SET_HEAD_INFO_RSP;
 
-  override HandleSync(req: {}, client?: Client): SetHeadInfoRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): SetHeadInfoRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_SetHeadInfo_SN');
     }

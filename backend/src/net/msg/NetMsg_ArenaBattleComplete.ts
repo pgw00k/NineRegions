@@ -20,8 +20,8 @@ export class NetMsg_ArenaBattleComplete extends MessageBase<{}, ArenaBattleCompl
   /** 响应消息号：ARENA_BATTLE_COMPLETE (15013) */
   recId: MESSAGE_ID = MESSAGE_ID.ARENA_BATTLE_COMPLETE;
 
-  override HandleSync(req: {}, client?: Client): ArenaBattleComplete {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): ArenaBattleComplete {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ArenaBattleComplete');
     }

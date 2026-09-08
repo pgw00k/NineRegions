@@ -21,8 +21,8 @@ export class NetMsg_GMMain extends MessageBase<GiveMeFiveRequest, GiveMeFiveResp
   /** 响应消息号：GIVEMEFIVE_LOGIC_REP (19001) */
   recId: MESSAGE_ID = MESSAGE_ID.GIVEMEFIVE_LOGIC_REP;
 
-  override HandleSync(req: GiveMeFiveRequest, client?: Client): GiveMeFiveResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GiveMeFiveRequest, client?: Client, uid?: string, token?: string,exData?:any): GiveMeFiveResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: GM_Main');
     }

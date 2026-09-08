@@ -21,8 +21,8 @@ export class NetMsg_InfiBuyClue extends MessageBase<InfiBuyMessageReq, InfiBuyMe
   /** 响应消息号：INFI_BUY_MESSAGE_REP (10113) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_BUY_MESSAGE_REP;
 
-  override HandleSync(req: InfiBuyMessageReq, client?: Client): InfiBuyMessageRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiBuyMessageReq, client?: Client, uid?: string, token?: string,exData?:any): InfiBuyMessageRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_BuyClue');
     }

@@ -21,8 +21,8 @@ export class NetMsg_CancelMatch_CS extends MessageBase<CancelMatchRequest, Cance
   /** 响应消息号：CANCEL_MATCH_REP (10014) */
   recId: MESSAGE_ID = MESSAGE_ID.CANCEL_MATCH_REP;
 
-  override HandleSync(req: CancelMatchRequest, client?: Client): CancelMatchResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: CancelMatchRequest, client?: Client, uid?: string, token?: string,exData?:any): CancelMatchResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_CS_CancelMatch');
     }

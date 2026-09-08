@@ -20,8 +20,8 @@ export class NetMsg_ArenaEnterRep extends MessageBase<{}, ArenaEnterResponse> {
   /** 响应消息号：ARENA_ENTER_REP (10061) */
   recId: MESSAGE_ID = MESSAGE_ID.ARENA_ENTER_REP;
 
-  override HandleSync(req: {}, client?: Client): ArenaEnterResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): ArenaEnterResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ArenaEnterRep');
     }

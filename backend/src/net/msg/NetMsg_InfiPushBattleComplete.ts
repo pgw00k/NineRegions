@@ -20,8 +20,8 @@ export class NetMsg_InfiPushBattleComplete extends MessageBase<{}, InfiBattleCom
   /** 响应消息号：INFI_BATTLE_COMPLETE (10096) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_BATTLE_COMPLETE;
 
-  override HandleSync(req: {}, client?: Client): InfiBattleComplete {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): InfiBattleComplete {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_PushBattleComplete');
     }

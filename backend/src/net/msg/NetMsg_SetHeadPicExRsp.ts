@@ -20,8 +20,8 @@ export class NetMsg_SetHeadPicExRsp extends MessageBase<{}, SetHeadPicExRsp> {
   /** 响应消息号：SET_HEAD_PIC_EX_RSP (10347) */
   recId: MESSAGE_ID = MESSAGE_ID.SET_HEAD_PIC_EX_RSP;
 
-  override HandleSync(req: {}, client?: Client): SetHeadPicExRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): SetHeadPicExRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_SetHeadPicExRsp');
     }

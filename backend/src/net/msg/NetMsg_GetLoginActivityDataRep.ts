@@ -20,8 +20,8 @@ export class NetMsg_GetLoginActivityDataRep extends MessageBase<{}, GetLoginActi
   /** 响应消息号：GET_LOGIN_ACTIVITY_REP (10341) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_LOGIN_ACTIVITY_REP;
 
-  override HandleSync(req: {}, client?: Client): GetLoginActivityDataRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): GetLoginActivityDataRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_GetLoginActivityDataRep');
     }

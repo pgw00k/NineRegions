@@ -18,9 +18,9 @@ export class DeckService {
      * @param playerId 玩家ID
      * @returns 套牌对象数组
      */
-    async getPlayerDecks(playerId: number): Promise<Deck[]> {
+    async getPlayerDecks(uid: string): Promise<Deck[]> {
         return await this.deckRepository.find({
-            where: { pid: playerId }
+            where: { uid }
         });
     }
 

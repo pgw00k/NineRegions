@@ -21,8 +21,8 @@ export class NetMsg_PullActAccept extends MessageBase<PullActAcceptReq, PullActA
   /** 响应消息号：PULL_ACT_ACCEPT_REP (10471) */
   recId: MESSAGE_ID = MESSAGE_ID.PULL_ACT_ACCEPT_REP;
 
-  override HandleSync(req: PullActAcceptReq, client?: Client): PullActAcceptRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: PullActAcceptReq, client?: Client, uid?: string, token?: string,exData?:any): PullActAcceptRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_PullActAccept');
     }

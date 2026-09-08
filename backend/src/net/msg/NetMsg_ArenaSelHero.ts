@@ -21,8 +21,8 @@ export class NetMsg_ArenaSelHero extends MessageBase<ArenaSelectHeroRequest, Are
   /** 响应消息号：ARENA_SELECT_HERO_REP (10065) */
   recId: MESSAGE_ID = MESSAGE_ID.ARENA_SELECT_HERO_REP;
 
-  override HandleSync(req: ArenaSelectHeroRequest, client?: Client): ArenaSelectHeroResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ArenaSelectHeroRequest, client?: Client, uid?: string, token?: string,exData?:any): ArenaSelectHeroResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ArenaSelHero');
     }

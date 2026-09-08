@@ -21,8 +21,8 @@ export class NetMsg_ChampGetInfo_CS extends MessageBase<ChampGetInfoRequest, Cha
   /** 响应消息号：CHAMP_GET_INFO_REP (10401) */
   recId: MESSAGE_ID = MESSAGE_ID.CHAMP_GET_INFO_REP;
 
-  override HandleSync(req: ChampGetInfoRequest, client?: Client): ChampGetInfoResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ChampGetInfoRequest, client?: Client, uid?: string, token?: string,exData?:any): ChampGetInfoResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ChampGetInfo_CS');
     }

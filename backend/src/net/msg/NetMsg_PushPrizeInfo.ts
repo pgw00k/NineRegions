@@ -20,8 +20,8 @@ export class NetMsg_PushPrizeInfo extends MessageBase<{}, PushPrizeInfo> {
   /** 响应消息号：PUSH_PRIZE_INFO (15041) */
   recId: MESSAGE_ID = MESSAGE_ID.PUSH_PRIZE_INFO;
 
-  override HandleSync(req: {}, client?: Client): PushPrizeInfo {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): PushPrizeInfo {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_PushPrizeInfo');
     }

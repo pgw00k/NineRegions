@@ -21,8 +21,8 @@ export class NetMsg_StartMatchChamp_CS extends MessageBase<ChampBattleRequest, C
   /** 响应消息号：CHAMP_BATTLE_REP (10405) */
   recId: MESSAGE_ID = MESSAGE_ID.CHAMP_BATTLE_REP;
 
-  override HandleSync(req: ChampBattleRequest, client?: Client): ChampBattleResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ChampBattleRequest, client?: Client, uid?: string, token?: string,exData?:any): ChampBattleResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_CS_StartMatchChamp');
     }

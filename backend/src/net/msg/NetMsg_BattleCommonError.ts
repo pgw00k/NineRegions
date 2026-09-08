@@ -20,8 +20,8 @@ export class NetMsg_BattleCommonError extends MessageBase<{}, BattleCommonError>
   /** 响应消息号：BATTLE_COMMONERROR_REP (25013) */
   recId: MESSAGE_ID = MESSAGE_ID.BATTLE_COMMONERROR_REP;
 
-  override HandleSync(req: {}, client?: Client): BattleCommonError {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): BattleCommonError {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_BattleCommonError');
     }

@@ -20,8 +20,8 @@ export class NetMsg_RMB_ShopBuy_SN extends MessageBase<{}, ShopBuyResponse> {
   /** 响应消息号：SHOP_RMB_BUY_PUSH (15044) */
   recId: MESSAGE_ID = MESSAGE_ID.SHOP_RMB_BUY_PUSH;
 
-  override HandleSync(req: {}, client?: Client): ShopBuyResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): ShopBuyResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_RMB_ShopBuy_SN');
     }

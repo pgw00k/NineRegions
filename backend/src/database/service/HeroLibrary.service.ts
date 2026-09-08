@@ -16,9 +16,9 @@ export class HeroLibraryService {
      * @param playerId 玩家ID
      * @returns 英雄对象数组
      */
-    async getPlayerHeroes(playerId: number): Promise<HeroLibrary[]> {
+    async getPlayerHeroes(uid: number): Promise<HeroLibrary[]> {
         return await this.heroRepository.find({
-            where: { pid: playerId }
+            where: { uid }
         });
     }
 
@@ -65,9 +65,9 @@ export class HeroLibraryService {
      * @param heroId 英雄ID
      * @returns 是否解锁成功
      */
-    async unlockHero(playerId: number, heroId: number): Promise<boolean> {
+    async unlockHero(uid: number, heroId: number): Promise<boolean> {
         const hero = await this.heroRepository.findOne({
-            where: { id: heroId, pid: playerId }
+            where: { id: heroId, uid }
         });
         
         if (hero) {

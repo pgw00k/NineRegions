@@ -21,8 +21,8 @@ export class NetMsg_GetDeckData extends MessageBase<GetDeckDataReq, GetDeckDataR
   /** 响应消息号：GET_DECKDATA_REP (10324) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_DECKDATA_REP;
 
-  override HandleSync(req: GetDeckDataReq, client?: Client): GetDeckDataRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetDeckDataReq, client?: Client, uid?: string, token?: string,exData?:any): GetDeckDataRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_GetDeckData');
     }

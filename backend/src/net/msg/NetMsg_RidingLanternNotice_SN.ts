@@ -20,8 +20,8 @@ export class NetMsg_RidingLanternNotice_SN extends MessageBase<{}, AnnounceLamp>
   /** 响应消息号：ANNOUNCE_LAMP_PUSH (10226) */
   recId: MESSAGE_ID = MESSAGE_ID.ANNOUNCE_LAMP_PUSH;
 
-  override HandleSync(req: {}, client?: Client): AnnounceLamp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): AnnounceLamp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: RidingLanternNotice');
     }

@@ -21,8 +21,8 @@ export class NetMsg_ChangeDefaultCardBack extends MessageBase<ChangeDefaultCardB
   /** 响应消息号：CHANGE_DEFAULT_CARDBACK_REP (10132) */
   recId: MESSAGE_ID = MESSAGE_ID.CHANGE_DEFAULT_CARDBACK_REP;
 
-  override HandleSync(req: ChangeDefaultCardBackRequest, client?: Client): ChangeDefaultCardBackResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ChangeDefaultCardBackRequest, client?: Client, uid?: string, token?: string,exData?:any): ChangeDefaultCardBackResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ChangeDefaultCardBack');
     }

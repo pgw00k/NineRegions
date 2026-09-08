@@ -35,7 +35,7 @@ async function main(): Promise<void> {
   const gateway = new WsGateway(logger);
   gateway.setOnConnCreate((connId) => conns.create(connId));
   gateway.setOnConnClose((connId) => conns.remove(connId));
-  gateway.setOnC2S((connId, frame) => router.route(connId, frame.msgId, frame.order, frame.body));
+  gateway.setOnC2S((connId, frame) => router.route(connId, frame));
 
   // 外围：客户端登录 HTTP 仿真层。
   const http = new HttpServer(logger);

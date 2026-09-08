@@ -20,8 +20,8 @@ export class NetMsg_FixPay_SN extends MessageBase<{}, QueryFailChargeOrderIDRsp>
   /** 响应消息号：QUERY_FAIL_CHARGE_ORDERID_RSP (10386) */
   recId: MESSAGE_ID = MESSAGE_ID.QUERY_FAIL_CHARGE_ORDERID_RSP;
 
-  override HandleSync(req: {}, client?: Client): QueryFailChargeOrderIDRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): QueryFailChargeOrderIDRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_FixPay_SN');
     }

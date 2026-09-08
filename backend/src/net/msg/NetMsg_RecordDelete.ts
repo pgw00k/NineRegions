@@ -21,8 +21,8 @@ export class NetMsg_RecordDelete extends MessageBase<DeleteRecordRequest, Delete
   /** 响应消息号：DELETE_RECORD_REP (10445) */
   recId: MESSAGE_ID = MESSAGE_ID.DELETE_RECORD_REP;
 
-  override HandleSync(req: DeleteRecordRequest, client?: Client): DeleteRecordResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: DeleteRecordRequest, client?: Client, uid?: string, token?: string,exData?:any): DeleteRecordResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Msg_RecordDelete');
     }

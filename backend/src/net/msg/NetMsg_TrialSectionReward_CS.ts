@@ -21,8 +21,8 @@ export class NetMsg_TrialSectionReward_CS extends MessageBase<SectionRewardReque
   /** 响应消息号：SECTION_REWARD_REP (10332) */
   recId: MESSAGE_ID = MESSAGE_ID.SECTION_REWARD_REP;
 
-  override HandleSync(req: SectionRewardRequest, client?: Client): SectionRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: SectionRewardRequest, client?: Client, uid?: string, token?: string,exData?:any): SectionRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: TrialSectionReward');
     }

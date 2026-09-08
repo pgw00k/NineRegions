@@ -21,8 +21,8 @@ export class NetMsg_InfiGetStory extends MessageBase<GetInfiStoryRequest, GetInf
   /** 响应消息号：INFI_GET_STORY_REP (10125) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_GET_STORY_REP;
 
-  override HandleSync(req: GetInfiStoryRequest, client?: Client): GetInfiStoryResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetInfiStoryRequest, client?: Client, uid?: string, token?: string,exData?:any): GetInfiStoryResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_GetStory');
     }

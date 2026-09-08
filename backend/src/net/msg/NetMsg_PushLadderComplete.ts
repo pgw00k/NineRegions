@@ -20,8 +20,8 @@ export class NetMsg_PushLadderComplete extends MessageBase<{}, PushLadderComplet
   /** 响应消息号：PUSH_LADDERCOMPLETE (15004) */
   recId: MESSAGE_ID = MESSAGE_ID.PUSH_LADDERCOMPLETE;
 
-  override HandleSync(req: {}, client?: Client): PushLadderComplete {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): PushLadderComplete {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_PushLadderComplete');
     }

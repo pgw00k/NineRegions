@@ -21,8 +21,8 @@ export class NetMsg_AchieveReward_CS extends MessageBase<GetAchieveRewardRequest
   /** 响应消息号：GET_ACHIEVE_REWARD_REP (10233) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_ACHIEVE_REWARD_REP;
 
-  override HandleSync(req: GetAchieveRewardRequest, client?: Client): GetAchieveRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetAchieveRewardRequest, client?: Client, uid?: string, token?: string,exData?:any): GetAchieveRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Achieve_Reward');
     }

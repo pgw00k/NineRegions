@@ -21,8 +21,8 @@ export class NetMsg_ShareDeck extends MessageBase<ShareDeckReq, ShareDeckRep> {
   /** 响应消息号：SHAREDECK_REP (10363) */
   recId: MESSAGE_ID = MESSAGE_ID.SHAREDECK_REP;
 
-  override HandleSync(req: ShareDeckReq, client?: Client): ShareDeckRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ShareDeckReq, client?: Client, uid?: string, token?: string,exData?:any): ShareDeckRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ShareDeck');
     }

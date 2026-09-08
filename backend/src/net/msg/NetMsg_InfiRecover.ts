@@ -21,8 +21,8 @@ export class NetMsg_InfiRecover extends MessageBase<InfiRecoverRequest, InfiReco
   /** 响应消息号：INFI_RECOVER_REP (10100) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_RECOVER_REP;
 
-  override HandleSync(req: InfiRecoverRequest, client?: Client): InfiRecoverResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiRecoverRequest, client?: Client, uid?: string, token?: string,exData?:any): InfiRecoverResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_Recover');
     }

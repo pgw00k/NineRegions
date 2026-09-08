@@ -21,8 +21,8 @@ export class NetMsg_InfiSelBattleReward extends MessageBase<InfiSelectRewardRequ
   /** 响应消息号：INFI_SELECT_REWARD_REP (10098) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_REWARD_REP;
 
-  override HandleSync(req: InfiSelectRewardRequest, client?: Client): InfiSelectRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiSelectRewardRequest, client?: Client, uid?: string, token?: string,exData?:any): InfiSelectRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_SelBattleReward');
     }

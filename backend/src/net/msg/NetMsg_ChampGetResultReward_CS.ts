@@ -21,8 +21,8 @@ export class NetMsg_ChampGetResultReward_CS extends MessageBase<ChampGetRankRewa
   /** 响应消息号：CHAMP_GET_RANKREWARD_REP (10409) */
   recId: MESSAGE_ID = MESSAGE_ID.CHAMP_GET_RANKREWARD_REP;
 
-  override HandleSync(req: ChampGetRankRewardRequest, client?: Client): ChampGetRankRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ChampGetRankRewardRequest, client?: Client, uid?: string, token?: string,exData?:any): ChampGetRankRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ChampGetResultReward_CS');
     }

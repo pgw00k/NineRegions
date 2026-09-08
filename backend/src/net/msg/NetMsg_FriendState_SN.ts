@@ -20,8 +20,8 @@ export class NetMsg_FriendState_SN extends MessageBase<{}, FriendStateNtf> {
   /** 响应消息号：FRIEND_STATE_NTF (15033) */
   recId: MESSAGE_ID = MESSAGE_ID.FRIEND_STATE_NTF;
 
-  override HandleSync(req: {}, client?: Client): FriendStateNtf {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): FriendStateNtf {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_FriendState_SN');
     }

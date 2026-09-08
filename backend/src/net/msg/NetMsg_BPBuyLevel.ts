@@ -21,8 +21,8 @@ export class NetMsg_BPBuyLevel extends MessageBase<BattlePassBuyExpRequest, Batt
   /** 响应消息号：BATTLEPASS_BUY_EXP_REP (10285) */
   recId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_BUY_EXP_REP;
 
-  override HandleSync(req: BattlePassBuyExpRequest, client?: Client): BattlePassBuyExpResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: BattlePassBuyExpRequest, client?: Client, uid?: string, token?: string,exData?:any): BattlePassBuyExpResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: BP_BuyLevel');
     }

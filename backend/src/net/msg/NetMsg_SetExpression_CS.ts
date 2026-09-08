@@ -21,8 +21,8 @@ export class NetMsg_SetExpression_CS extends MessageBase<SetExpressionShortcutRe
   /** 响应消息号：SET_EXPRESSION_SHORTCUT_RSP (10353) */
   recId: MESSAGE_ID = MESSAGE_ID.SET_EXPRESSION_SHORTCUT_RSP;
 
-  override HandleSync(req: SetExpressionShortcutReq, client?: Client): SetExpressionShortcutRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: SetExpressionShortcutReq, client?: Client, uid?: string, token?: string,exData?:any): SetExpressionShortcutRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_SetExpression');
     }

@@ -20,8 +20,8 @@ export class NetMsg_TransChatInfo_CN extends MessageBase<TransChatInfoRpt, {}> {
   /** 响应消息号：NETWORK_MESSAGE_BEGIN (0) */
   recId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
 
-  override HandleSync(req: TransChatInfoRpt, client?: Client): {} {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: TransChatInfoRpt, client?: Client, uid?: string, token?: string,exData?:any): {} {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_TransChatInfo_CN');
     }

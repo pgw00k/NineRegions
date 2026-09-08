@@ -21,8 +21,8 @@ export class NetMsg_SetUserTitle extends MessageBase<SetUserTitleReq, SetUserTit
   /** 响应消息号：SET_USERTITLE_RSP (10373) */
   recId: MESSAGE_ID = MESSAGE_ID.SET_USERTITLE_RSP;
 
-  override HandleSync(req: SetUserTitleReq, client?: Client): SetUserTitleRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: SetUserTitleReq, client?: Client, uid?: string, token?: string,exData?:any): SetUserTitleRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_SetUserTitle');
     }

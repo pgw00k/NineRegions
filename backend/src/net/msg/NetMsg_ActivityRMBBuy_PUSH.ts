@@ -20,8 +20,8 @@ export class NetMsg_ActivityRMBBuy_PUSH extends MessageBase<{}, GetActivityRewar
   /** 响应消息号：ACT_RMB_BUY_PUSH (15048) */
   recId: MESSAGE_ID = MESSAGE_ID.ACT_RMB_BUY_PUSH;
 
-  override HandleSync(req: {}, client?: Client): GetActivityRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): GetActivityRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ActivityRMBBuy_PUSH');
     }

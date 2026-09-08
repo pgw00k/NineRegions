@@ -74,18 +74,18 @@ export class CardLibraryService {
      * 查询玩家完整牌库（附带卡牌详情）
      * 这里利用 TypeORM 的 Relation 优势，方便返回前端展示
      */
-    async getPlayerCollection(pid: number): Promise<CardLibrary[]> {
+    async getPlayerCollection(uid: number): Promise<CardLibrary[]> {
         return this._Repo.find({
-            where: { pid },
+            where: { uid },
         });
     }
 
     /**
      * 检查玩家是否拥有某张卡（及数量）
      */
-    async getCardQuantity(pid: number, cid: number): Promise<number> {
+    async getCardQuantity(uid: number, cid: number): Promise<number> {
         const result = await this._Repo.findOne({
-            where: { pid, cid },
+            where: { uid, cid },
             select: { count: true },
         });
         return result?.count ?? 0;

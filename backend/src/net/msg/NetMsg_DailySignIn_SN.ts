@@ -20,8 +20,8 @@ export class NetMsg_DailySignIn_SN extends MessageBase<{}, DailySignInResponse> 
   /** 响应消息号：DAILY_SIGNIN_REP (10201) */
   recId: MESSAGE_ID = MESSAGE_ID.DAILY_SIGNIN_REP;
 
-  override HandleSync(req: {}, client?: Client): DailySignInResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): DailySignInResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_DailySignIn_SN');
     }

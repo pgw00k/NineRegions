@@ -21,8 +21,8 @@ export class NetMsg_InfiShopBuyItem extends MessageBase<InfiBuyItemRequest, Infi
   /** 响应消息号：INFI_BUY_ITEM_REP (10094) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_BUY_ITEM_REP;
 
-  override HandleSync(req: InfiBuyItemRequest, client?: Client): InfiBuyItemResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiBuyItemRequest, client?: Client, uid?: string, token?: string,exData?:any): InfiBuyItemResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_ShopBuyItem');
     }

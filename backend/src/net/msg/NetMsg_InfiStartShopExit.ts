@@ -21,8 +21,8 @@ export class NetMsg_InfiStartShopExit extends MessageBase<InfiOpenShopExitReques
   /** 响应消息号：INFI_OPENSHOP_EXIT_REP (10123) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_OPENSHOP_EXIT_REP;
 
-  override HandleSync(req: InfiOpenShopExitRequest, client?: Client): InfiOpenShopExitResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiOpenShopExitRequest, client?: Client, uid?: string, token?: string,exData?:any): InfiOpenShopExitResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_StartShopExit');
     }

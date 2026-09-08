@@ -20,8 +20,8 @@ export class NetMsg_GetGiftInfo_SN extends MessageBase<{}, GetGiftInfoResponse> 
   /** 响应消息号：GET_GIFTINFO_REP (10023) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_GIFTINFO_REP;
 
-  override HandleSync(req: {}, client?: Client): GetGiftInfoResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): GetGiftInfoResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_GetGiftInfo_SN');
     }

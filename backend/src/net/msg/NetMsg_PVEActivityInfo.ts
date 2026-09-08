@@ -21,8 +21,8 @@ export class NetMsg_PVEActivityInfo extends MessageBase<GetActivityPveInfoReq, G
   /** 响应消息号：GET_ACTIVITY_PVE_INFO_RSP (10138) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_ACTIVITY_PVE_INFO_RSP;
 
-  override HandleSync(req: GetActivityPveInfoReq, client?: Client): GetActivityPveInfoRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetActivityPveInfoReq, client?: Client, uid?: string, token?: string,exData?:any): GetActivityPveInfoRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_PVEActivityInfo');
     }

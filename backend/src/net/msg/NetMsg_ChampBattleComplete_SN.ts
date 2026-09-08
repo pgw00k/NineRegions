@@ -20,8 +20,8 @@ export class NetMsg_ChampBattleComplete_SN extends MessageBase<{}, ChampBattleCo
   /** 响应消息号：CHAMP_BATTLE_COMPLETE (15046) */
   recId: MESSAGE_ID = MESSAGE_ID.CHAMP_BATTLE_COMPLETE;
 
-  override HandleSync(req: {}, client?: Client): ChampBattleComplete {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): ChampBattleComplete {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ChampBattleComplete_SN');
     }

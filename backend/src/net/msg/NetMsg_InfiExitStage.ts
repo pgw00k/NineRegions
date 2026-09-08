@@ -21,8 +21,8 @@ export class NetMsg_InfiExitStage extends MessageBase<InfiExitStageRequest, Infi
   /** 响应消息号：INFI_EXIT_STAGE_REP (10102) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_EXIT_STAGE_REP;
 
-  override HandleSync(req: InfiExitStageRequest, client?: Client): InfiExitStageResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiExitStageRequest, client?: Client, uid?: string, token?: string,exData?:any): InfiExitStageResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_InfiExitStage');
     }

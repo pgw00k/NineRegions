@@ -20,8 +20,8 @@ export class NetMsg_ChallengeHeroComplete extends MessageBase<{}, ChallengeHeroC
   /** 响应消息号：CHALLENGE_HERO_COMPLETE (15022) */
   recId: MESSAGE_ID = MESSAGE_ID.CHALLENGE_HERO_COMPLETE;
 
-  override HandleSync(req: {}, client?: Client): ChallengeHeroComplete {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): ChallengeHeroComplete {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: ChallengeHeroComplete');
     }

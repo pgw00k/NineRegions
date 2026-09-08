@@ -15,3 +15,29 @@ export interface S2CFrame {
   /** 已按线格式构造好的帧体（含 dynproto 头）。 */
   body: Buffer;
 }
+
+export interface C2SFrameHeader{
+  /** 帧体（含 dynproto 头）大小（字节）。u32 */
+  size: number;
+  /** 帧 order（沿用 C2S 的 order）。u32 */
+  order: number;
+  /** 帧消息号（recId）。u16 */
+  msgId: number;
+}
+
+export interface Envelope{
+  /** 信封中的用户 ID（ASCII 数字串，解包时已校验） */
+  /** 长度限制u16 */
+  uid: string;
+  /** 信封中的 token（可选：心跳等仅含 uid 的帧缺省） */
+  /** 长度限制u16 */
+  token?: string;
+}
+
+export interface DecodedC2S {
+  /** 帧头 */
+  header: C2SFrameHeader;
+  /** 信封 */
+  envelope: Envelope;
+  body: Buffer;
+}

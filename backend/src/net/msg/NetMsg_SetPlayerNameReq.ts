@@ -21,8 +21,8 @@ export class NetMsg_SetPlayerNameReq extends MessageBase<SetPlayerNameRequest, S
   /** 响应消息号：SET_PLAYERNAME_REP (10048) */
   recId: MESSAGE_ID = MESSAGE_ID.SET_PLAYERNAME_REP;
 
-  override HandleSync(req: SetPlayerNameRequest, client?: Client): SetPlayerNameResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: SetPlayerNameRequest, client?: Client, uid?: string, token?: string,exData?:any): SetPlayerNameResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_SetPlayerName');
     }

@@ -21,8 +21,8 @@ export class NetMsg_ArenaReward extends MessageBase<ArenaGetRewardRequest, Arena
   /** 响应消息号：ARENA_GET_REWARDS_REP (10069) */
   recId: MESSAGE_ID = MESSAGE_ID.ARENA_GET_REWARDS_REP;
 
-  override HandleSync(req: ArenaGetRewardRequest, client?: Client): ArenaGetRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ArenaGetRewardRequest, client?: Client, uid?: string, token?: string,exData?:any): ArenaGetRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ArenaReward');
     }

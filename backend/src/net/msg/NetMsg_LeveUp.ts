@@ -20,8 +20,8 @@ export class NetMsg_LeveUp extends MessageBase<{}, PushLevelup> {
   /** 响应消息号：PUSH_LEVELUP (15005) */
   recId: MESSAGE_ID = MESSAGE_ID.PUSH_LEVELUP;
 
-  override HandleSync(req: {}, client?: Client): PushLevelup {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): PushLevelup {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_LevelUp');
     }

@@ -20,8 +20,8 @@ export class NetMsg_BPActive extends MessageBase<{}, BattlePassActiveResponse> {
   /** 响应消息号：BATTLEPASS_ACTIVE_REP (10287) */
   recId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_ACTIVE_REP;
 
-  override HandleSync(req: {}, client?: Client): BattlePassActiveResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): BattlePassActiveResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: BP_Active');
     }

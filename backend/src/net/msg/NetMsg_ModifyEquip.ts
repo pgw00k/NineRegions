@@ -21,8 +21,8 @@ export class NetMsg_ModifyEquip extends MessageBase<ModifyEquipRequest, ModifyEq
   /** 响应消息号：MODIFY_EQUIP_REP (10301) */
   recId: MESSAGE_ID = MESSAGE_ID.MODIFY_EQUIP_REP;
 
-  override HandleSync(req: ModifyEquipRequest, client?: Client): ModifyEquipResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ModifyEquipRequest, client?: Client, uid?: string, token?: string,exData?:any): ModifyEquipResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ModifyEquip');
     }

@@ -21,8 +21,8 @@ export class NetMsg_DLC4GetInfo extends MessageBase<DLC4GetInfoReq, DLC4GetInfoR
   /** 响应消息号：DLC4_GETINFO_REP (10477) */
   recId: MESSAGE_ID = MESSAGE_ID.DLC4_GETINFO_REP;
 
-  override HandleSync(req: DLC4GetInfoReq, client?: Client): DLC4GetInfoRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: DLC4GetInfoReq, client?: Client, uid?: string, token?: string,exData?:any): DLC4GetInfoRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_DLC4GetInfo');
     }

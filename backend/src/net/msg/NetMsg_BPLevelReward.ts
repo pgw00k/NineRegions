@@ -21,8 +21,8 @@ export class NetMsg_BPLevelReward extends MessageBase<BattlePassRewardRequest, B
   /** 响应消息号：BATTLEPASS_REWARD_REP (10283) */
   recId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_REWARD_REP;
 
-  override HandleSync(req: BattlePassRewardRequest, client?: Client): BattlePassRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: BattlePassRewardRequest, client?: Client, uid?: string, token?: string,exData?:any): BattlePassRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: BP_LevelReward');
     }

@@ -21,8 +21,8 @@ export class NetMsg_ActivityGetReward_CS extends MessageBase<GetActivityRewardRe
   /** 响应消息号：GET_ACTIVITY_REWARD_REP (10207) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_ACTIVITY_REWARD_REP;
 
-  override HandleSync(req: GetActivityRewardRequest, client?: Client): GetActivityRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetActivityRewardRequest, client?: Client, uid?: string, token?: string,exData?:any): GetActivityRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ActivityGetReward_CS');
     }

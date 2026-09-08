@@ -20,8 +20,8 @@ export class NetMsg_GildingResetRep extends MessageBase<{}, GildingResetResponse
   /** 响应消息号：GILDING_RESET_REP (10433) */
   recId: MESSAGE_ID = MESSAGE_ID.GILDING_RESET_REP;
 
-  override HandleSync(req: {}, client?: Client): GildingResetResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): GildingResetResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_GildingResetRep');
     }

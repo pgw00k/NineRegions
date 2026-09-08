@@ -20,8 +20,8 @@ export class NetMsg_AchieveInfo_SN extends MessageBase<{}, GetAchieveInfoRespons
   /** 响应消息号：GET_ACHIEVE_INFO_REP (10231) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_ACHIEVE_INFO_REP;
 
-  override HandleSync(req: {}, client?: Client): GetAchieveInfoResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): GetAchieveInfoResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Achieve_InfoRes');
     }

@@ -21,8 +21,8 @@ export class NetMsg_InfiUnlockDifficulty extends MessageBase<InfiUnlockDifficult
   /** 响应消息号：INFI_UNLOCK_DIFFICULTY_REP (10111) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_UNLOCK_DIFFICULTY_REP;
 
-  override HandleSync(req: InfiUnlockDifficultyReq, client?: Client): InfiUnlockDifficultyRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiUnlockDifficultyReq, client?: Client, uid?: string, token?: string,exData?:any): InfiUnlockDifficultyRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_UnlockDifficulty');
     }

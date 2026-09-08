@@ -20,8 +20,8 @@ export class NetMsg_BattleEmoji_SN extends MessageBase<{}, BattleEmojiResponse> 
   /** 响应消息号：BATTLE_EMOJI_REP (25017) */
   recId: MESSAGE_ID = MESSAGE_ID.BATTLE_EMOJI_REP;
 
-  override HandleSync(req: {}, client?: Client): BattleEmojiResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): BattleEmojiResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_BattleEmojiRsp');
     }

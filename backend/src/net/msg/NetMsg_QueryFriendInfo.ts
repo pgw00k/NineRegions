@@ -21,8 +21,8 @@ export class NetMsg_QueryFriendInfo extends MessageBase<QueryFriendInfoReq, Quer
   /** 响应消息号：QUERY_FRIEND_INFO_RSP (10461) */
   recId: MESSAGE_ID = MESSAGE_ID.QUERY_FRIEND_INFO_RSP;
 
-  override HandleSync(req: QueryFriendInfoReq, client?: Client): QueryFriendInfoRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: QueryFriendInfoReq, client?: Client, uid?: string, token?: string,exData?:any): QueryFriendInfoRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_QueryFriendInfo');
     }

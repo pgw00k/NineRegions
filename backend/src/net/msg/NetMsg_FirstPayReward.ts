@@ -21,8 +21,8 @@ export class NetMsg_FirstPayReward extends MessageBase<FirstChargeRewardReq, Fir
   /** 响应消息号：FIRSTCHARGEREWARD_REP (10382) */
   recId: MESSAGE_ID = MESSAGE_ID.FIRSTCHARGEREWARD_REP;
 
-  override HandleSync(req: FirstChargeRewardReq, client?: Client): FirstChargeRewardRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: FirstChargeRewardReq, client?: Client, uid?: string, token?: string,exData?:any): FirstChargeRewardRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_FirstPayReward');
     }

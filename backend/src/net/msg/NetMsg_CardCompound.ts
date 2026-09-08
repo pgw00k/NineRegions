@@ -21,8 +21,8 @@ export class NetMsg_CardCompound extends MessageBase<CardCompoundRequest, CardCo
   /** 响应消息号：CARD_COMPOUND_REP (10044) */
   recId: MESSAGE_ID = MESSAGE_ID.CARD_COMPOUND_REP;
 
-  override HandleSync(req: CardCompoundRequest, client?: Client): CardCompoundResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: CardCompoundRequest, client?: Client, uid?: string, token?: string,exData?:any): CardCompoundResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_CardCompound');
     }

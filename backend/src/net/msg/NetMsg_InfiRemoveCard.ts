@@ -21,8 +21,8 @@ export class NetMsg_InfiRemoveCard extends MessageBase<InfiDelCardRequest, InfiD
   /** 响应消息号：INFI_DEL_CARD_REP (10092) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_DEL_CARD_REP;
 
-  override HandleSync(req: InfiDelCardRequest, client?: Client): InfiDelCardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiDelCardRequest, client?: Client, uid?: string, token?: string,exData?:any): InfiDelCardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_RemoveCard');
     }
