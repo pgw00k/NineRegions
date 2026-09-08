@@ -1,6 +1,7 @@
 // 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: <%- TAG %>
 
+import { Client } from '../Client';
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
@@ -20,10 +21,10 @@ export class <%- CLASS_NAME %> extends MessageBase<<%- REQ_TYPE %>, <%- RES_TYPE
   /** 响应消息号：<%- REC_ID_NAME %> (<%- REC_ID_NUM %>) */
   recId: MESSAGE_ID = MESSAGE_ID.<%- REC_ID_NAME %>;
 
-  override Handle(req: <%- REQ_TYPE %>): <%- RES_TYPE %> {
-    let resobj = super.Handle(req)
+  override HandleSync(req: <%- REQ_TYPE %>, client?: Client): <%- RES_TYPE %> {
+    let resobj = super.HandleSync(req, client)
     if(!resobj) {
-      throw new Error('Handle not implemented: <%- TAG %>');
+      throw new Error('HandleSync not implemented: <%- TAG %>');
     }
     return resobj
   }

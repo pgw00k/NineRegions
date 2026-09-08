@@ -233,9 +233,12 @@ function genHandler(
   const resType = n.recvProto ? ctx.shortToFlat.get(n.recvProto) : "{}";
   const reqIdName = msgIdNameToNum.has(n.reqId) ? n.reqId : 'NETWORK_MESSAGE_BEGIN';
   const recIdName = msgIdNameToNum.has(n.recId) ? n.recId : 'NETWORK_MESSAGE_BEGIN';
-  const register = Boolean(n.reqProto &&  n.recvProto);
+  const register = Boolean(n.reqProto && n.recvProto);
   
-  if (!register) return { base, className: base, reqIdName: '', register: false };
+  if (!register) {
+    // console.log(`${base} not registered, n.reqProto=${n.reqProto}, n.recvProto=${n.recvProto}`);
+    // return { base, className: base, reqIdName: '', register: false };
+  }
 
   const reqIdNum = msgIdNameToNum.get(reqIdName)!;
   const recIdNum = msgIdNameToNum.get(recIdName)!;
@@ -251,7 +254,7 @@ function genHandler(
     REC_ID_NUM: String(recIdNum),
     CLASS_NAME: base,
   });
-  return { base, className: base, reqIdName, register: true, content: content.endsWith('\n') ? content : content + '\n' };
+  return { base, className: base, reqIdName, register, content: content.endsWith('\n') ? content : content + '\n' };
 }
 
 // ---------------------------------------------------------------------------
@@ -313,7 +316,7 @@ function main(): void {
   const msgIdNameToNum = parseMessageIdEnum(messageIdFile);
   const forceReplace = true;
 
-  // ① 生成处理器文件（已存在则跳过，保留手写 Handle）与 Controller 注册数据
+  // ① 生成处理器文件
   fs.mkdirSync(msgOutDir, { recursive: true });
   const handlers: HandlerResult[] = [];
   let created = 0;
@@ -321,7 +324,8 @@ function main(): void {
   for (const { base, n } of nets) {
     const h = genHandler(n, base, ctx, msgIdNameToNum, scriptDir);
     handlers.push(h);
-    if (h.register && h.content) {
+    // 有模板的都写入
+    if (h.content) {
       const file = path.join(msgOutDir, `${h.className}.ts`);
       if (!fs.existsSync(file) || forceReplace) {
         fs.writeFileSync(file, h.content, 'utf-8');

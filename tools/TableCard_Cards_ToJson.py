@@ -13,6 +13,13 @@ import json
 import os
 import re
 
+try:
+    from openpyxl import Workbook
+    from openpyxl.styles import Font
+except ImportError:  # pragma: no cover
+    Workbook = None
+    Font = None
+
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEFAULT_LUA_TABLE = os.path.join(
@@ -24,6 +31,7 @@ DEFAULT_META_FILE = os.path.join(
 DEFAULT_ID_TO_STRING = os.path.join(PROJECT_ROOT, "LUA", "Table", "idToString.json")
 DEFAULT_OUTPUT_DIR = os.path.join(PROJECT_ROOT, "data")
 DEFAULT_OUTPUT_NAME = "Cards.json"
+DEFAULT_OUTPUT_EXCEL_NAME = "Cards.xlsx"
 
 # CardsDefine field schema: (name, meta-type) in LUA tuple order.
 # Only string-typed fields need idToString.json resolution; boolean fields use
@@ -222,7 +230,7 @@ def parse_cards(lua_path):
 
 
 def convert(lua_table, meta_fields, id_to_string, output_path):
-    """Run the conversion and return (card_count, mismatches)."""
+    """Run the conversion and return (result, mismatches)."""
     field_names = [name for name, _, _ in meta_fields]
     expected = len(field_names)
 
@@ -273,24 +281,66 @@ def convert(lua_table, meta_fields, id_to_string, output_path):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as fh:
         json.dump(result, fh, ensure_ascii=False, indent=2)
-    return len(result), mismatches
+    return result, mismatches
+
+
+def write_cards_excel(result, meta_fields, excel_path):
+    """Write the ID->card dict into a .xlsx workbook, one row per card.
+
+    Columns follow the CardsDefine field order. Array-typed fields are written
+    as JSON array strings so the whole row stays lossless.
+    """
+    if Workbook is None:
+        raise SystemExit(
+            "excel export requested but 'openpyxl' is not installed; "
+            "run: python -m pip install openpyxl"
+        )
+
+    field_names = [name for name, _, _ in meta_fields]
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Cards"
+    ws.append(field_names)
+    header_font = Font(bold=True)
+    for cell in ws[1]:
+        cell.font = header_font
+
+    for key in sorted(result, key=lambda k: int(k)):
+        card = result[key]
+        row = []
+        for name in field_names:
+            value = card.get(name)
+            if isinstance(value, list):
+                row.append(json.dumps(value, ensure_ascii=False, separators=(",", ":")))
+            elif value is None:
+                row.append("")
+            else:
+                row.append(value)
+        ws.append(row)
+
+    ws.freeze_panes = "A2"
+    wb.save(excel_path)
+    return len(result)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Convert TableCard_Cards.lua into Cards.json"
+        description="Convert TableCard_Cards.lua into Cards.json and Cards.xlsx"
     )
     parser.add_argument("--lua", default=DEFAULT_LUA_TABLE)
     parser.add_argument("--meta", default=DEFAULT_META_FILE)
     parser.add_argument("--idToString", default=DEFAULT_ID_TO_STRING)
     parser.add_argument("--outDir", default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--outName", default=DEFAULT_OUTPUT_NAME)
+    parser.add_argument("--outExcelName", default=DEFAULT_OUTPUT_EXCEL_NAME)
     args = parser.parse_args()
 
     lua_table = args.lua
     meta_file = args.meta
     id_to_string_path = args.idToString
     output_path = os.path.join(args.outDir, args.outName)
+    excel_path = os.path.join(args.outDir, args.outExcelName)
 
     for path in (lua_table, meta_file, id_to_string_path):
         if not os.path.isfile(path):
@@ -302,9 +352,13 @@ def main():
     id_to_string = load_id_to_string(id_to_string_path)
     print("idToString entries:", len(id_to_string))
 
-    card_count, mismatches = convert(lua_table, meta_fields, id_to_string, output_path)
-    print("cards written: {}{}".format(card_count, " (field-count mismatches: {})".format(mismatches) if mismatches else ""))
+    result, mismatches = convert(lua_table, meta_fields, id_to_string, output_path)
+    print("cards written: {}{}".format(len(result), " (field-count mismatches: {})".format(mismatches) if mismatches else ""))
     print("output: " + output_path)
+
+    excel_count = write_cards_excel(result, meta_fields, excel_path)
+    print("excel rows written: " + str(excel_count))
+    print("output: " + excel_path)
 
 
 if __name__ == "__main__":
