@@ -21,8 +21,8 @@ export class NetMsg_EnterGame extends MessageBase<EnterGameRequest, EnterGameRes
   /** 响应消息号：ENTER_GAME_REP (10002) */
   recId: MESSAGE_ID = MESSAGE_ID.ENTER_GAME_REP;
 
-  override HandleSync(req: EnterGameRequest, client?: Client): EnterGameResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: EnterGameRequest, client?: Client, uid?: string, token?: string,exData?:any): EnterGameResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_EnterGame');
     }

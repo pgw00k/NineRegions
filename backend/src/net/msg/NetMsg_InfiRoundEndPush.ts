@@ -20,8 +20,8 @@ export class NetMsg_InfiRoundEndPush extends MessageBase<{}, InfiRoundEndPush> {
   /** 响应消息号：PUSH_INFI_ROUND_END (15021) */
   recId: MESSAGE_ID = MESSAGE_ID.PUSH_INFI_ROUND_END;
 
-  override HandleSync(req: {}, client?: Client): InfiRoundEndPush {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): InfiRoundEndPush {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_RoundEnd');
     }

@@ -14,7 +14,7 @@ export class UserLibraryService extends BaseRepositoryTemplate<UserLibrary> {
         UserLibraryService.Instance = this;
     }
 
-    GetByUID(sdkid:string): Promise<UserLibrary | null> {
+    GetBySdkID(sdkid:string): Promise<UserLibrary | null> {
         return this._Repository.findOne({
             where: { sdkid }
         });

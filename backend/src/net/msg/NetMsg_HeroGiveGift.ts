@@ -21,8 +21,8 @@ export class NetMsg_HeroGiveGift extends MessageBase<HeroGiveGiftRequest, HeroGi
   /** 响应消息号：HERO_GIVE_GIFT_REP (10263) */
   recId: MESSAGE_ID = MESSAGE_ID.HERO_GIVE_GIFT_REP;
 
-  override HandleSync(req: HeroGiveGiftRequest, client?: Client): HeroGiveGiftResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: HeroGiveGiftRequest, client?: Client, uid?: string, token?: string,exData?:any): HeroGiveGiftResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: HeroGiveGift');
     }

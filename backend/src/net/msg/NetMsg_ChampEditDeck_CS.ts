@@ -21,8 +21,8 @@ export class NetMsg_ChampEditDeck_CS extends MessageBase<ChampEditDeckRequest, C
   /** 响应消息号：CHAMP_EDIT_DECK_REP (10411) */
   recId: MESSAGE_ID = MESSAGE_ID.CHAMP_EDIT_DECK_REP;
 
-  override HandleSync(req: ChampEditDeckRequest, client?: Client): ChampEditDeckResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ChampEditDeckRequest, client?: Client, uid?: string, token?: string,exData?:any): ChampEditDeckResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ChampEditDeck_CS');
     }

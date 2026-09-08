@@ -21,8 +21,8 @@ export class NetMsg_InfiSelEvent extends MessageBase<InfiSelectEventRequest, Inf
   /** 响应消息号：INFI_SELECT_EVENT_REP (10087) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_EVENT_REP;
 
-  override HandleSync(req: InfiSelectEventRequest, client?: Client): InfiSelectEventResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiSelectEventRequest, client?: Client, uid?: string, token?: string,exData?:any): InfiSelectEventResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_SelectEvent');
     }

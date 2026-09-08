@@ -20,8 +20,8 @@ export class NetMsg_Pay_SN extends MessageBase<{}, PayResponse> {
   /** 响应消息号：PAY_REP (10380) */
   recId: MESSAGE_ID = MESSAGE_ID.PAY_REP;
 
-  override HandleSync(req: {}, client?: Client): PayResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): PayResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_Pay_SN');
     }

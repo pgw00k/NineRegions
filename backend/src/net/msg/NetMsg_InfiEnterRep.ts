@@ -20,8 +20,8 @@ export class NetMsg_InfiEnterRep extends MessageBase<{}, InfiEnterResponse> {
   /** 响应消息号：INFI_ENTER_REP (10081) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_ENTER_REP;
 
-  override HandleSync(req: {}, client?: Client): InfiEnterResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): InfiEnterResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_EnterRep');
     }

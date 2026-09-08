@@ -20,8 +20,8 @@ export class NetMsg_ActivityEventData_PUSH extends MessageBase<{}, ActivityEvent
   /** 响应消息号：ACT_EVENT_DATA_PUSH (15049) */
   recId: MESSAGE_ID = MESSAGE_ID.ACT_EVENT_DATA_PUSH;
 
-  override HandleSync(req: {}, client?: Client): ActivityEventDataPush {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): ActivityEventDataPush {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ActivityEventData_PUSH');
     }

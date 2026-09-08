@@ -21,8 +21,8 @@ export class NetMsg_MissionReward extends MessageBase<TaskRewardRequest, TaskRew
   /** 响应消息号：TASK_REWARD_REP (10031) */
   recId: MESSAGE_ID = MESSAGE_ID.TASK_REWARD_REP;
 
-  override HandleSync(req: TaskRewardRequest, client?: Client): TaskRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: TaskRewardRequest, client?: Client, uid?: string, token?: string,exData?:any): TaskRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Mission_Reward');
     }

@@ -21,8 +21,8 @@ export class NetMsg_UnloadExpressionShortcut_CS extends MessageBase<UnloadExpres
   /** 响应消息号：UNLOAD_EXPRESSION_SHORTCUT_RSP (10359) */
   recId: MESSAGE_ID = MESSAGE_ID.UNLOAD_EXPRESSION_SHORTCUT_RSP;
 
-  override HandleSync(req: UnloadExpressionShortcutReq, client?: Client): UnloadExpressionShortcutRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: UnloadExpressionShortcutReq, client?: Client, uid?: string, token?: string,exData?:any): UnloadExpressionShortcutRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_UnloadExpressionShortcut');
     }

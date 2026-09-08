@@ -21,8 +21,8 @@ export class NetMsg_SetDefaultExpression_CS extends MessageBase<SetDefaultShortc
   /** 响应消息号：SET_DEFAULT_SHORTCUT_RSP (10357) */
   recId: MESSAGE_ID = MESSAGE_ID.SET_DEFAULT_SHORTCUT_RSP;
 
-  override HandleSync(req: SetDefaultShortcutReq, client?: Client): SetDefaultShortcutRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: SetDefaultShortcutReq, client?: Client, uid?: string, token?: string,exData?:any): SetDefaultShortcutRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_SetDefaultExpression');
     }

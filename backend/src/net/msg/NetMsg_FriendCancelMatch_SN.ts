@@ -20,8 +20,8 @@ export class NetMsg_FriendCancelMatch_SN extends MessageBase<{}, FriendOpStatusN
   /** 响应消息号：FRIEND_OP_STATUS_NTF (15037) */
   recId: MESSAGE_ID = MESSAGE_ID.FRIEND_OP_STATUS_NTF;
 
-  override HandleSync(req: {}, client?: Client): FriendOpStatusNtf {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): FriendOpStatusNtf {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: FriendCancelMatch_SN');
     }

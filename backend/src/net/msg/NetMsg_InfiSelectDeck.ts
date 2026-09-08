@@ -21,8 +21,8 @@ export class NetMsg_InfiSelectDeck extends MessageBase<InfiSelectDeckRequest, In
   /** 响应消息号：INFI_SELECT_DECK_REP (10106) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_DECK_REP;
 
-  override HandleSync(req: InfiSelectDeckRequest, client?: Client): InfiSelectDeckResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiSelectDeckRequest, client?: Client, uid?: string, token?: string,exData?:any): InfiSelectDeckResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_SelectDeck');
     }

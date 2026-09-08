@@ -21,8 +21,8 @@ export class NetMsg_GetQuestion extends MessageBase<GetQuestionnaireRequest, Get
   /** 响应消息号：GET_QUESTION_REP (10221) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_QUESTION_REP;
 
-  override HandleSync(req: GetQuestionnaireRequest, client?: Client): GetQuestionnaireResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetQuestionnaireRequest, client?: Client, uid?: string, token?: string,exData?:any): GetQuestionnaireResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_GetQuestion');
     }

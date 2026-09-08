@@ -16,13 +16,8 @@ import { Buffer } from 'buffer';
 import { C2S_HASH, C2S_T1, C2S_T2INV } from './c2s_tables';
 import { MESSAGE_ID } from 'mc-local-share';
 import { Logger } from '../core/Logger';
+import { DecodedC2S, Envelope } from '../messages/types';
 
-
-export interface DecodedC2S {
-  msgId: number;
-  order: number;
-  body: Buffer;
-}
 
 function keybe(key: number): number[] {
   const u = key >>> 0;
@@ -89,15 +84,21 @@ function tryDecrypt(ws: Buffer, fast: boolean): DecodedC2S | null {
               if (bl < 2 || bl > maxBl) continue;
               const valid = 10 + (bl - 2);
               if (valid > n) continue;
-              // 防误报: pad 区至少 8B 全零 + msgId 白名单
-              if (n - valid < 8) continue;
+              // 防误报: 信封结构校验（uid 数字串）+ 尾零校验 + msgId 白名单。
+              // 不要求最小 pad——客户端小帧（如 EditDeck 填 pad=2）也会正确解密。
+              const env = parseEnvelope(plain, valid);
+              if (!env) continue;
               if (!padZero(plain, valid)) continue;
               const msgId = plain.readUInt16LE(8);
               if (!MESSAGE_ID[msgId]) {
                 Logger.LogWarn('decryptC2S', `msgId(${msgId}) is not a MESSAGE_ID`);
                 continue;
               };
-              return { msgId, order: plain.readUInt32LE(4), body: plain.subarray(10, valid) };
+              return {
+                header:{size:n,order:plain.readUInt32LE(4),msgId},
+                envelope:env,
+                body:plain.subarray(10, valid)
+              };
             }
           }
         }
@@ -144,14 +145,19 @@ function tryDecrypt(ws: Buffer, fast: boolean): DecodedC2S | null {
               const plain = fullDecryptC2S(ws, key);
               if (plain.readUInt32LE(0) !== bl) continue;
               const valid = 10 + (bl - 2);
-              if (n - valid < 8) continue;
+              const env = parseEnvelope(plain, valid);
+              if (!env) continue;
               if (!padZero(plain, valid)) continue;
               const msgId = plain.readUInt16LE(8);
               if (!MESSAGE_ID[msgId]) {
                 Logger.LogWarn('decryptC2S', `msgId(${msgId}) is not a MESSAGE_ID`);
                 continue;
               };
-              return { msgId, order: plain.readUInt32LE(4), body: plain.subarray(10, valid) };
+              return {
+                header:{size:n,order:plain.readUInt32LE(4),msgId},
+                envelope:env,
+                body:plain.subarray(10, valid)
+              };
             }
           }
         }
@@ -166,4 +172,40 @@ function padZero(plain: Buffer, valid: number): boolean {
     if (plain[i] !== 0) return false;
   }
   return true;
+}
+
+/**
+ * 信封解析（C2S 帧业务体的通用形态，见 stripNetBitStream）：
+ *   body = plain.subarray(10, valid)；
+ *   信封 = [u16 uidLen][uid ASCII 数字串][u16 tokenLen][token](可选)，其后可接 [u32 protoLen][proto]。
+ *   仅 uid（心跳）或 uid+token 也合法。
+ * 不满足信封结构返回 null。这样在大量候选 key 中唯一锁定真实 key，
+ * 并替代原先“最小 pad≥8”的防误报门槛（该门槛会误杀 pad<8 的正确小帧）。
+ */
+function parseEnvelope(plain: Buffer, valid: number): Envelope | null {
+  let off = 10;
+  if (valid - off < 2) return null;
+  const uidLen = plain.readUInt16LE(off);
+  off += 2;
+  if (uidLen < 1 || off + uidLen > valid) return null;
+  for (let i = 0; i < uidLen; i++) {
+    const c = plain[off + i];
+    if (c < 0x30 || c > 0x39) return null; // uid 必须为 ASCII 数字串
+  }
+  const uid = plain.toString('ascii', off, off + uidLen);
+  off += uidLen;
+  if (off === valid) return { uid }; // 仅 uid（心跳）
+  if (valid - off < 4) return null; // 还需 u16 tokenLen，或 u32 protoLen 头
+  const tokenLen = plain.readUInt16LE(off);
+  if (tokenLen > 0 && off + 2 + tokenLen <= valid) {
+    // 有 token 段
+    const token = plain.toString('ascii', off + 2, off + 2 + tokenLen);
+    off += 2 + tokenLen;
+    if (off === valid) return { uid, token }; // 仅 uid + token
+    if (valid - off >= 4) return { uid, token }; // uid + token + proto
+    return null;
+  }
+  // 无 token：off 处已是 protoLen(u32)，余长需≥4
+  if (valid - off >= 4) return { uid };
+  return null;
 }

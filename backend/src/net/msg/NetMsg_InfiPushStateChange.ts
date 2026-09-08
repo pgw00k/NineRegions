@@ -20,8 +20,8 @@ export class NetMsg_InfiPushStateChange extends MessageBase<{}, InfiStateChangeP
   /** 响应消息号：INFI_STATE_CHANGE_PUSH (15015) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_STATE_CHANGE_PUSH;
 
-  override HandleSync(req: {}, client?: Client): InfiStateChangePush {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): InfiStateChangePush {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_PushStateChange');
     }

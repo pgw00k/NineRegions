@@ -21,8 +21,8 @@ export class NetMsg_ChampBuyTicket_CS extends MessageBase<ChampBuyTicketRequest,
   /** 响应消息号：CHAMP_BUYTICKET_REP (10403) */
   recId: MESSAGE_ID = MESSAGE_ID.CHAMP_BUYTICKET_REP;
 
-  override HandleSync(req: ChampBuyTicketRequest, client?: Client): ChampBuyTicketResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ChampBuyTicketRequest, client?: Client, uid?: string, token?: string,exData?:any): ChampBuyTicketResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ChampBuyTicket_CS');
     }

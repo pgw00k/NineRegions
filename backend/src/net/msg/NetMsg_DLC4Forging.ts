@@ -21,8 +21,8 @@ export class NetMsg_DLC4Forging extends MessageBase<DLC4ForgingReq, DLC4ForgingR
   /** 响应消息号：DLC4_FORGING_REP (10483) */
   recId: MESSAGE_ID = MESSAGE_ID.DLC4_FORGING_REP;
 
-  override HandleSync(req: DLC4ForgingReq, client?: Client): DLC4ForgingRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: DLC4ForgingReq, client?: Client, uid?: string, token?: string,exData?:any): DLC4ForgingRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_DLC4Forging');
     }

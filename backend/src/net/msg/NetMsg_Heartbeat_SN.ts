@@ -20,8 +20,8 @@ export class NetMsg_Heartbeat_SN extends MessageBase<{}, HeartbeatRep> {
   /** 响应消息号：HEARTBEAT_REP (10004) */
   recId: MESSAGE_ID = MESSAGE_ID.HEARTBEAT_REP;
 
-  override HandleSync(req: {}, client?: Client): HeartbeatRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): HeartbeatRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_SN_Heartbeat');
     }

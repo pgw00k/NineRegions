@@ -20,8 +20,8 @@ export class NetMsg_PushHeroInfo extends MessageBase<{}, PushHeroSimpleInfo> {
   /** 响应消息号：PUSH_HERO_INFO (15023) */
   recId: MESSAGE_ID = MESSAGE_ID.PUSH_HERO_INFO;
 
-  override HandleSync(req: {}, client?: Client): PushHeroSimpleInfo {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): PushHeroSimpleInfo {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: PushHeroInfo');
     }

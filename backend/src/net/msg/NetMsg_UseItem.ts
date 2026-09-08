@@ -21,8 +21,8 @@ export class NetMsg_UseItem extends MessageBase<UseItemRequest, UseItemResponse>
   /** 响应消息号：USE_ITEM_REP (10046) */
   recId: MESSAGE_ID = MESSAGE_ID.USE_ITEM_REP;
 
-  override HandleSync(req: UseItemRequest, client?: Client): UseItemResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: UseItemRequest, client?: Client, uid?: string, token?: string,exData?:any): UseItemResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_UseItem');
     }

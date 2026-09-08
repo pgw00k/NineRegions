@@ -20,8 +20,8 @@ export class NetMsg_MainTownReconnect extends MessageBase<{}, LogicReconnectionR
   /** 响应消息号：LOGIC_RECONNECTION_REP (10012) */
   recId: MESSAGE_ID = MESSAGE_ID.LOGIC_RECONNECTION_REP;
 
-  override HandleSync(req: {}, client?: Client): LogicReconnectionResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): LogicReconnectionResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_MainTownReconnect');
     }

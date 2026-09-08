@@ -21,8 +21,8 @@ export class NetMsg_BattleGetEmojiList_CS extends MessageBase<QueryExpressionSho
   /** 响应消息号：QUERY_EXPRESSION_SHORECUT_RSP (10375) */
   recId: MESSAGE_ID = MESSAGE_ID.QUERY_EXPRESSION_SHORECUT_RSP;
 
-  override HandleSync(req: QueryExpressionShortcutReq, client?: Client): QueryExpressionShortcutRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: QueryExpressionShortcutReq, client?: Client, uid?: string, token?: string,exData?:any): QueryExpressionShortcutRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_BattleGetEmojiList');
     }

@@ -21,8 +21,8 @@ export class NetMsg_ChangeDeckCardBack extends MessageBase<ChangeDeckCardBackReq
   /** 响应消息号：CHANGE_DECK_CARDBACK_REP (10134) */
   recId: MESSAGE_ID = MESSAGE_ID.CHANGE_DECK_CARDBACK_REP;
 
-  override HandleSync(req: ChangeDeckCardBackRequest, client?: Client): ChangeDeckCardBackResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ChangeDeckCardBackRequest, client?: Client, uid?: string, token?: string,exData?:any): ChangeDeckCardBackResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ChangeDeckCardBack');
     }

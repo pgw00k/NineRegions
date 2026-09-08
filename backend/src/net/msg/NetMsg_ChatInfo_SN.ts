@@ -20,8 +20,8 @@ export class NetMsg_ChatInfo_SN extends MessageBase<{}, ChatInfoNtf> {
   /** 响应消息号：CHAT_INFO_NTF (15028) */
   recId: MESSAGE_ID = MESSAGE_ID.CHAT_INFO_NTF;
 
-  override HandleSync(req: {}, client?: Client): ChatInfoNtf {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): ChatInfoNtf {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ChatInfo_SN');
     }

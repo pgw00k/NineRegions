@@ -13,11 +13,10 @@
 import { Buffer } from 'buffer';
 import { get, decodeMessage, MESSAGE_ID } from 'mc-local-share';
 import { Logger } from '../core/Logger';
-import { S2CFrame } from './types';
+import { DecodedC2S, S2CFrame } from './types';
 import { MessageControllerMod } from '../net/msg_mod/MessageControllerMod';
 import { ConnManager } from '../net/ConnManager';
 import { Client } from '../net/Client';
-import { UserStateStore } from '../state/UserState';
 import { MESSAGE_SET_CONNECT } from './MESSAGE_ID.SET';
 
 export class MessageRouter {
@@ -38,13 +37,17 @@ export class MessageRouter {
    * @param msgId 解密后的请求消息号（reqId）。
    * @param order C2S 的 order；应答帧使用 order + 1。
    * @param body  解密后、含 NetBitStream 前缀的业务体。
+   * @param uid   解密阶段已从信封解析出的用户 ID（可省：缺省时尝试从业务体解析）。
    * @returns 要下发的 S2C 帧（0 或 1 条）。
    */
-  route(connId: string, msgId: number, order: number, body: Buffer): Promise<S2CFrame[]> | S2CFrame[] {
+  route(connId: string, frame: DecodedC2S): Promise<S2CFrame[]> | S2CFrame[] {
     // 定位当前客户端上下文；若首条消息已带 uid，则绑定到 Client。
     // 该 Client 持有本次请求的应答器处理、order 记账与 S2C 帧队列（见 Client.process）。
     const client = this.conns.get(connId);
-    // this.prebindUid(connId, client, body);
+    const { msgId, order} = frame.header;
+    const {uid,token} = frame.envelope;
+    const {body} = frame;
+    this.prebindUid(connId, client, uid);
 
     // 第一层过滤：无需进入 Client 应答处理的消息（如心跳 PINGPONG）。
     // 无 protobuf、无应答器 → 直接往 Client 队列推 8B 空体
@@ -65,17 +68,6 @@ export class MessageRouter {
       try {
         // 解码业务体
         req = decodeMessage(reqSchema, stripNetBitStream(body)) as Record<string, unknown>;
-
-        // 连接请求，绑定UID
-        if (MESSAGE_SET_CONNECT[msgId]) {
-          let uid = req.uid as string;
-          if (uid){
-            this.conns.bind(connId, uid);
-            this.logger?.info('router', `[${connId}] 绑定玩家 uid=${uid}`);
-          }else{
-            this.logger?.warn('router', `[${connId}] 绑定玩家 req#${msgId} 失败: 未包含 uid`);
-          } 
-        }
       } catch (e) {
         this.logger?.warn('router', `[${connId}] 解码 req#${msgId} 失败: ${(e as Error).message}`);
         return Promise.resolve([]);
@@ -86,17 +78,16 @@ export class MessageRouter {
     // 返回待下发帧。事件驱动：请求处理完成即取帧，无定时遍历。
     // Handle 可能异步查询数据库，route 保持 Promise 透传，由 WsGateway await 后下发。
     if (!client) return Promise.resolve([]);
-    return client.process(req, msgId, order, this.controller);
+    return client.process(req, order, msgId, uid, token, this.controller);
   }
 
   /**
-   * 从首条消息的 NetBitStream 信封里提取 userID 绑到 Client（一次绑定后不再重复提取）。
-   * 这样后续每条消息都能用 `client.uid` / `ConnManager.byUidLookup` 定位玩家。
+   * 用解密阶段已解析出的 uid 绑定到 Client（一次绑定后不再重复绑定）。
+   * 这样后续每条消息都能用 `client.uid` / `ConnManager.byUidLookup` 定位玩家，
+   * 无需再对 body 作 NetBitStream 二次解析。
    */
-  private prebindUid(connId: string, client: Client | undefined, body: Buffer): void {
-    if (!client || client.uid) return;
-    const uid = UserStateStore.extractUserId(body);
-    if (!uid) return;
+  private prebindUid(connId: string, client: Client | undefined, uid?: string): void {
+    if (!client || client.uid || !uid) return;
     this.conns.bind(connId, uid);
     this.logger?.info('router', `[${connId}] 绑定玩家 uid=${uid}`);
   }

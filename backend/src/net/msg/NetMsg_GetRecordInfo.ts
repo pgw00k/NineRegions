@@ -21,8 +21,8 @@ export class NetMsg_GetRecordInfo extends MessageBase<GetRecordListRequest, GetR
   /** 响应消息号：GET_RECORDLIST_REP (10441) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_RECORDLIST_REP;
 
-  override HandleSync(req: GetRecordListRequest, client?: Client): GetRecordListResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetRecordListRequest, client?: Client, uid?: string, token?: string,exData?:any): GetRecordListResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Msg_GetRecordInfo');
     }

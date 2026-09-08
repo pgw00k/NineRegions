@@ -21,8 +21,8 @@ export class NetMsg_ReceiveGift extends MessageBase<ReceiveGiftRequest, ReceiveG
   /** 响应消息号：RECEIVE_GIFT_REP (10025) */
   recId: MESSAGE_ID = MESSAGE_ID.RECEIVE_GIFT_REP;
 
-  override HandleSync(req: ReceiveGiftRequest, client?: Client): ReceiveGiftResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ReceiveGiftRequest, client?: Client, uid?: string, token?: string,exData?:any): ReceiveGiftResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: ReceiveGift');
     }

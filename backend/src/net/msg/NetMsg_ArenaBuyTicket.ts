@@ -21,8 +21,8 @@ export class NetMsg_ArenaBuyTicket extends MessageBase<ArenaBuyTicketRequest, Ar
   /** 响应消息号：ARENA_BUY_TICKET_REP (10063) */
   recId: MESSAGE_ID = MESSAGE_ID.ARENA_BUY_TICKET_REP;
 
-  override HandleSync(req: ArenaBuyTicketRequest, client?: Client): ArenaBuyTicketResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ArenaBuyTicketRequest, client?: Client, uid?: string, token?: string,exData?:any): ArenaBuyTicketResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ArenaBuyTicket');
     }

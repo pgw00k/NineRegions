@@ -20,8 +20,8 @@ export class NetMsg_GuideRecordRep extends MessageBase<{}, GuiderUpdateResponse>
   /** 响应消息号：GUIDER_UPDATE_REP (10311) */
   recId: MESSAGE_ID = MESSAGE_ID.GUIDER_UPDATE_REP;
 
-  override HandleSync(req: {}, client?: Client): GuiderUpdateResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): GuiderUpdateResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Guide_RecordRep');
     }

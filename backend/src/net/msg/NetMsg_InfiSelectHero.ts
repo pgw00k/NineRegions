@@ -21,8 +21,8 @@ export class NetMsg_InfiSelectHero extends MessageBase<InfiSelectHeroRequest, In
   /** 响应消息号：INFI_SELECT_HERO_REP (10085) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_HERO_REP;
 
-  override HandleSync(req: InfiSelectHeroRequest, client?: Client): InfiSelectHeroResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiSelectHeroRequest, client?: Client, uid?: string, token?: string,exData?:any): InfiSelectHeroResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_SelectHero');
     }

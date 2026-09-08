@@ -20,8 +20,8 @@ export class NetMsg_InfiGetStaticDataRep extends MessageBase<{}, InfiGetStaticDa
   /** 响应消息号：INFI_GET_STATICDATA_REP (10117) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_GET_STATICDATA_REP;
 
-  override HandleSync(req: {}, client?: Client): InfiGetStaticDataRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): InfiGetStaticDataRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_GetStaticDataRep');
     }

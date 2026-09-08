@@ -19,11 +19,11 @@ export class MessageBase<REQ, RES> implements IHandle<REQ, RES>, IResponderPair 
     return undefined as RES
   }
 
-  async Handle(req: REQ, client?: Client): Promise<RES> {
-    return Promise.resolve(this.HandleSync(req, client))
+  async Handle(req: REQ, client?: Client, uid?: string, token?: string,exData?:any): Promise<RES> {
+    return Promise.resolve(this.HandleSync(req, client, uid, token,exData))
   }
 
-  HandleSync(req: REQ, client?: Client): RES {
+  HandleSync(req: REQ, client?: Client, uid?: string, token?: string,exData?:any): RES {
     return this.LoadMock(req, client)
   }
 }

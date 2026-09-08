@@ -20,8 +20,8 @@ export class NetMsg_PVECompletePush extends MessageBase<{}, PushPVEComplete> {
   /** 响应消息号：PUSH_PVECOMPLETE (15003) */
   recId: MESSAGE_ID = MESSAGE_ID.PUSH_PVECOMPLETE;
 
-  override HandleSync(req: {}, client?: Client): PushPVEComplete {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): PushPVEComplete {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_PVECompletePush');
     }

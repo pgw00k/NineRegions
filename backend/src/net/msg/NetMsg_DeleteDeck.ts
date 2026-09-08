@@ -21,8 +21,8 @@ export class NetMsg_DeleteDeck extends MessageBase<DeleteDeckRequest, DeleteDeck
   /** 响应消息号：DELETE_DECK_REP (10008) */
   recId: MESSAGE_ID = MESSAGE_ID.DELETE_DECK_REP;
 
-  override HandleSync(req: DeleteDeckRequest, client?: Client): DeleteDeckResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: DeleteDeckRequest, client?: Client, uid?: string, token?: string,exData?:any): DeleteDeckResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_DeleteDeck');
     }

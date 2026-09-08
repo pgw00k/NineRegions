@@ -20,8 +20,8 @@ export class NetMsg_RMB_PVE_SN extends MessageBase<{}, PveBuyPush> {
   /** 响应消息号：PVE_BUY_PUSH (15045) */
   recId: MESSAGE_ID = MESSAGE_ID.PVE_BUY_PUSH;
 
-  override HandleSync(req: {}, client?: Client): PveBuyPush {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): PveBuyPush {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_RMB_PVE_SN');
     }

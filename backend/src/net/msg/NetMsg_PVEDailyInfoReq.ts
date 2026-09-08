@@ -20,8 +20,8 @@ export class NetMsg_PVEDailyInfoReq extends MessageBase<GetDailyPveInfoRequest, 
   /** 响应消息号：NETWORK_MESSAGE_BEGIN (0) */
   recId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
 
-  override HandleSync(req: GetDailyPveInfoRequest, client?: Client): {} {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetDailyPveInfoRequest, client?: Client, uid?: string, token?: string,exData?:any): {} {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_PVEDailyInfoReq');
     }

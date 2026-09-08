@@ -21,8 +21,8 @@ export class NetMsg_EditDeck extends MessageBase<EditDeckRequest, EditDeckRespon
   /** 响应消息号：EDIT_DECK_REP (10006) */
   recId: MESSAGE_ID = MESSAGE_ID.EDIT_DECK_REP;
 
-  override HandleSync(req: EditDeckRequest, client?: Client): EditDeckResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: EditDeckRequest, client?: Client, uid?: string, token?: string,exData?:any): EditDeckResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_EditDeck');
     }

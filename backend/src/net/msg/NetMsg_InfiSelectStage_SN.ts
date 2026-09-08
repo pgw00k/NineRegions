@@ -20,8 +20,8 @@ export class NetMsg_InfiSelectStage_SN extends MessageBase<{}, InfiSelectStageRe
   /** 响应消息号：INFI_SELECT_STAGE_REP (10089) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_STAGE_REP;
 
-  override HandleSync(req: {}, client?: Client): InfiSelectStageResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): InfiSelectStageResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_SelectStage_SN');
     }

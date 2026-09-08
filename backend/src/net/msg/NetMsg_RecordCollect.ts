@@ -21,8 +21,8 @@ export class NetMsg_RecordCollect extends MessageBase<FavorRecordRequest, FavorR
   /** 响应消息号：FAVOR_RECORD_REP (10443) */
   recId: MESSAGE_ID = MESSAGE_ID.FAVOR_RECORD_REP;
 
-  override HandleSync(req: FavorRecordRequest, client?: Client): FavorRecordResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: FavorRecordRequest, client?: Client, uid?: string, token?: string,exData?:any): FavorRecordResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Msg_RecordCollect');
     }

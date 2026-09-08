@@ -20,8 +20,8 @@ export class NetMsg_SeasonRewardRep extends MessageBase<{}, SeasonRewardResponse
   /** 响应消息号：SEASON_REWARD_REP (10018) */
   recId: MESSAGE_ID = MESSAGE_ID.SEASON_REWARD_REP;
 
-  override HandleSync(req: {}, client?: Client): SeasonRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): SeasonRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_LadderSeasonRewardRep');
     }

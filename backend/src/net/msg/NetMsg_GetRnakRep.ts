@@ -20,8 +20,8 @@ export class NetMsg_GetRnakRep extends MessageBase<{}, GetRankResponse> {
   /** 响应消息号：GET_RANK_REP (10241) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_RANK_REP;
 
-  override HandleSync(req: {}, client?: Client): GetRankResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): GetRankResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: GetRank');
     }

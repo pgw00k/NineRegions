@@ -20,8 +20,8 @@ export class NetMsg_FirstPayPush extends MessageBase<{}, FirstChargePush> {
   /** 响应消息号：FIRSTCHARGE_PUSH (15047) */
   recId: MESSAGE_ID = MESSAGE_ID.FIRSTCHARGE_PUSH;
 
-  override HandleSync(req: {}, client?: Client): FirstChargePush {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): FirstChargePush {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_FirstPayPush');
     }

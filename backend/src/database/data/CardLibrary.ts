@@ -2,13 +2,13 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique }
 import { Player } from "./Player";
 
 @Entity()
-@Unique('UQ_PLAYER_CARD', ['pid', 'cid'])
+@Unique('UQ_PLAYER_CARD', ['uid', 'cid'])
 export class CardLibrary {
     @PrimaryGeneratedColumn({ type: 'bigint', comment: '牌库牌型ID，每位玩家牌库新增的一种牌型会新增一行' })
     id: number;
 
     @Column({ type:'bigint',comment:'关联玩家ID' })
-    pid: number;
+    uid: number;
 
     @Column({ type:'bigint',comment:'牌型ID' })
     cid: number;
@@ -18,6 +18,6 @@ export class CardLibrary {
 
     // ---------- ORM 关联（仅用于连表查询，不用于更新） ----------
     @ManyToOne(() => Player, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'pid' })
+    @JoinColumn({ name: 'uid' })
     player: Player;
 }

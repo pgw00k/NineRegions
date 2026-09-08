@@ -21,8 +21,8 @@ export class NetMsg_GetShopInfo extends MessageBase<GetShopInfoRequest, GetShopI
   /** 响应消息号：GET_SHOP_INFO_REP (10211) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_SHOP_INFO_REP;
 
-  override HandleSync(req: GetShopInfoRequest, client?: Client): GetShopInfoResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetShopInfoRequest, client?: Client, uid?: string, token?: string,exData?:any): GetShopInfoResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: GetShopInfo');
     }

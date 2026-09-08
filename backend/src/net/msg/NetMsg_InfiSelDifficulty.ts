@@ -21,8 +21,8 @@ export class NetMsg_InfiSelDifficulty extends MessageBase<InfiSelectDifficultyRe
   /** 响应消息号：INFI_SELECT_DIFFICULTY_REP (10115) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_SELECT_DIFFICULTY_REP;
 
-  override HandleSync(req: InfiSelectDifficultyReq, client?: Client): InfiSelectDifficultyRep {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiSelectDifficultyReq, client?: Client, uid?: string, token?: string,exData?:any): InfiSelectDifficultyRep {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_SelectDifficulty');
     }

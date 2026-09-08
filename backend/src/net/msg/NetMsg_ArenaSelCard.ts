@@ -21,8 +21,8 @@ export class NetMsg_ArenaSelCard extends MessageBase<ArenaSelectCardsRequest, Ar
   /** 响应消息号：ARENA_SELECT_CARDS_REP (10067) */
   recId: MESSAGE_ID = MESSAGE_ID.ARENA_SELECT_CARDS_REP;
 
-  override HandleSync(req: ArenaSelectCardsRequest, client?: Client): ArenaSelectCardsResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: ArenaSelectCardsRequest, client?: Client, uid?: string, token?: string,exData?:any): ArenaSelectCardsResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ArenaSelCard');
     }

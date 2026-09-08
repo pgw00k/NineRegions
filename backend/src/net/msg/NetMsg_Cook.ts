@@ -21,8 +21,8 @@ export class NetMsg_Cook extends MessageBase<CookRequest, CookResponse> {
   /** 响应消息号：COOK_REP (10303) */
   recId: MESSAGE_ID = MESSAGE_ID.COOK_REP;
 
-  override HandleSync(req: CookRequest, client?: Client): CookResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: CookRequest, client?: Client, uid?: string, token?: string,exData?:any): CookResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMag_Cook');
     }

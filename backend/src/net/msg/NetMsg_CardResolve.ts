@@ -21,8 +21,8 @@ export class NetMsg_CardResolve extends MessageBase<CardResolveRequest, CardReso
   /** 响应消息号：CARD_RESOLVE_REP (10042) */
   recId: MESSAGE_ID = MESSAGE_ID.CARD_RESOLVE_REP;
 
-  override HandleSync(req: CardResolveRequest, client?: Client): CardResolveResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: CardResolveRequest, client?: Client, uid?: string, token?: string,exData?:any): CardResolveResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_CardResolve');
     }

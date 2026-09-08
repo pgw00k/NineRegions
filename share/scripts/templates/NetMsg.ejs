@@ -21,8 +21,8 @@ export class <%- CLASS_NAME %> extends MessageBase<<%- REQ_TYPE %>, <%- RES_TYPE
   /** 响应消息号：<%- REC_ID_NAME %> (<%- REC_ID_NUM %>) */
   recId: MESSAGE_ID = MESSAGE_ID.<%- REC_ID_NAME %>;
 
-  override HandleSync(req: <%- REQ_TYPE %>, client?: Client): <%- RES_TYPE %> {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: <%- REQ_TYPE %>, client?: Client, uid?: string, token?: string,exData?:any): <%- RES_TYPE %> {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: <%- TAG %>');
     }

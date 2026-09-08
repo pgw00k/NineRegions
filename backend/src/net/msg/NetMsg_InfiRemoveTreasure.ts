@@ -21,8 +21,8 @@ export class NetMsg_InfiRemoveTreasure extends MessageBase<InfiDelSpellEquipRequ
   /** 响应消息号：INFI_DEL_SPELLEQUIP_REP (10109) */
   recId: MESSAGE_ID = MESSAGE_ID.INFI_DEL_SPELLEQUIP_REP;
 
-  override HandleSync(req: InfiDelSpellEquipRequest, client?: Client): InfiDelSpellEquipResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: InfiDelSpellEquipRequest, client?: Client, uid?: string, token?: string,exData?:any): InfiDelSpellEquipResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Infi_RemoveTreasure');
     }

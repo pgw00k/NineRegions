@@ -21,8 +21,8 @@ export class NetMsg_ActivityGetTradeReward_CS extends MessageBase<GetActivityTra
   /** 响应消息号：GET_ACTIVITY_TRADE_REWARD_REP (10209) */
   recId: MESSAGE_ID = MESSAGE_ID.GET_ACTIVITY_TRADE_REWARD_REP;
 
-  override HandleSync(req: GetActivityTradeRewardRequest, client?: Client): GetActivityTradeRewardResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: GetActivityTradeRewardRequest, client?: Client, uid?: string, token?: string,exData?:any): GetActivityTradeRewardResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_ActivityGetTradeReward_CS');
     }

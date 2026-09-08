@@ -20,8 +20,8 @@ export class NetMsg_QueryUserTitelInfo_SN extends MessageBase<{}, QueryUserTitel
   /** 响应消息号：QUERY_USERTITLE_INFO_RSP (10371) */
   recId: MESSAGE_ID = MESSAGE_ID.QUERY_USERTITLE_INFO_RSP;
 
-  override HandleSync(req: {}, client?: Client): QueryUserTitelInfoRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): QueryUserTitelInfoRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_QueryUserTitelInfo_SN');
     }

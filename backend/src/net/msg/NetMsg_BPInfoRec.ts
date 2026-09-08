@@ -20,8 +20,8 @@ export class NetMsg_BPInfoRec extends MessageBase<{}, BattlePassResponse> {
   /** 响应消息号：BATTLEPASS_REP (10281) */
   recId: MESSAGE_ID = MESSAGE_ID.BATTLEPASS_REP;
 
-  override HandleSync(req: {}, client?: Client): BattlePassResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): BattlePassResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: BP_RecInfo');
     }

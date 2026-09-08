@@ -20,8 +20,8 @@ export class NetMsg_MissionInfoRec extends MessageBase<{}, TaskDataResponse> {
   /** 响应消息号：TASK_DATA_REP (10059) */
   recId: MESSAGE_ID = MESSAGE_ID.TASK_DATA_REP;
 
-  override HandleSync(req: {}, client?: Client): TaskDataResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): TaskDataResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: Mission_InfoRec');
     }

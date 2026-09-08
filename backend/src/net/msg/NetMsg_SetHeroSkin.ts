@@ -21,8 +21,8 @@ export class NetMsg_SetHeroSkin extends MessageBase<SetHeroSkinRequest, SetHeroS
   /** 响应消息号：SET_HERO_SKIN_REQ (10266) */
   recId: MESSAGE_ID = MESSAGE_ID.SET_HERO_SKIN_REQ;
 
-  override HandleSync(req: SetHeroSkinRequest, client?: Client): SetHeroSkinResponse {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: SetHeroSkinRequest, client?: Client, uid?: string, token?: string,exData?:any): SetHeroSkinResponse {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: SetHeroSkin');
     }

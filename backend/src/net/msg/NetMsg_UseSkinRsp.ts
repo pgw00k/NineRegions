@@ -20,8 +20,8 @@ export class NetMsg_UseSkinRsp extends MessageBase<{}, UseSkinRsp> {
   /** 响应消息号：USE_SKIN_RSP (10395) */
   recId: MESSAGE_ID = MESSAGE_ID.USE_SKIN_RSP;
 
-  override HandleSync(req: {}, client?: Client): UseSkinRsp {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): UseSkinRsp {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_UseSkin');
     }

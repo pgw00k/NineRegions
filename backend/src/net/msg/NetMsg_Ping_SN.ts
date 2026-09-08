@@ -19,8 +19,8 @@ export class NetMsg_Ping_SN extends MessageBase<{}, {}> {
   /** 响应消息号：PINGPONG (7) */
   recId: MESSAGE_ID = MESSAGE_ID.PINGPONG;
 
-  override HandleSync(req: {}, client?: Client): {} {
-    let resobj = super.HandleSync(req, client)
+  override HandleSync(req: {}, client?: Client, uid?: string, token?: string,exData?:any): {} {
+    let resobj = super.HandleSync(req, client, uid, token,exData)
     if(!resobj) {
       throw new Error('HandleSync not implemented: NetMsg_Ping_SN');
     }
