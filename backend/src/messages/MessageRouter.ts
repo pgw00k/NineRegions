@@ -39,11 +39,11 @@ export class MessageRouter {
    * @param body  解密后、含 NetBitStream 前缀的业务体。
    * @returns 要下发的 S2C 帧（0 或 1 条）。
    */
-  route(connId: string, msgId: number, order: number, body: Buffer): S2CFrame[] {
+  route(connId: string, msgId: number, order: number, body: Buffer): Promise<S2CFrame[]> | S2CFrame[] {
     // 定位当前客户端上下文；若首条消息已带 uid，则绑定到 Client。
     // 该 Client 持有本次请求的应答器处理、order 记账与 S2C 帧队列（见 Client.process）。
     const client = this.conns.get(connId);
-    this.prebindUid(connId, client, body);
+    // this.prebindUid(connId, client, body);
 
     // 第一层过滤：无需进入 Client 应答处理的消息（如心跳 PINGPONG）。
     // 无 protobuf、无应答器 → 直接往 Client 队列推 8B 空体
@@ -64,13 +64,14 @@ export class MessageRouter {
         req = decodeMessage(reqSchema, stripNetBitStream(body)) as Record<string, unknown>;
       } catch (e) {
         this.logger?.warn('router', `[${connId}] 解码 req#${msgId} 失败: ${(e as Error).message}`);
-        return [];
+        return Promise.resolve([]);
       }
     }
 
     // 交给 Client 判断应答器并处理（dispatch / Handle / 编码 / 记账 / 排队都在 Client 内完成），
     // 返回待下发帧。事件驱动：请求处理完成即取帧，无定时遍历。
-    if (!client) return [];
+    // Handle 可能异步查询数据库，route 保持 Promise 透传，由 WsGateway await 后下发。
+    if (!client) return Promise.resolve([]);
     return client.process(req, msgId, order, this.controller);
   }
 
@@ -91,7 +92,7 @@ export class MessageRouter {
  * 剥离客户端 C2S 业务体前的 NetBitStream 信封，剩余为纯 protobuf。
  *
  * 信封结构（实证，EnterGame 帧）：
- *   [11 00][u16 len][userId 数字串]
+ *   [u16 len][userId 数字串]（len 为实际字节数，不固定为 17；17 字节 uid 时即 11 00）
  *   [u16 len][token 字符串]
  *   [u32 len][protobuf]
  * 仅含 userId（心跳类，msgId=7）时只有第一段，无 protobuf。
@@ -101,11 +102,16 @@ function stripNetBitStream(body: Buffer): Buffer {
   let off = 0;
   const n = body.length;
 
-  // ① userId 段：[11 00][u16 len][len 字节数字串]。非 11 起头则原样返回。
-  if (n < 2 || body[0] !== 0x11 || body[1] !== 0x00) return body;
+  // ① userId 段：[u16 len][len 字节数字串]。长度随 uid 动态变化，按前缀读实际长度；
+  //    段内容须为 ASCII 数字串且长度自洽，否则视为无信封（纯 protobuf）原样返回。
+  if (n < 2) return body;
   const userIdLen = body.readUInt16LE(0);
+  if (userIdLen < 1 || 2 + userIdLen > n) return body;
+  for (let i = 2; i < 2 + userIdLen; i++) {
+    const c = body[i];
+    if (c < 0x30 || c > 0x39) return body;
+  }
   off = 2 + userIdLen;
-  if (off > n) return Buffer.alloc(0);
   if (off === n) return Buffer.alloc(0); // 只有 userId 段（心跳），无业务 protobuf
 
   // ② token 段：[u16 len][len 字节字符串]。长度须自洽，否则视为已到 protobuf。
