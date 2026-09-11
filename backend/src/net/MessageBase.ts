@@ -9,8 +9,8 @@ export class MessageBase<REQ, RES> implements IHandle<REQ, RES>, IResponderPair 
   reqId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
   recId: MESSAGE_ID = MESSAGE_ID.NETWORK_MESSAGE_BEGIN;
 
-  LoadMock(req: REQ, client?: Client): RES {
-    let fp = `mocks/${this.recId}.json`
+  LoadMock(req: REQ, client?: Client,mockName?:string): RES {
+    let fp = `mocks/${mockName || `${this.recId}`}.json`
     if (this.recId > MESSAGE_ID.NETWORK_MESSAGE_BEGIN && fs.existsSync(fp)) {
       Logger.LogInfo('MessageBase.LoadMock Loading mock', fp);
       let mock = JSON.parse(fs.readFileSync(fp, "utf-8")) as RES

@@ -1,0 +1,8 @@
+{
+  "TageName": "PVPBattleStart",
+  "reqId": "",
+  "reqProto": "",
+  "recId": "BATTLE_START_REP",
+  "recvProto": "BattleStartResponse",
+  "needParseLua": true
+}

@@ -1,36 +1,39 @@
+// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_EnterGame
 
 import { MessageBase } from '../MessageBase';
 import {
   MESSAGE_ID,
-  EnterGameRequest,
-  EnterGameResponse,
+  LogicReconnectionRequest,
+  LogicReconnectionResponse,
   ErrorCode,
 } from 'mc-local-share';
-import { NetMsg_EnterGame } from '../msg/NetMsg_EnterGame';
+
 import { Logger } from '../../core/Logger';
 import { Client } from '../Client';
+import { NetMsg_MainTownReconnect } from '../msg/NetMsg_MainTownReconnect';
 import { PlayerService } from '../../database/service/Player.service';
 import { DeckService } from '../../database/service/Deck.service';
-import { CardLibraryService } from '../../database/service/CardLibrary.service';
 import { PlayerBaseService } from '../../database/service/PlayerBase.service';
 
 /**
- * NetMsg_EnterGame
- * REQ = EnterGameRequest
- * RES = EnterGameResponse
- * 注册：reqId=10001,recId=10002
+ * NetMsg_LogicReconnection_Mod
+ * REQ = LogicReconnectionRequest
+ * RES = LogicReconnectionResponse
+ * 注册：reqId=10011,recId=10012
  */
-export class NetMsg_EnterGame_Mod extends NetMsg_EnterGame {
-  override async Handle(req: EnterGameRequest, client?: Client, uid?: string, token?: string, exData?: any): Promise<EnterGameResponse> {
-    let suid = uid || req.uid || client?.uid;
-    let res: EnterGameResponse = {
+export class NetMsg_MainTownReconnect_Mod extends NetMsg_MainTownReconnect {
+  reqId: MESSAGE_ID = MESSAGE_ID.LOGIC_RECONNECTION_REQ;
+
+  override async Handle(req: LogicReconnectionRequest, client?: Client, uid?: string, token?: string, exData?: any): Promise<LogicReconnectionResponse> {
+    let suid = uid || client?.uid;
+    let res: LogicReconnectionResponse = {
       error: ErrorCode.ACCOUNT_NOT_EXISTS,
-      activity: [],
-      achieveInfo: [],
+      index: '',
+      data: [],
       heroEquips: [],
       loginActivity: [],
-      shopInfo: [],
+      shopInfo: []
     }
     // console.log(`EnterGame_Mod.HandleSync uid=${suid}`);
     if (!suid) {

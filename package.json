@@ -8,6 +8,7 @@
     "install:all": "pnpm install",
     "dev": "pnpm -r --parallel run dev",
     "gen": "pnpm -r --parallel run gen",
+    "gen:ts": "pnpm --filter mc-local-share run gen:ts",
     "build": "pnpm -r run build",
     "build:share": "pnpm --filter mc-local-share build",
     "build:backend": "pnpm --filter mc-local-backend build",

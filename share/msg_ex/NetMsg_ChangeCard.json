@@ -1,0 +1,8 @@
+{
+  "TageName": "ChangeCard",
+  "reqId": "CHANGE_CARD_REQ",
+  "reqProto": "ChangeCardRequest",
+  "recId": "CHANGE_CARD_REP",
+  "recvProto": "ChangeCardResponse",
+  "needParseLua": true
+}

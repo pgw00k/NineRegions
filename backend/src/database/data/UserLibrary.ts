@@ -3,7 +3,7 @@ import { Player } from "./Player";
 
 @Entity()
 export class UserLibrary {
-    @Column({ comment:'平台传过来的登录ID' ,default:""})
+    @PrimaryColumn({ type:'varchar',length: 64, comment:'平台传过来的登录ID' ,default:""})
     sdkid: string = "";
 
     @Column({ type:'bigint',comment:'关联玩家ID' })
