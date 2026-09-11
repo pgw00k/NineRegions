@@ -8,6 +8,8 @@ import {
   QueryFriendInfoRsp,
 } from 'mc-local-share';
 import { NetMsg_QueryFriendInfo } from '../msg/NetMsg_QueryFriendInfo';
+import { Client } from '../Client';
+import { PlayerService } from '../../database/service/Player.service';
 
 /**
  * NetMsg_QueryFriendInfo
@@ -16,12 +18,12 @@ import { NetMsg_QueryFriendInfo } from '../msg/NetMsg_QueryFriendInfo';
  * 注册：reqId=10460,recId=10461
  */
 export class NetMsg_QueryFriendInfo_Mod extends NetMsg_QueryFriendInfo {
-
-  override HandleSync(req: QueryFriendInfoReq): QueryFriendInfoRsp {
-    let resobj = super.HandleSync(req)
-    if(!resobj) {
-      throw new Error('Handle not implemented: NetMsg_QueryFriendInfo');
+  override async Handle(req: QueryFriendInfoReq, client?: Client, uid?: string, token?: string, exData?: any): Promise<QueryFriendInfoRsp> {
+    let suid = uid || client?.uid;
+    if (!suid) {
+      return Promise.resolve({});
     }
-    return resobj
+    let player = await PlayerService.Instance.GetPlayerByID(suid);
+    return super.Handle(req, client, suid, token, exData);
   }
 }

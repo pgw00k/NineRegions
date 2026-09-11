@@ -1,67 +1,97 @@
-import { DataSource, Repository } from 'typeorm';
 import { CardLibrary } from '../data/CardLibrary';
+import { AppDataSource } from '../DataSource';
+import { BaseRepositoryTemplate } from './BaseRepositoryTemplate';
 
-export class CardLibraryService {
-    protected _Repo: Repository<CardLibrary>;
+export class CardLibraryService extends BaseRepositoryTemplate<CardLibrary> {
+    static Instance: CardLibraryService;
 
-    constructor(protected readonly dataSource: DataSource) {
-        this._Repo = dataSource.getRepository(CardLibrary);
+    public CHUNK_SIZE = 512;
+    public TableName: string = '';
+    public UniqueConstraint: string = '';
+
+    constructor() {
+        super(CardLibrary);
+        this._Template = this._Repository.create();
+        CardLibraryService.Instance = this;
+
+        // 3. 从实体元数据中获取表名和列名，避免硬编码
+        let metadata = this._Repository.metadata;
+        this.TableName = metadata.tableName;
+        this.UniqueConstraint = metadata.uniques[0].name;
+    }
+
+    async GetCard(uid: number, cid: number): Promise<CardLibrary | null> {
+        return await this._Repository.findOne({
+            where: {
+                uid: uid,
+                cid: cid,
+            },
+        });
+    }
+
+    async AddCard(uid: number, cid: number, count: number = 1): Promise<void> {
+        let card = await this.GetCard(uid, cid);
+        if (card) {
+            card.count += count;
+        } else {
+            card = await this._Repository.create({
+                uid: uid,
+                cid: cid,
+                count: count,
+            });
+        }
+        await this._Repository.save(card);
     }
 
     /**
-     * 原子增加卡牌数量（抽卡/合成）
-     * 利用 MySQL 的 ON DUPLICATE KEY UPDATE 实现原子 upsert
+     * 批量添加卡牌到玩家库
+     * @param uid 玩家 uid
+     * @param cards 卡牌 cid 数组
      */
-    async addCard(playerId: number, cardId: number, amount: number = 1): Promise<void> {
-        await this.dataSource.query(
-            `INSERT INTO player_collections (player_id, card_id, quantity)
-             VALUES (?, ?, ?)
-             ON DUPLICATE KEY UPDATE quantity = quantity + ?`,
-            [playerId, cardId, amount, amount],
-        );
-    }
+    async AddCards(ruid: number | string, cards: number[]): Promise<void> {
+        let uid = typeof ruid === 'number' ? ruid : Number(ruid);
 
-    /**
-     * 原子减少卡牌数量（分解/消耗）
-     * 先扣减，再清理数量为 0 的冗余记录
-     * @throws {Error} 当卡牌数量不足时抛出异常
-     */
-    async removeCard(playerId: number, cardId: number, amount: number = 1): Promise<void> {
-        // 开启事务执行，保证扣减和删除的一致
-        const queryRunner = this.dataSource.createQueryRunner();
+        // 聚合 cards 数组，统计每个 cid 的出现次数
+        let cardCountMap = new Map<number, number>();
+        for (const cid of cards) {
+            cardCountMap.set(cid, (cardCountMap.get(cid) || 0) + 1);
+        }
+
+        // 构建批量插入数据
+        let valuesToInsert = Array.from(cardCountMap.entries()).map(([cid, count]) => ({
+            uid: uid, // 当前玩家 uid
+            cid,
+            count, // 本次该牌型新增的数量
+        }));
+
+        if (valuesToInsert.length === 0) return;
+
+        let queryRunner = await this._Repository.manager.connection.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
-
         try {
-            // 1. 执行原子扣减（条件约束确保不会减到负数）
-            const updateResult = await queryRunner.query(
-                `UPDATE player_collections
-                 SET quantity = quantity - ?
-                 WHERE player_id = ? AND card_id = ? AND quantity >= ?`,
-                [amount, playerId, cardId, amount],
-            );
+            for (let i = 0; i < valuesToInsert.length; i += this.CHUNK_SIZE) {
+                let chunk = valuesToInsert.slice(i, i + this.CHUNK_SIZE);
 
-            // 2. 如果影响行数为 0，说明玩家没有这张卡或数量不足
-            if (updateResult.affectedRows === 0) {
-                // 通过查询确认是根本不存在还是数量不足（优化提示）
-                const exists = await queryRunner.query(
-                    `SELECT quantity FROM player_collections WHERE player_id = ? AND card_id = ?`,
-                    [playerId, cardId],
-                );
-                if (exists.length === 0) {
-                    throw new Error(`玩家 ${playerId} 未拥有卡牌 ${cardId}`);
-                } else {
-                    throw new Error(`玩家 ${playerId} 的卡牌 ${cardId} 数量不足 (当前: ${exists[0].quantity}, 需要: ${amount})`);
-                }
+                // 构建参数化 SQL
+                let params: any[] = [];
+                let valuePlaceholders = chunk
+                    .map((item, index) => {
+                        return `(${item.uid}, ${item.cid}, ${item.count})`;
+                    })
+                    .join(', ')
+
+                // 已有的卡牌直接累加
+                let cmd = `
+                INSERT INTO ${this.TableName} (uid, cid, count) 
+                VALUES ${valuePlaceholders}
+                ON CONFLICT (uid, cid) 
+                DO UPDATE SET "count" = "${this.TableName}"."count" + EXCLUDED."count"
+                `
+                await queryRunner.query(cmd, params);
             }
-
-            // 3. 如果扣减后数量为 0，物理删除该条记录（保持表轻盈）
-            await queryRunner.query(
-                `DELETE FROM player_collections WHERE player_id = ? AND card_id = ? AND quantity <= 0`,
-                [playerId, cardId],
-            );
-
             await queryRunner.commitTransaction();
+
         } catch (err) {
             await queryRunner.rollbackTransaction();
             throw err;
@@ -71,23 +101,19 @@ export class CardLibraryService {
     }
 
     /**
-     * 查询玩家完整牌库（附带卡牌详情）
-     * 这里利用 TypeORM 的 Relation 优势，方便返回前端展示
+     * 获取玩家库中的所有卡牌
+     * @param uid 玩家 uid
+     * @returns 所有卡牌
      */
-    async getPlayerCollection(uid: number): Promise<CardLibrary[]> {
-        return this._Repo.find({
-            where: { uid },
+    async GetCardsByUID(uid: number|string): Promise<CardLibrary[]> {
+        return await this._Repository.find({
+            where: {
+                uid: typeof uid === 'number' ? uid : Number(uid),
+            },
+            select: {
+                cid: true,
+                count: true,
+            }
         });
-    }
-
-    /**
-     * 检查玩家是否拥有某张卡（及数量）
-     */
-    async getCardQuantity(uid: number, cid: number): Promise<number> {
-        const result = await this._Repo.findOne({
-            where: { uid, cid },
-            select: { count: true },
-        });
-        return result?.count ?? 0;
     }
 }

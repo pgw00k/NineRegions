@@ -127,35 +127,74 @@ function genFieldsTs(
   msgIdNameToNum: Map<string, number>,
   scriptDir: string,
 ): string {
-  // 短名 proto -> 首次出现且合法的 MESSAGE_ID 枚举名（请求优先，其次响应）。
-  const idByFlat = new Map<string, string>();
+  const defineLines: string[] = [];
+  const idMappingLines: string[] = [];
+  const seen = new Set<string>();
+  const idSet = new Set<number>();
+
+  // ① 收集所有需要 define 的消息名：
+  //     a) 出现在网段（recvProto/reqProto）中的消息；
+  //     b) 任一消息字段 typeName 引用到的嵌套消息（含多级），保证嵌套解析可用。
+  const targets = new Set<string>();
   for (const n of nets) {
-    if (n.reqId && n.reqProto) {
-      const flat = ctx.shortToFlat.get(n.reqProto);
-      if (flat && msgIdNameToNum.has(n.reqId)) idByFlat.set(flat, n.reqId);
+    for (const p of [n.reqProto, n.recvProto]) {
+      const flat = p && ctx.shortToFlat.get(p);
+      if (flat) targets.add(flat);
     }
-    if (n.recId && n.recvProto) {
-      const flat = ctx.shortToFlat.get(n.recvProto);
-      if (flat && msgIdNameToNum.has(n.recId) && !idByFlat.has(flat)) {
-        idByFlat.set(flat, n.recId);
+  }
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const m of desc.messages) {
+      const flat = ctx.fullToFlat.get(m.fullName);
+      if (!flat || !targets.has(flat)) continue;
+      for (const f of m.fields) {
+        if (f.type !== FieldType.MESSAGE || !f.typeName) continue;
+        const nested = ctx.fullToFlat.get(f.typeName) ?? ctx.shortToFlat.get(f.typeName);
+        if (nested && !targets.has(nested)) {
+          targets.add(nested);
+          grew = true;
+        }
       }
     }
   }
 
-  // 按消息逐条生成 define(...) 行（含内联 FieldSchema 数组），
-  // 交由模板里的 `<% defines.forEach %>` 循环逐行输出。
-  const seen = new Set<string>();
-  const defineLines: string[] = [];
+  // ② 生成 define 行：每个拍平名只登记一次（同 recvProto 被多个 MESSAGE_ID 共用也不重复）。
+  const byFlat = new Map<string, ParsedDescriptor['messages'][number]>();
   for (const m of desc.messages) {
-    const flat = ctx.fullToFlat.get(m.fullName)!;
-    if (seen.has(flat)) continue;
+    const flat = ctx.fullToFlat.get(m.fullName);
+    if (flat) byFlat.set(flat, m);
+  }
+  for (const flat of targets) {
+    const msg = byFlat.get(flat);
+    if (!msg || seen.has(flat)) continue;
     seen.add(flat);
-    const idName = idByFlat.get(flat);
-    const idRef = idName ? `MESSAGE_ID.${idName}` : '0';
-    defineLines.push(`define(${idRef}, '${flat}', ${genFieldArrayDecl(m, ctx)});`);
+    defineLines.push(`define('${flat}', ${genFieldArrayDecl(msg, ctx)});`);
   }
 
-  return renderEjs(loadFieldsTemplate(scriptDir), { defines: defineLines }).trimEnd();
+  // ③ 生成 MESSAGE_ID → 拍平名 映射行（id 合法才登记）。
+  //    请求（reqId/reqProto）与响应（recId/recvProto）都登记，保证 codec 编码请求、解码响应都能查到 schema。
+  //    注意：部分协议 reqId 与 recId 数值相同（MESSAGE_ID 中 REQ/REP 同号），此时按数值去重无法两全，
+  //    优先登记响应侧（rec），因为解码是 codec 主流程，且 push 类消息只有 rec 侧。
+  const mapIdProto = (idName: string, proto: string): void => {
+    const idNum = idName && msgIdNameToNum.has(idName) ? msgIdNameToNum.get(idName)! : null;
+    if (!idNum || !proto) return;
+    const flat = ctx.shortToFlat.get(proto);
+    if (!flat) return;
+    if (!idSet.has(idNum)) {
+      idSet.add(idNum);
+      idMappingLines.push(`ID_BY_NAME[MESSAGE_ID.${idName}] = '${flat}';`);
+    }
+  };
+  for (const n of nets) {
+    mapIdProto(n.recId, n.recvProto);
+    mapIdProto(n.reqId, n.reqProto);
+  }
+
+  return renderEjs(loadFieldsTemplate(scriptDir), {
+    defines: defineLines,
+    idMappings: idMappingLines,
+  }).trimEnd();
 }
 
 /** 生成 FieldSchema[] 的元素数组文本（内联），供 define 使用。 */

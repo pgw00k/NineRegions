@@ -1,16 +1,18 @@
 import { DataSource, Repository } from "typeorm";
 import { Deck } from "../data/Deck";
+import { BaseRepositoryTemplate } from "./BaseRepositoryTemplate";
 
 /**
  * 套牌服务类 - 处理玩家套牌数据的CRUD操作和相关业务逻辑
  */
-export class DeckService {
-    private deckRepository: Repository<Deck>;
-    private dataSource: DataSource;
+export class DeckService extends BaseRepositoryTemplate<Deck> {
 
-    constructor(dataSource: DataSource) {
-        this.dataSource = dataSource;
-        this.deckRepository = dataSource.getRepository(Deck);
+    static Instance: DeckService;
+
+    constructor() {
+        super(Deck);
+        this._Template = this._Repository.create();
+        DeckService.Instance = this;
     }
 
     /**
@@ -19,7 +21,7 @@ export class DeckService {
      * @returns 套牌对象数组
      */
     async getPlayerDecks(uid: string): Promise<Deck[]> {
-        return await this.deckRepository.find({
+        return await this._Repository.find({
             where: { uid }
         });
     }
@@ -29,9 +31,9 @@ export class DeckService {
      * @param deckId 套牌ID
      * @returns 套牌对象或null
      */
-    async getDeckById(deckId: number): Promise<Deck | null> {
-        return await this.deckRepository.findOne({
-            where: { did: deckId }
+    async GetById(did: number): Promise<Deck | null> {
+        return await this._Repository.findOne({
+            where: { did }
         });
     }
 
@@ -41,8 +43,8 @@ export class DeckService {
      * @returns 创建的套牌对象
      */
     async createDeck(deck: Partial<Deck>): Promise<Deck> {
-        const newDeck = this.deckRepository.create(deck);
-        return await this.deckRepository.save(newDeck);
+        const newDeck = this._Repository.create(deck);
+        return await this._Repository.save(newDeck);
     }
 
     /**
@@ -51,14 +53,14 @@ export class DeckService {
      * @param deckUpdate 更新的套牌数据
      * @returns 更新后的套牌对象
      */
-    async updateDeck(deckId: number, deckUpdate: Partial<Deck>): Promise<Deck | null> {
-        const deck = await this.getDeckById(deckId);
+    async updateDeck(ndid: number, deckUpdate: Partial<Deck>): Promise<Deck | null> {
+        let {did, ...base} = deckUpdate;
+        const deck = await this.GetById(ndid);
         if (!deck) {
             return null;
         }
-        
-        Object.assign(deck, deckUpdate);
-        return await this.deckRepository.save(deck);
+        Object.assign(deck, base);
+        return await this._Repository.save(deck);
     }
 
     /**
@@ -66,8 +68,21 @@ export class DeckService {
      * @param deckId 套牌ID
      * @returns 是否删除成功
      */
-    async deleteDeck(deckId: number): Promise<boolean> {
-        const result = await this.deckRepository.delete({ did: deckId });
+    async deleteDeck(did: number): Promise<boolean> {
+        const result = await this._Repository.delete({ did });
+        return result.affected !== 0;
+    }
+
+    /**
+     * 更新多个套牌信息
+     * 默认必定存在，不走校验流程
+     * 现阶段主要用来更新卡背
+     * @param dids 套牌ID数组
+     * @param decks 更新的套牌数据数组
+     * @returns 是否更新成功
+     */
+    async UpdateDecks(dids: number[], decks: Partial<Deck>): Promise<boolean> {
+        const result = await this._Repository.update(dids, decks);
         return result.affected !== 0;
     }
 }

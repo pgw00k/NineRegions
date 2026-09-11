@@ -26,6 +26,7 @@ import { NetMsg_ChampEditDeck_CS } from './NetMsg_ChampEditDeck_CS';
 import { NetMsg_ChampGetInfo_CS } from './NetMsg_ChampGetInfo_CS';
 import { NetMsg_ChampGetMatchReward_CS } from './NetMsg_ChampGetMatchReward_CS';
 import { NetMsg_ChampGetResultReward_CS } from './NetMsg_ChampGetResultReward_CS';
+import { NetMsg_ChangeCard } from './NetMsg_ChangeCard';
 import { NetMsg_ChangeDeckCardBack } from './NetMsg_ChangeDeckCardBack';
 import { NetMsg_ChangeDefaultCardBack } from './NetMsg_ChangeDefaultCardBack';
 import { NetMsg_ChangePlayerName } from './NetMsg_ChangePlayerName';
@@ -123,6 +124,7 @@ export class MessageController extends MessageControllerBase {
     this.AutoResponser[MESSAGE_ID.CHAMP_GET_INFO_REQ] = new NetMsg_ChampGetInfo_CS();
     this.AutoResponser[MESSAGE_ID.CHAMP_GET_WINREWARD_REQ] = new NetMsg_ChampGetMatchReward_CS();
     this.AutoResponser[MESSAGE_ID.CHAMP_GET_RANKREWARD_REQ] = new NetMsg_ChampGetResultReward_CS();
+    this.AutoResponser[MESSAGE_ID.CHANGE_CARD_REQ] = new NetMsg_ChangeCard();
     this.AutoResponser[MESSAGE_ID.CHANGE_DECK_CARDBACK_REQ] = new NetMsg_ChangeDeckCardBack();
     this.AutoResponser[MESSAGE_ID.CHANGE_DEFAULT_CARDBACK_REQ] = new NetMsg_ChangeDefaultCardBack();
     this.AutoResponser[MESSAGE_ID.CHANGE_PLAYERNAME_REQ] = new NetMsg_ChangePlayerName();

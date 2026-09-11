@@ -1,0 +1,8 @@
+{
+  "TageName": "Reconnect",
+  "reqId": "LOGIC_RECONNECTION_REQ",
+  "reqProto": "LogicReconnectionRequest",
+  "recId": "",
+  "recvProto": "",
+  "needParseLua": true
+}

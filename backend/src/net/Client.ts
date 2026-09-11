@@ -8,7 +8,7 @@
  * Client，共享的 MessageController 应答器通过它访问各自的游戏状态。
  */
 import { Buffer } from 'buffer';
-import { get, encodeMessage, MESSAGE_ID } from 'mc-local-share';
+import { get, encodeMessage, MESSAGE_ID, PushBattleWaiting } from 'mc-local-share';
 import { DecodedC2S, S2CFrame } from '../messages/types';
 import { Logger } from '../core/Logger';
 import { wrapDynProtoAuto } from './FrameCodec';
@@ -56,13 +56,13 @@ export class Client {
    * @param body 已 wrap 好 dynproto 头的业务体。
    * @returns 本次为这条帧分配的 order。
    */
-  pushFrame(msgId: number, body: Buffer,order?:number): number {
+  pushFrame(msgId: number, body: Buffer, order?: number): number {
     this.seq += 1;
     // const order = this.base + this.seq;
-    // this.order += 1;
+    this.order += 1;
     let newOrder = this.order;
-    if(order){
-      newOrder = order;
+    if (order) {
+      newOrder = Math.max(newOrder, order);
     }
     this.pending.push({ msgId, order: newOrder, body });
     return newOrder;
@@ -120,7 +120,7 @@ export class Client {
     }
     // 应答器判断：未注册该消息号 → 不应答
     const responder = controller.AutoResponser[msgId as MESSAGE_ID] as any | undefined;
-    if (!responder){
+    if (!responder) {
       this.logger?.warn('client', `[${this.connId}] 处理 req#${msgId} 异常: 未注册应答器`);
       return [];
     };
@@ -128,23 +128,48 @@ export class Client {
     // ① Handle：取得返回对象（可能 async 查询数据库，统一 await 以支持 DB 填充）
     let rep: Record<string, unknown>;
     try {
-      rep = (await responder.Handle(req, this, uid, token)) ?? {};
+      rep = await responder.Handle(req, this, uid, token);
     } catch (e) {
       this.logger?.warn('client', `[${this.connId}] 处理 req#${msgId} 异常: ${(e as Error).message}`);
       return [];
     }
 
-    // ② 编码 REP → dynproto 体 → 记账入队（order 由本对象按「请求+产出次序」分配）
-    const repSchema = get(Number(responder.recId));
-    if (!repSchema) return [];
+    // 不做保底，无效信息不发送，保证队列逻辑order和客户端能够对应
+    if (!rep) {
+      return [];
+    };
+
     try {
-      const inner = encodeMessage(repSchema, rep);
-      this.beginRequest(order);
-      this.pushFrame(Number(responder.recId), wrapDynProtoAuto(inner),order+1);
+      this.PushMessage(responder.recId, rep, order);
       return this.drainPending();
     } catch (e) {
       this.logger?.warn('client', `[${this.connId}] 编码 rec#${responder.recId} 失败: ${(e as Error).message}`);
       return [];
     }
+  }
+
+  /** 
+   * 推送一个消息到队列中 
+   * 
+   * @param msgid 消息号
+   * @param data 消息体
+   * @param order 消息 order，不带消息Order的话会自动使用处记录的Order
+   * */
+  public PushMessage(msgid: MESSAGE_ID, data: any, order?: number): void {
+    // this.logger?.info( `client [${this.connId}] 推送 msg#${msgid}`,data);
+    let repSchema = get(msgid);
+    if (!repSchema) {
+      this.logger?.warn('client', `[${this.connId}] 编码 msg#${msgid} 失败: 未注册编码器`);
+      return;
+    }
+
+    try {
+      let raw = encodeMessage(repSchema, data as any)
+      this.pushFrame(msgid, wrapDynProtoAuto(raw), order);
+    }
+    catch (e) {
+      this.logger?.warn('client', `[${this.connId}] 编码 msg#${msgid} 失败: ${(e as Error).message}`);
+    }
+
   }
 }

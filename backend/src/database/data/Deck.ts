@@ -7,7 +7,7 @@ export class Deck {
     @PrimaryGeneratedColumn({ type: 'bigint', comment: '组牌ID' })
     did: number;
 
-    @Column({ length: 64 })
+    @Column({ type:'varchar', length: 64, comment: '组牌名称' })
     name: string = '';
 
     @Column({ type: 'int', default: 0 })

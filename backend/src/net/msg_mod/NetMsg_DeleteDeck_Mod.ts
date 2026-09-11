@@ -1,9 +1,5 @@
-// 由 mc-local-share generate_ts 自动生成，请勿手改。
 // tagName: NetMsg_DeleteDeck
-
-import { MessageBase } from '../MessageBase';
 import {
-  MESSAGE_ID,
   DeleteDeckRequest,
   DeleteDeckResponse,
   ErrorCode,
@@ -11,39 +7,36 @@ import {
 import { Logger } from '../../core/Logger';
 import { Client } from '../Client';
 import { DeckService } from '../../database/service/Deck.service';
-import { AppDataSource } from '../../database/DataSource';
+import { NetMsg_DeleteDeck } from '../msg/NetMsg_DeleteDeck';
 
 /**
  * NetMsg_DeleteDeck
  * REQ = DeleteDeckRequest
  * RES = DeleteDeckResponse
- * 注册：reqId=10052,recId=10053
+ * 注册：reqId=10007,recId=10008
  */
-export class NetMsg_DeleteDeck_Mod extends MessageBase<DeleteDeckRequest, DeleteDeckResponse> {
-  private deckService: DeckService;
+export class NetMsg_DeleteDeck_Mod extends NetMsg_DeleteDeck {
 
-  constructor() {
-    super();
-    this.deckService = new DeckService(AppDataSource);
-  }
-
-  override async Handle(req: DeleteDeckRequest, client?: Client): Promise<DeleteDeckResponse> {
-    Logger.LogInfo('NetMsg_DeleteDeck_Mod.Handle', { ...req, uid: client?.uid });
-    
+  override async Handle(req: DeleteDeckRequest, client?: Client, uid?: string, token?: string,exData?:any): Promise<DeleteDeckResponse> {
+    let did = req.did;
+    let res: DeleteDeckResponse = {
+      error: ErrorCode.SUCCESS,
+    };
     try {
-      // 删除套牌
-      const result = await this.deckService.deleteDeck(req.did || 0);
-      
-      return {
-        error: result ? ErrorCode.SUCCESS : ErrorCode.ERROR,
-        did: req.did
-      };
+      if (did) {
+        let isDeleted = await DeckService.Instance.deleteDeck(did);
+        if (!isDeleted) {
+          res.error = ErrorCode.DECK_NOT_FIND;
+        }else{
+          res.did = did;
+        }
+      } else {
+        res.error = ErrorCode.DECK_NOT_FIND;
+      }
     } catch (error) {
       Logger.LogError('Error in NetMsg_DeleteDeck_Mod.Handle', error);
-      return {
-        error: ErrorCode.ERROR,
-        did: req.did
-      };
+      res.error = ErrorCode.ERROR;
     }
+    return res;
   }
 }

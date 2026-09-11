@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/src/index.js",
-    "dev": "tsc -p tsconfig.json && node dist/src/index.js",
+    "dev": "tsx src/index.ts",
+    "dev:scripts": "tsc -p tsconfig.json && node dist/scripts/index.js",
     "registry": "python tools/extract_registry.py",
     "extract:data": "python tools/extract_account_data.py",
     "test": "tsc -p tsconfig.json && node dist/tools/test_encoder.js",
@@ -24,7 +25,6 @@
   "dependencies": {
     "mc-local-share": "workspace:*",
     "pg": "^8.23.0",
-    "reflect-metadata": "^0.2.2",
     "typeorm": "^1.1.0"
   },
   "devDependencies": {
@@ -32,6 +32,7 @@
     "esbuild": "^0.28.0",
     "pkg": "^5.8.1",
     "rimraf": "^5.0.5",
+    "tsx": "^4.7.0",
     "typescript": "^5.5.0"
   }
 }

@@ -276,7 +276,9 @@ export class WsGateway extends Server {
       this.recorder.record(connId, 'C2S', dec.body,recData);
       isrecorded=true;
       if (this.onC2S) {
+        // this.logger.info(`[${connId}] C2S(${dec.header.msgId}) start`);
         const frames = await this.onC2S(connId, dec);
+        // this.logger.info(`[${connId}] C2S(${dec.header.msgId}) return`,frames);
         for (const f of frames) this.sendS2C(connId, f);
       }
     } else {

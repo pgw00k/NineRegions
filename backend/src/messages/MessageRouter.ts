@@ -72,12 +72,18 @@ export class MessageRouter {
         this.logger?.warn('router', `[${connId}] 解码 req#${msgId} 失败: ${(e as Error).message}`);
         return Promise.resolve([]);
       }
+    }else{
+      this.logger?.warn('router', `[${connId}] 解码 req#${msgId} 失败: 未注册解码器`);
     }
+    // this.logger?.info(`router [${connId}] 解码 req#${msgId} 结果:`, req);
 
     // 交给 Client 判断应答器并处理（dispatch / Handle / 编码 / 记账 / 排队都在 Client 内完成），
     // 返回待下发帧。事件驱动：请求处理完成即取帧，无定时遍历。
     // Handle 可能异步查询数据库，route 保持 Promise 透传，由 WsGateway await 后下发。
-    if (!client) return Promise.resolve([]);
+    if (!client){
+      this.logger?.warn('router', `[${connId}] 未绑定clients uid=${uid}`);
+      return Promise.resolve([]);
+    }
     return client.process(req, order, msgId, uid, token, this.controller);
   }
 

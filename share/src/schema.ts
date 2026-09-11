@@ -17,29 +17,31 @@ export interface FieldSchema {
 }
 
 export interface MessageSchema {
-  /** 登记用的消息号（MESSAGE_ID）；非网络消息为 0 占位。 */
-  id: number;
   /** 拍平消息名（嵌套解析依据）。 */
   name: string;
   /** 按字段号升序。 */
   fields: FieldSchema[];
 }
 
-const REG_ID: Record<number, MessageSchema> = {};
 const REG_NAME: Record<string, MessageSchema> = {};
 
-/** 登记一个消息：既按消息号（id）注册，也按拍平名（name）注册以便嵌套解析。 */
-export function define(id: number, name: string, fields: FieldSchema[]): MessageSchema {
+/** MESSAGE_ID -> recvProto 拍平名；供 codec 运行时由 id 反查字段格式。 */
+export const ID_BY_NAME: Record<number, string> = {};
+
+/** 登记一个消息：仅按拍平名（name）注册字段格式，避免同一 recvProto 被多次完整登记。 */
+export function define(name: string, fields: FieldSchema[]): MessageSchema {
   const sorted = [...fields].sort((a, b) => a.number - b.number);
-  const s: MessageSchema = { id, name, fields: sorted };
-  REG_ID[id] = s;
-  REG_NAME[name] = s;
+  const s: MessageSchema = { name, fields: sorted };
+  if (!REG_NAME[name]) {
+    REG_NAME[name] = s;
+  }
   return s;
 }
 
-/** 按消息号取 schema（网络请求/响应）。 */
+/** 按消息号取 schema：先通过 ID_BY_NAME 反查名称，再取字段格式。 */
 export function get(id: number): MessageSchema | undefined {
-  return REG_ID[id];
+  const name = ID_BY_NAME[id];
+  return name ? getByName(name) : undefined;
 }
 
 /** 按拍平类型名取 schema（嵌套 message 解析）。 */
