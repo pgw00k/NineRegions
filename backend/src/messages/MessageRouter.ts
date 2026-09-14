@@ -7,7 +7,8 @@
  * 设计约束：
  *  - 全程只依赖共享层的静态编解码与注册表（mc-local-share），不在本文件碰操作号之外
  *    的业务细节；
- *  - 不做任何附加业务（无 INTERNAL 特判、无 order 增/减）。每条 C2S 至多产出一条 S2C；
+ *  - 不做业务特判，但负责「order 基准同步」：收到逻辑区间 C2S 时把客户端逻辑基准（Client.order）
+ *    对齐到该 C2S 的 order，具体 +1 记账由 Client.pushFrame 完成（战斗区间走独立空间，不同步）；
  *  - 解码/编码/处理任一环节失败即静默丢弃该请求。
  */
 import { Buffer } from 'buffer';
@@ -34,11 +35,8 @@ export class MessageRouter {
   /**
    * 路由一条已解密的 C2S。
    * @param connId 来源连接（据此定位该客户的 Client）。
-   * @param msgId 解密后的请求消息号（reqId）。
-   * @param order C2S 的 order；应答帧使用 order + 1。
-   * @param body  解密后、含 NetBitStream 前缀的业务体。
-   * @param uid   解密阶段已从信封解析出的用户 ID（可省：缺省时尝试从业务体解析）。
-   * @returns 要下发的 S2C 帧（0 或 1 条）。
+   * @param frame 已解码的 C2S（header.msgId / header.order / envelope / body）。
+   * @returns 要下发的 S2C 帧（0 或多条）。
    */
   route(connId: string, frame: DecodedC2S): Promise<S2CFrame[]> | S2CFrame[] {
     // 定位当前客户端上下文；若首条消息已带 uid，则绑定到 Client。
@@ -49,16 +47,28 @@ export class MessageRouter {
     const {body} = frame;
     this.prebindUid(connId, client, uid);
 
-    // 第一层过滤：无需进入 Client 应答处理的消息（如心跳 PINGPONG）。
-    // 无 protobuf、无应答器 → 直接往 Client 队列推 8B 空体
-    // （若 Buffer.alloc(0)，客户端判 MsgBodyExists=False 拒读），order 不变。
+    // 同步 order 基准：客户端发出逻辑 order=n 后本地 logicOrder 推进到 n，之后期待 S2C 为 n+1。
+    // 只对「逻辑区间」同步 —— 战斗区间（msgId >= BATTLE_MESSAGE_BEGIN，如 25001）走客户端
+    // 独立的 battleOrder 空间，其 order 与逻辑序列无关，若在此同步会把逻辑基准顶高一格，
+    // 导致后续心跳应答跳号被客户端丢弃（实证 gw_20260911.jsonl 第 1085 行 `C2S 25001 order=8`
+    // 之后 `S2C 10004` 变为 10/11）。
+    // 同理，PINGPONG（msgId < ACCOUNT_MESSAGE_BEGIN）order 恒为 0，不参与业务递增。
+    if (client && msgId >= MESSAGE_ID.LOGIC_MESSAGE_BEGIN && msgId < MESSAGE_ID.BATTLE_MESSAGE_BEGIN) {
+      client.syncOrder(order);
+    }
+
+    // 第一层过滤：网络层内部消息（msgId < ACCOUNT_MESSAGE_BEGIN，目前只有 PINGPONG=7）。
+    // 这类消息不进入业务应答器，但客户端要求「收到一条同号回包」才算心跳存活 ——
+    // 实证见 logs/develop.jsonl：C2S msg=7 order=0 → S2C msg=7 order=0（bodyLen=0 空体，
+    // order 原样沿用，不 +1）。若此处不回，客户端会持续重发心跳并最终判定掉线。
+    // 用 echoFrame 而非 pushFrame：既不推进服务端 order 记账，也不污染业务 order 序列
+    // （客户端侧 PINGPONG 的 order 恒为 0，不参与业务递增）。
     if (msgId < MESSAGE_ID.ACCOUNT_MESSAGE_BEGIN) {
-      if (client) {
-        // client.beginRequest(order);
-        // client.pushFrame(msgId, Buffer.alloc(8));
+      if (!client) {
+        return [{ msgId, order, body: Buffer.alloc(0) }];
       }
-      // 原样返回
-      return client ? client.drainPending() : [{ msgId, order: order, body: body }];
+      client.echoFrame(msgId, order, Buffer.alloc(0));
+      return client.drainPending();
     }
 
     // 解码 REQ：按请求消息号取静态 schema → 字段名对象

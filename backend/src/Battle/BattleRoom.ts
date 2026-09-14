@@ -19,30 +19,59 @@ export class BattleRoom {
      */
     public IsReady: number = 0;
 
-    SetBattler(preset:any,BattlerCtor: new (preset?: any) => BattlePlayer = BattlePlayer): number {
+    /**
+     * 战斗是否已经开启，避免重复发送战斗开始消息
+     */
+    private BattleStarted: boolean = false;
+
+    constructor(preset:any) {
+        Object.assign(this, preset);
+    }
+
+    async SetBattler(preset:any,BattlerCtor: new (preset?: any) => BattlePlayer = BattlePlayer): Promise<number> {
         let uid = preset.uid||preset.client?.uid||undefined
         if(!uid){
             Logger.LogWarn(`BattleRoom[${this.RoomToken}] SetBattler 未找到uid`,preset);
             return 0;
         }
-
         this.IsReady++;
         let NewBallter = new BattlerCtor(preset);
         NewBallter.side = this.IsReady;
-        NewBallter.InitBattleInfo(preset);
 
         /**
          * 绑定玩家到字典
+         * 必须在初始化战斗信息前绑定，否则异步初始化期间的发牌信息无法回传
          */
         this.BattlersDict[uid] = NewBallter;
         Logger.LogInfo(`BattleRoom[${this.RoomToken}] SetBattler ${uid} ${NewBallter.side}`);
 
-        if (this.IsReady >= 2) {
-            /* 战斗开始 */
-            this.Battlers = Object.values(this.Battlers);
-            this.BattleStart();
+        /**
+         * 必须等待战斗信息初始化完成，否则 BattleStart 时主将/手牌仍为空
+         */
+        try {
+            await NewBallter.InitBattleInfo(preset);
+        } catch (err) {
+            this.IsReady--;
+            Logger.LogError(`BattleRoom[${this.RoomToken}] SetBattler ${uid} 初始化战斗信息失败`,err);
+            return this.IsReady;
         }
+
+        this.TryBattleStart();
         return this.IsReady;
+    }
+
+    /**
+     * 所有玩家准备完毕且战斗信息全部初始化完成后，才发送战斗开始消息
+     */
+    protected TryBattleStart() {
+        if (this.BattleStarted || this.IsReady < 2) {   
+            return; 
+        }
+
+        this.BattleStarted = true;
+        /* 战斗开始：按 side 排序，避免字典整数键导致的乱序 */
+        this.Battlers = Object.values(this.BattlersDict).sort((a,b) => a.side - b.side);
+        this.BattleStart();
     }
 
     /**
@@ -52,6 +81,10 @@ export class BattleRoom {
 
         let battlers = this.Battlers.map((battler) => {
             return battler.GetSimple();
+        });
+
+        let infos = this.Battlers.map((battler) => {
+            return battler.GetSimpleInfo();
         });
 
         let info = {
@@ -64,7 +97,7 @@ export class BattleRoom {
             /** 为了模拟方便，让2号玩家先开始，1号是机器人 */
             side: 2,
             actions: [],
-            infos: [],
+            infos: infos,
             battlers: battlers,
         }
 

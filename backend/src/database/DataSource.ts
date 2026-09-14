@@ -5,6 +5,7 @@ import { UserLibrary } from "./data/UserLibrary";
 import { Deck } from "./data/Deck";
 import { CardLibrary } from "./data/CardLibrary";
 import { Card } from "./data/Card";
+import { PlayerInfo } from "./data/PlayerInfo";
 
 export let DBBaseSetting: any = ReadSettingFile('db')
 
@@ -17,7 +18,7 @@ export let DBConnectCmd = {
     database: "",
     synchronize: true, // 开发环境下使用，生产环境应设为false
     logging: true,
-    entities: [Player, UserLibrary, Deck, CardLibrary, Card],
+    entities: [Player, UserLibrary, Deck, CardLibrary, Card,PlayerInfo],
     migrations: [],
     subscribers: [],
     ...DBBaseSetting
@@ -33,6 +34,7 @@ export function PostDBInit() {
     const { PlayerService } = require("./service/Player.service");
     const { UserLibraryService } = require("./service/UserLibrary.service");
     const { DeckService } = require("./service/Deck.service");
+    const { PlayerInfoService } = require("./service/PlayerInfo.service");
     const { CardLibraryService } = require("./service/CardLibrary.service");
     const { CardService } = require("./service/Card.service");
 
@@ -41,4 +43,5 @@ export function PostDBInit() {
     let deckService = new DeckService();
     let cardLibraryService = new CardLibraryService();
     let cardService = new CardService();
+    let playerInfoService = new PlayerInfoService();
 }

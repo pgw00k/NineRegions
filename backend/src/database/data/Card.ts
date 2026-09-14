@@ -1,8 +1,9 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { NumericTransformer } from '../../utils/NumericTransformer';
 
 @Entity()
 export class Card {
-    @PrimaryColumn({ type: 'bigint', comment: '牌型ID' })
+    @PrimaryColumn({ type: 'bigint', comment: '牌型ID',transformer: NumericTransformer })
     cid: number;
 
     @Column({ type: 'int', default: 1, comment: '是否正式牌型' })
@@ -35,7 +36,7 @@ export class Card {
     @Column({ type: 'boolean', default: false, comment: '巨型牌' })
     IsHuge: boolean = false;
 
-    @Column({ type: 'int', default: 0, comment: '飞行层' })
+    @Column({ type: 'int', default: 0, comment: '飞行' })
     FlyLayer: number = 0;
 
     // 后续如果要实现AI相关的功能，可能要把配表里的其他内容也加上，初步估计AIDamege/AIDamageType等应该都是AI相关的内容

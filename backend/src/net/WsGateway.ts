@@ -41,6 +41,8 @@ export class WsGateway extends Server {
   private readonly markerPath = path.join(os.tmpdir(), 'nineregions.reconnect');
   /** 连接建立回调（由 index.ts 注入，创建 Client 并登记入 ConnManager）。 */
   private onConnCreate?: (connId: string) => void;
+  /** 连接建立后的出站通道绑定器（由 index.ts 注入，把 client → sendS2C 接通）。 */
+  private onConnBindSender?: (connId: string, send: (frame: S2CFrame) => void) => void;
   /** 连接断开回调（由 index.ts 注入，清理 Client / PVE 结算状态等）。 */
   private onConnClose?: (connId: string) => void;
   /** C2S 解密后回调（由 index.ts 注入，路由应答）。返回要下发的 S2C 帧（可能 async 查询 DB）。 */
@@ -59,6 +61,14 @@ export class WsGateway extends Server {
   /** 注册连接建立回调（创建 Client 登记入 ConnManager）。 */
   setOnConnCreate(cb: (connId: string) => void): void {
     this.onConnCreate = cb;
+  }
+
+  /**
+   * 注册出站通道绑定器（把某个 Client 的即时下发能力接到本网关的 sendS2C）。
+   * 与 onConnCreate 成对使用：先建 Client，再把它接到 socket。
+   */
+  setOnConnBindSender(cb: (connId: string, send: (frame: S2CFrame) => void) => void): void {
+    this.onConnBindSender = cb;
   }
 
   /** 注册连接断开回调（清理 PVE 结算状态等）。 */
@@ -134,6 +144,11 @@ export class WsGateway extends Server {
         this.markPriorSession();
         // 登记 Client（仅握手成功后才视为有效连接）
         if (this.onConnCreate) this.onConnCreate(connId);
+        // 绑定出站通道：此后该 Client 产出的 S2C（含主动推送/延迟应答）立即下发，
+        // 不再等待某条 C2S 的返回值被消费。
+        if (this.onConnBindSender) {
+          this.onConnBindSender(connId, (frame) => this.sendS2C(connId, frame));
+        }
         // 下发 CONNECTION_REQUEST_ACCEPTED (msg1)
         this.sendFrame(sock, 0x2, buildConnectionAccepted());
         this.logger.info('ws', `[${connId}] 已下发 CONNECTION_REQUEST_ACCEPTED`);

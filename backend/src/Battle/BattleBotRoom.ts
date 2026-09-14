@@ -8,12 +8,12 @@ import { BattleRoom } from "./BattleRoom";
  */
 export class BattleBotRoom extends BattleRoom {
 
-    constructor() {
-        super();
+    constructor(preset:any) {
+        super(preset);
 
         // 自动新增一个机器人
         // 这里我在数据库默认创建了一个玩家ID=1和Deck=1
-        this.SetBattler({did:1,client:undefined,uid:'Bot'},BattlePlayerBot);
+        this.SetBattler({did:1,client:undefined,uid:1},BattlePlayerBot);
     }
 
 }
