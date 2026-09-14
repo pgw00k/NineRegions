@@ -43,15 +43,17 @@ export class BattleServer {
              * 这里改用BattleBotRoom类来模拟战斗信息
              * 正常战斗应当使用BattleRoom类
              */
-            let room = new BattleBotRoom();
-            room.RoomToken = roomInfo.roomToken!;
-            room.BattleToken = roomInfo.token!;
+            let roomCreateInfo = {
+                RoomToken: roomInfo.roomToken!,
+                BattleToken: roomInfo.token!,
+            }
+            // let room = new BattleRoom();
+            let room = new BattleBotRoom(roomCreateInfo);
             this.BattleRooms[room.RoomToken] = room;
             Logger.LogInfo(`创建战斗房间：${room.RoomToken}`);
 
             this.BattlePlayers[client.uid] = roomInfo.roomToken!;
             Logger.LogInfo(`添加战斗玩家：${client.uid} to room ${room.RoomToken}`);
-            // room.SetBattlerA();
         }, 3000);
     }
 
@@ -59,7 +61,7 @@ export class BattleServer {
         let roomToken = this.BattlePlayers[client.uid];
         let room = this.BattleRooms[roomToken] ?? undefined;
         if (!room) {
-            Logger.LogWarn(`battle ${client.uid} 未找到房间房间 ${roomToken}`);
+            Logger.LogWarn(`battle ${client.uid} 未找到房间房间 ${roomToken}`,this.BattlePlayers);
         }
         return room;
     }
@@ -76,7 +78,7 @@ export class BattleServer {
             /**
              * 都准备好了就开始战斗
              */
-            let isReady = room.SetBattler({ did: this.BattlePlayerDecks[client.uid], client: client });
+            let isReady = await room.SetBattler({ did: this.BattlePlayerDecks[client.uid], client: client });
             if (isReady >= 2) {
                 // 已经将战斗消息移动到了Room中处理，这里预留一个口子看以后有没有用
             }

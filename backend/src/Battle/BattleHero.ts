@@ -5,6 +5,7 @@ import { HeroInfo } from "mc-local-share";
  */
 export class BattleHero
 {
+    side: number = 0;
     heroID: number = 1;
     heroSkillID: number = 100001;
     heroSkillCD: number = 1;
@@ -22,5 +23,23 @@ export class BattleHero
         Object.assign(this, preset);
     }
 
-    
+    GetInfo(){
+        return {
+            side: this.side,
+            heroID: this.heroID,
+            heroSkillID: this.heroSkillID,
+            heroSkillCD: this.heroSkillCD,
+            curMana: this.curMana,
+            maxMana: this.maxMana,
+            curHP: this.curHP,
+            maxHP: this.maxHP,
+            atk: this.atk,
+            handCount: this.handCount,
+            deckCount: this.deckCount,
+            cemeteryCount: this.cemeteryCount,
+            tmpMana: this.tmpMana,
+        }
+    }
+
+
 }

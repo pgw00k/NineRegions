@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { Player } from "./Player";
 
 @Entity()
@@ -13,11 +13,7 @@ export class FriendShip {
     @Column({ type:'bigint',comment:'好友ID' })
     fid: number;
 
-    @ManyToOne(() => Player, { onDelete: 'CASCADE' })
+    @OneToOne(() => Player, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'uid' })
     player: Player;
-
-    @ManyToOne(() => Player, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'fid' })
-    friend: Player;
 }

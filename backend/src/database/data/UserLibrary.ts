@@ -7,10 +7,5 @@ export class UserLibrary {
     sdkid: string = "";
 
     @Column({ type:'bigint',comment:'关联玩家ID' })
-    uid: string = '0';
-
-    // ---------- ORM 关联（仅用于连表查询，不用于更新） ----------
-    @ManyToOne(() => Player, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'uid' })
-    player: Player;
+    uid: string = "0";
 }

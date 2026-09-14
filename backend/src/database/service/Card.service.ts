@@ -1,4 +1,4 @@
-import { In } from 'typeorm';
+import { FindOptionsSelect, In } from 'typeorm';
 import { Card } from '../data/Card';
 import { BaseRepositoryTemplate } from './BaseRepositoryTemplate';
 
@@ -19,11 +19,12 @@ export class CardService extends BaseRepositoryTemplate<Card> {
         });
     }
 
-    async GetCards(cids: number[]): Promise<Card[]> {
+    async GetCards(cids: number[],select?:FindOptionsSelect<Card>): Promise<Card[]> {
         return await this._Repository.find({
             where: {
                 cid: In(cids),
             },
+            select,
         });
     }
 

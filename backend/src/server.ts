@@ -22,6 +22,9 @@ export async function main(): Promise<void> {
   const router = new MessageRouter(conns, logger);
   const gateway = new WsGateway(logger);
   gateway.setOnConnCreate((connId) => conns.create(connId));
+  // 出站通道：把 Client 与网关的 sendS2C 接通。主动推送 / 延迟应答由此即时下发，
+  // 不依赖 route() 的返回值，避免帧滞留到下一次心跳才被带出。
+  gateway.setOnConnBindSender((connId, send) => conns.get(connId)?.bindSender(send));
   gateway.setOnConnClose((connId) => conns.remove(connId));
   gateway.setOnC2S((connId, frame) => router.route(connId, frame));
 
