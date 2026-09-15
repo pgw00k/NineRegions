@@ -80,11 +80,11 @@ export class BattleRoom {
     BattleStart() {
 
         let battlers = this.Battlers.map((battler) => {
-            return battler.GetSimple();
+            return battler.GetBattler();
         });
 
         let infos = this.Battlers.map((battler) => {
-            return battler.GetSimpleInfo();
+            return battler.GetInfo();
         });
 
         let info = {
@@ -111,14 +111,14 @@ export class BattleRoom {
      * 玩家更换手牌
      * @param did 手牌id
      */
-    ChangeCard(uid:string,req:ChangeCardRequest):ChangeCardResponse {
+    async ChangeCard(uid:string,req:ChangeCardRequest): Promise<ChangeCardResponse> {
         let battler = this.BattlersDict[uid];
         if(!uid||!battler){
             Logger.LogWarn(`BattleRoom[${this.RoomToken}] ChangeCard 未找到玩家 ${uid}`);
             return undefined as any;
         }
 
-        return undefined as any;
-
+        let rep = await battler.ChangeCard(req);
+        return rep;
     }
 }
