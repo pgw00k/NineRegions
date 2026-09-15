@@ -132,39 +132,18 @@ function genFieldsTs(
   const seen = new Set<string>();
   const idSet = new Set<number>();
 
-  // ① 收集所有需要 define 的消息名：
-  //     a) 出现在网段（recvProto/reqProto）中的消息；
-  //     b) 任一消息字段 typeName 引用到的嵌套消息（含多级），保证嵌套解析可用。
+  // ① 收集所有需要 define 的消息名：所有消息体全部登记。
+  //    JSON 网段文件只用于生成 MESSAGE_ID → 拍平名 的 ID_BY_NAME 映射。
   const targets = new Set<string>();
-  for (const n of nets) {
-    for (const p of [n.reqProto, n.recvProto]) {
-      const flat = p && ctx.shortToFlat.get(p);
-      if (flat) targets.add(flat);
-    }
-  }
-  let grew = true;
-  while (grew) {
-    grew = false;
-    for (const m of desc.messages) {
-      const flat = ctx.fullToFlat.get(m.fullName);
-      if (!flat || !targets.has(flat)) continue;
-      for (const f of m.fields) {
-        if (f.type !== FieldType.MESSAGE || !f.typeName) continue;
-        const nested = ctx.fullToFlat.get(f.typeName) ?? ctx.shortToFlat.get(f.typeName);
-        if (nested && !targets.has(nested)) {
-          targets.add(nested);
-          grew = true;
-        }
-      }
-    }
-  }
-
-  // ② 生成 define 行：每个拍平名只登记一次（同 recvProto 被多个 MESSAGE_ID 共用也不重复）。
   const byFlat = new Map<string, ParsedDescriptor['messages'][number]>();
   for (const m of desc.messages) {
     const flat = ctx.fullToFlat.get(m.fullName);
-    if (flat) byFlat.set(flat, m);
+    if (!flat) continue;
+    targets.add(flat);
+    byFlat.set(flat, m);
   }
+
+  // ② 生成 define 行：每个拍平名只登记一次（同 recvProto 被多个 MESSAGE_ID 共用也不重复）。
   for (const flat of targets) {
     const msg = byFlat.get(flat);
     if (!msg || seen.has(flat)) continue;

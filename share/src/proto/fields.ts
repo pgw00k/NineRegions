@@ -5,475 +5,211 @@ import { FieldType, WireType } from '../common';
 import { define, FieldSchema, ID_BY_NAME } from '../schema';
 import { MESSAGE_ID } from '../MESSAGE_ID';
 
-define('GetAchieveInfoRequest', []);
-
-define('GetAchieveInfoResponse', [
-    { name: 'data', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'AchieveData', wire: WireType.LENDELIM },
-    { name: 'point', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('GetAchieveRewardRequest', [
-    { name: 'idList', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('GetAchieveRewardResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'reqIds', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'success', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'get', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'point', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'addAchi', number: 6, kind: FieldType.MESSAGE, repeated: true, typeName: 'AchieveData', wire: WireType.LENDELIM },
-  ]);
-
-define('ActivityEventDataPush', [
-    { name: 'data', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ActivityEventData', wire: WireType.LENDELIM },
-  ]);
-
-define('GetActivityRewardRequest', [
-    { name: 'actID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'eventID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'costPack', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
-    { name: 'otherIDs', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('GetActivityRewardResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'actID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'eventID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'data', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ActivityEventData', wire: WireType.LENDELIM },
-    { name: 'get', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'cost', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'point', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'totalPoint', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'change', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'otherDatas', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'ActivityEventData', wire: WireType.LENDELIM },
-  ]);
-
-define('GetActivityTradeRewardRequest', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('GetActivityTradeRewardResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'info', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'ActivityTradeInfo', wire: WireType.LENDELIM },
-    { name: 'get', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'cost', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('GetActitiviesResponse', [
-    { name: 'activities', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ActivityInfo', wire: WireType.LENDELIM },
-    { name: 'data', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'ActivityEventData', wire: WireType.LENDELIM },
-    { name: 'trade', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'ActivityTradeInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('GetActitiviesRequest', []);
-
-define('ArenaBattleComplete', [
-    { name: 'state', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
-    { name: 'countInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaBattleCountInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('ArenaBuyTicketRequest', [
-    { name: 'costPack', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
-  ]);
-
-define('ArenaBuyTicketResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
-    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'selectCombines', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('ArenaEnterResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
-    { name: 'selectCombines', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'countInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaBattleCountInfo', wire: WireType.LENDELIM },
-    { name: 'deckInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaHeroDeckInfo', wire: WireType.LENDELIM },
-    { name: 'groupInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaCardSelectGroup', wire: WireType.LENDELIM },
-  ]);
-
-define('ArenaEnterRequest', []);
-
-define('ArenaGiveUpRequest', []);
-
-define('ArenaGiveUpResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
-  ]);
-
-define('ArenaGetRewardRequest', []);
-
-define('ArenaGetRewardResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
-    { name: 'getInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('ArenaSelectCardsRequest', [
-    { name: 'defineId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'selectIdxs', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('ArenaSelectCardsResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
-    { name: 'defineId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'groupInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaCardSelectGroup', wire: WireType.LENDELIM },
-    { name: 'deckInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaHeroDeckInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('ArenaSelectHeroRequest', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ArenaSelectHeroResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
-    { name: 'id', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'groupInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaCardSelectGroup', wire: WireType.LENDELIM },
-    { name: 'deckInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaHeroDeckInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('SetAutoDeployRequest', [
-    { name: 'autoDeploy', number: 1, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetAutoDeployResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'autoDeploy', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('BattleCommonError', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-  ]);
-
-define('BattleEmojiRequest', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('BattleEmojiResponse', [
+define('BattleTarget', [
     { name: 'side', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'uid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('QueryExpressionShortcutReq', []);
-
-define('QueryExpressionShortcutRsp', [
-    { name: 'shortcuts', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('BattleReadyRequest', [
-    { name: 'version', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('PushBattleWaiting', [
-    { name: 'token', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'roomToken', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'roomType', number: 3, kind: FieldType.ENUM, repeated: false, typeName: 'RoomType', wire: WireType.VARINT },
-    { name: 'overtime', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('BattlePassActiveResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'info', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattlePassInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('BattlePassBuyExpRequest', [
-    { name: 'lv', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'costPack', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
-  ]);
-
-define('BattlePassBuyExpResponse', [
-    { name: 'level', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'exp', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'error', number: 3, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'diamondCost', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'change', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('BattlePassResponse', [
-    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattlePassInfo', wire: WireType.LENDELIM },
-    { name: 'freeRewardFlag', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'rewardFlag', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'quest', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattlePassQuest', wire: WireType.LENDELIM },
-  ]);
-
-define('BattlePassRequest', []);
-
-define('BattlePassRewardRequest', [
-    { name: 'lv', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'free', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('BattlePassRewardResponse', [
-    { name: 'freeRewardFlag', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'rewardFlag', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'reward', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'error', number: 4, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-  ]);
-
-define('PveBuyRequest', [
-    { name: 'buyType', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'buyId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'costPack', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
-  ]);
-
-define('PveBuyResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'buyType', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'buyId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'change', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'buyInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PVEBuyInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('CancelMatchRequest', [
-    { name: 'roomType', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('CancelMatchResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'battleRoomType', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'RoomType', wire: WireType.VARINT },
-    { name: 'battleAccountToken', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'battleRoomToken', number: 4, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('CardCompoundRequest', [
-    { name: 'cards', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('CardCompoundResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'request', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
-    { name: 'success', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
-    { name: 'getInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'costInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('CardResolveRequest', [
-    { name: 'cards', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('CardResolveResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'request', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
-    { name: 'success', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
-    { name: 'getInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'costInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'deckInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckLibrarySimple', wire: WireType.LENDELIM },
-  ]);
-
-define('ChallengeHeroRequest', [
-    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'deckId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChallengeHeroResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'hero', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'token', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'roomToken', number: 4, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('ChallengeHeroComplete', [
-    { name: 'heroSimple', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroSimple', wire: WireType.LENDELIM },
-    { name: 'buffInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemBuffInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('ChampBattleComplete', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'battleInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampBattleInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('ChampBuyTicketRequest', [
-    { name: 'costPack', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
-  ]);
-
-define('ChampBuyTicketResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'info', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampInfo', wire: WireType.LENDELIM },
-    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('ChampDelDeckRequest', [
-    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChampDelDeckResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'did', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChampEditDeckRequest', [
-    { name: 'deck', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('ChampEditDeckResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'deck', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('ChampGetInfoRequest', []);
-
-define('ChampGetInfoResponse', [
-    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('ChampGetWinRewardRequest', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChampGetWinRewardResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'rewardInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampRewardInfo', wire: WireType.LENDELIM },
-    { name: 'change', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('ChampGetRankRewardRequest', []);
-
-define('ChampGetRankRewardResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'change', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('ChangeDeckCardBackRequest', [
-    { name: 'dids', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'cardBack', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChangeDeckCardBackResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'dids', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'cardBack', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChangeDefaultCardBackRequest', [
-    { name: 'cardBack', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChangeDefaultCardBackResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'cardBack', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChangePlayerNameRequest', [
-    { name: 'name', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('ChangePlayerNameResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'name', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'lastChangeNameTime', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChatInfoRpt', [
-    { name: 'tp', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChatInfoNtf', [
-    { name: 'content', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ChatContent', wire: WireType.LENDELIM },
-  ]);
-
-define('ClearExpressionShortcutReq', [
-    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ClearExpressionShortcutRsp', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+define('Battlefield', [
+    { name: 'side', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('CookRequest', [
-    { name: 'recipeId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('CookResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'recipeId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'buffInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemBuffInfo', wire: WireType.LENDELIM },
-    { name: 'costInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('CreatePVERoomRequest', [
-    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('CardRelated', [
+    { name: 'uid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'cid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'sid', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cost', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'isMaterialized', number: 4, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'locationStatus', number: 5, kind: FieldType.ENUM, repeated: false, typeName: 'LocationStatus', wire: WireType.VARINT },
   ]);
 
-define('CreatePVERoomResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+define('Abilitie', [
+    { name: 'skillId', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'passiveSkillId', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'skillExpander', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'SkillExpander', wire: WireType.LENDELIM },
+    { name: 'atk', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'curDef', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'maxDef', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'isPrepare', number: 7, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'flyLayer', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'auraSkillId', number: 9, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
   ]);
 
-define('DailySignInRequest', [
+define('SkillExpander', [
+    { name: 'skillID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'expander', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('DeployActionSimple', [
+    { name: 'type', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ActionType', wire: WireType.VARINT },
+    { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cardUid', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'field', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'Battlefield', wire: WireType.LENDELIM },
+    { name: 'target', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattleTarget', wire: WireType.LENDELIM },
+  ]);
+
+define('Hit', [
+    { name: 'field', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'Battlefield', wire: WireType.LENDELIM },
+    { name: 'bufferId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'hurt', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'card', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'CardRelated', wire: WireType.LENDELIM },
+    { name: 'abilitie', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'Abilitie', wire: WireType.LENDELIM },
+    { name: 'attacker', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'Battlefield', wire: WireType.LENDELIM },
+  ]);
+
+define('HeroInfo', [
+    { name: 'side', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'heroID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'heroSkillID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'heroSkillCD', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'curMana', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'maxMana', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'curHP', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'maxHP', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'atk', number: 9, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'handCount', number: 10, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'deckCount', number: 11, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cemeteryCount', number: 12, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'tmpMana', number: 13, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('Talk', [
+    { name: 'field', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'Battlefield', wire: WireType.LENDELIM },
+    { name: 'talkIDs', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('Action', [
+    { name: 'b1', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'Battlefield', wire: WireType.LENDELIM },
+    { name: 'b2', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'Battlefield', wire: WireType.LENDELIM },
+    { name: 'skillId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'attackType', number: 4, kind: FieldType.ENUM, repeated: false, typeName: 'AttackType', wire: WireType.VARINT },
+    { name: 'hits', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'Hit', wire: WireType.LENDELIM },
+    { name: 'isPassive', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'heros', number: 7, kind: FieldType.MESSAGE, repeated: true, typeName: 'HeroInfo', wire: WireType.LENDELIM },
+    { name: 'talk', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'Talk', wire: WireType.LENDELIM },
+  ]);
+
+define('BattleLogUnit', [
+    { name: 'side', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'field', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cid', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'atk', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'def', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'maxDef', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'isMaterialized', number: 7, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'activeSkills', number: 8, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'passiveSkills', number: 9, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('BattleLogParams', [
+    { name: 'units', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleLogUnit', wire: WireType.LENDELIM },
+    { name: 'intParams', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('BattleLogSimple', [
+    { name: 'type', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'BattleLogType', wire: WireType.VARINT },
+    { name: 'side', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'BattleLogSide', wire: WireType.VARINT },
+    { name: 'battleParams', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleLogParams', wire: WireType.LENDELIM },
+  ]);
+
+define('IdPair', [
     { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('DailySignInResponse', [
+define('KickOut', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'info', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DailySignInInfo', wire: WireType.LENDELIM },
-    { name: 'reward', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
   ]);
 
-define('DeleteDeckRequest', [
-    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('DeleteDeckResponse', [
+define('CommonError', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'did', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'bandMid', number: 2, kind: FieldType.UINT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('DLC4ForgingReq', [
-    { name: 'eid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('ClickStatistic', [
+    { name: 'clickCount', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'bannerCount', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'IdPair', wire: WireType.LENDELIM },
+    { name: 'boardClick', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'IdPair', wire: WireType.LENDELIM },
   ]);
 
-define('DLC4ForgingRep', [
+define('TimeStampSimple', [
+    { name: 'time', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'zone', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('HeartbeatReq', [
+    { name: 'click', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ClickStatistic', wire: WireType.LENDELIM },
+  ]);
+
+define('HeartbeatRep', [
+    { name: 'timestamp', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'TimeStampSimple', wire: WireType.LENDELIM },
+    { name: 'moduleFlags', number: 2, kind: FieldType.BOOL, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('RegisterRequest', [
+    { name: 'username', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'password', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'version', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'phoneType', number: 4, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'playerType', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'deviceID', number: 6, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('RegisterResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'eid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'equipments', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'costInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'username', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'password', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
   ]);
 
-define('DLC4GetInfoReq', []);
-
-define('DLC4GetInfoRep', [
-    { name: 'stageInfos', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'DLC4StageSimple', wire: WireType.LENDELIM },
-    { name: 'characterInfos', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'DLC4CharacterSimple', wire: WireType.LENDELIM },
-    { name: 'equipments', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+define('LoginRequest', [
+    { name: 'username', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'password', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'version', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
   ]);
 
-define('DLC4SetEquipmentReq', [
-    { name: 'cid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'equipInfo', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('DLC4SetEquipmentRep', [
+define('LoginResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'cid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'equipInfo', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'index', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'token', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'host', number: 4, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'port', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('DLC4SetTalentReq', [
-    { name: 'cid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'talentInfo', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+define('LoginBySDKRequest', [
+    { name: 'userID', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'token', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'version', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'phoneType', number: 4, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'deviceID', number: 5, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'activationCode', number: 6, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'timestamp', number: 7, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'playerType', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('DLC4SetTalentRep', [
+define('LoginBySDKResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'cid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'talentInfo', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'index', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'token', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'host', number: 4, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'port', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('EditDeckRequest', [
-    { name: 'deck', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
+define('Logout', [
+    { name: 'uid', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'token', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
   ]);
 
-define('EditDeckResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'deck', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
+define('AnnouncementRequest', []);
+
+define('AnnouncementResponse', [
+    { name: 'title', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'content', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'cardmd5', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'pvemd5', number: 4, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('GuiderInfo', [
+    { name: 'value', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
   ]);
 
 define('EnterGameRequest', [
@@ -531,607 +267,51 @@ define('EnterGameResponse', [
     { name: 'gildingInfo', number: 36, kind: FieldType.MESSAGE, repeated: false, typeName: 'GildingInfo', wire: WireType.LENDELIM },
   ]);
 
-define('FirstChargePush', [
-    { name: 'firstCharge', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('MatchLadderRoomRequest', [
+    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'type', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('FirstChargeRewardReq', []);
-
-define('FirstChargeRewardRep', [
+define('MatchLadderRoomResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'get', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'firstCharge', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('QueryFailChargeOrderIDReq', []);
-
-define('QueryFailChargeOrderIDRsp', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'OrderID', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'status', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('FriendBehaviorRpt', [
-    { name: 'tp', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'EFriendBehaviorOp', wire: WireType.VARINT },
-    { name: 'ufid', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'did', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'fast', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('FriendBehaviorNtf', [
-    { name: 'tp', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'EFriendBehaviorOp', wire: WireType.VARINT },
-    { name: 'ufid', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'info', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'FriendInfo', wire: WireType.LENDELIM },
-    { name: 'over_fightwait_time', number: 4, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('FriendOpStatusNtf', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'battleAccountToken', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'battleRoomToken', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('FriendInfoRpt', []);
-
-define('FriendInfoNtf', [
-    { name: 'self', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'FriendInfo', wire: WireType.LENDELIM },
-    { name: 'invite', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'InviteFriendInfo', wire: WireType.LENDELIM },
-    { name: 'other', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'FriendInfo', wire: WireType.LENDELIM },
-    { name: 'search_list', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'FriendInfo', wire: WireType.LENDELIM },
-    { name: 'last_refresh_time', number: 5, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('FriendRefreshScenceRpt', [
-    { name: 'scene', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'FriendSceneState', wire: WireType.VARINT },
-  ]);
-
-define('FriendRefreshRearchNtf', [
-    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'FriendInfo', wire: WireType.LENDELIM },
-    { name: 'refresh_time', number: 2, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('FriendStateNtf', [
-    { name: 'uid', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EFriendState', wire: WireType.VARINT },
-    { name: 'offlineTime', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('GetDeckCodeReq', [
+define('EditDeckRequest', [
     { name: 'deck', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
   ]);
 
-define('GetDeckCodeRep', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'code', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('GetDeckDataReq', [
-    { name: 'code', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('GetDeckDataRep', [
+define('EditDeckResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
     { name: 'deck', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
   ]);
 
-define('GetFavorRewardRequest', [
-    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'favorRewardId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('DeleteDeckRequest', [
+    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('GetFavorRewardResponse', [
+define('DeleteDeckResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'hero', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'favorRewardId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'reward', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'rewardInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroFavorRewardInfo', wire: WireType.LENDELIM },
+    { name: 'did', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('GetGiftInfoRequest', []);
+define('EditDeckEquipRequest', [
+    { name: 'deckID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equips', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
 
-define('GetGiftInfoResponse', [
+define('EditDeckEquipResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'gifts', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'GiftInfoSimple', wire: WireType.LENDELIM },
-    { name: 'delGifts', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'GiftInfoSimple', wire: WireType.LENDELIM },
+    { name: 'deckID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('GetLoginActivityDataRep', [
-    { name: 'data', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'LoginActivitySimple', wire: WireType.LENDELIM },
+define('BattleMatchStatus', [
+    { name: 'status', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'type', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'RoomType', wire: WireType.VARINT },
   ]);
 
-define('GetLoginActivityRewardRep', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'groupId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'rewardIds', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'data', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'LoginActivitySimple', wire: WireType.LENDELIM },
-    { name: 'get', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('GetLoginActivityRewardReq', [
-    { name: 'groupId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('GetQuestionnaireRequest', []);
-
-define('GetQuestionnaireResponse', [
-    { name: 'data', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'QuestionnaireData', wire: WireType.LENDELIM },
-  ]);
-
-define('GetRankDetailResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'rankType', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'uid', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'ladder', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'LadderRankDetail', wire: WireType.LENDELIM },
-    { name: 'infi', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiRankDetail', wire: WireType.LENDELIM },
-    { name: 'champ', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampRankDetail', wire: WireType.LENDELIM },
-  ]);
-
-define('GetRankDetailRequest', [
-    { name: 'rankType', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'uid', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('GetRecordInfoRequest', [
-    { name: 'code', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('GetRecordInfoResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'code', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'info', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'RecordBaseInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('GetRecordListRequest', []);
-
-define('GetRecordListResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'recentRecords', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'RecordBaseInfo', wire: WireType.LENDELIM },
-    { name: 'favorRecords', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'RecordBaseInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('GetRankResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'rankType', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'beginIdx', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'endIdx', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'selfRank', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'selfScore', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'ladder', number: 7, kind: FieldType.MESSAGE, repeated: true, typeName: 'LadderRankSimple', wire: WireType.LENDELIM },
-    { name: 'infi', number: 8, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiRankSimple', wire: WireType.LENDELIM },
-    { name: 'selfInfi', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiRankSimple', wire: WireType.LENDELIM },
-    { name: 'champ', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'ChampRankSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('GetRankRequest', [
-    { name: 'rankType', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'begin', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'end', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('GetSharedDecksReq', []);
-
-define('GetSharedDecksRep', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'infos', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'SharedDeckInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('GetShopInfoRequest', [
-    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('GetShopInfoResponse', [
-    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'info', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShopSimpleInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('GetSignInInfoRequest', []);
-
-define('GetSignInInfoResponse', [
-    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'DailySignInInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('GildingResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'gildingId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'simple', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'GildingSimple', wire: WireType.LENDELIM },
-    { name: 'simpleUse', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'GildingSimple', wire: WireType.LENDELIM },
-    { name: 'cards', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('GildingRequest', [
-    { name: 'gildingId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cards', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'costPack', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
-  ]);
-
-define('GildingResetResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'cards', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'useList', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'GildingSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('GildingResetRequest', [
-    { name: 'cards', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('GiveMeFiveRequest', [
-    { name: 'cmd', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'info', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('GiveMeFiveResponse', [
-    { name: 'result', number: 1, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'prizeInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'playerInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PlayerInfoSimple', wire: WireType.LENDELIM },
-    { name: 'pveInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PVEInfoSimple', wire: WireType.LENDELIM },
-    { name: 'ladderSeason', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'LadderSeasonSimple', wire: WireType.LENDELIM },
-    { name: 'signInInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'DailySignInInfo', wire: WireType.LENDELIM },
-    { name: 'battlers', number: 7, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattlerSimple', wire: WireType.LENDELIM },
-    { name: 'heroInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroLibrarySimple', wire: WireType.LENDELIM },
-    { name: 'battlePass', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattlePassResponse', wire: WireType.LENDELIM },
-    { name: 'equipmentInfo', number: 10, kind: FieldType.MESSAGE, repeated: false, typeName: 'EquipmentInfoSimple', wire: WireType.LENDELIM },
-    { name: 'buffInfo', number: 11, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemBuffInfo', wire: WireType.LENDELIM },
-    { name: 'cmd', number: 12, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'get', number: 13, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'cost', number: 14, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('GuiderUpdateRequest', [
-    { name: 'infoList', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'GuiderUpdateInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('GuiderUpdateResponse', []);
-
-define('HeartbeatReq', [
-    { name: 'click', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ClickStatistic', wire: WireType.LENDELIM },
-  ]);
-
-define('HeartbeatRep', [
-    { name: 'timestamp', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'TimeStampSimple', wire: WireType.LENDELIM },
-    { name: 'moduleFlags', number: 2, kind: FieldType.BOOL, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('HeroGiveGiftRequest', [
-    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'itemId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'count', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('HeroGiveGiftResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'heroSimple', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroSimple', wire: WireType.LENDELIM },
-    { name: 'dailyFavor', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroDailyFavor', wire: WireType.LENDELIM },
-    { name: 'cost', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiBuyMessageReq', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'costPack', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiBuyMessageRep', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiEnterResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'round', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'state', number: 3, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'selectJobs', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'selectHeros', number: 5, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'cards', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'stageInfo', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStageInfo', wire: WireType.LENDELIM },
-    { name: 'heroInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
-    { name: 'itemInfo', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
-    { name: 'globalData', number: 10, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
-    { name: 'shopInfo', number: 11, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiOpenShopInfo', wire: WireType.LENDELIM },
-    { name: 'passDifficulty', number: 12, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'selectDifficulty', number: 13, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'selectedDeckGroups', number: 14, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('InfiEnterRequest', [
-    { name: 'resetFlag', number: 1, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiUnlockEventReq', [
-    { name: 'eventId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'costPack', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiUnlockEventRep', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'eventId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiExitStageRequest', []);
-
-define('InfiExitStageResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-  ]);
-
-define('InfiGetSimpleDataResponse', [
-    { name: 'unlockData', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiUnlockData', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiGetSimpleDataRequest', []);
-
-define('InfiGetStaticDataRep', [
-    { name: 'data', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStaticData', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiGetStaticDataReq', []);
-
-define('GetInfiStoryRequest', []);
-
-define('GetInfiStoryResponse', [
-    { name: 'storyEvents', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('InfiBattleComplete', [
-    { name: 'state', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'isWin', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'source', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiBattleSource', wire: WireType.LENDELIM },
-    { name: 'heroInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
-    { name: 'reward', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattleReward', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiStateChangePush', [
-    { name: 'curHP', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'maxHP', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'silver', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiRecoverRequest', []);
-
-define('InfiRecoverResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'heroInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiDelCardRequest', [
-    { name: 'cardID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiDelCardResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'cardID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
-    { name: 'innDelCount', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'globalData', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
-    { name: 'costInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'get', number: 9, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-    { name: 'cost', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiDelSpellEquipRequest', [
-    { name: 'slotIndex', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiDelSpellEquipResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'slotIndex', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiRoundEndPush', [
-    { name: 'curRound', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'isPassed', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'scoreInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiScoreInfo', wire: WireType.LENDELIM },
-    { name: 'historyState', number: 4, kind: FieldType.ENUM, repeated: false, typeName: 'InfiScoreState', wire: WireType.VARINT },
-    { name: 'get', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'difficulty', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiSelectRewardRequest', [
-    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'option', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'OptionParam', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiSelectRewardResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'type', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
-    { name: 'heroInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
-    { name: 'globalData', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
-    { name: 'costInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'getInfo', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'get', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-    { name: 'cost', number: 11, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiSelectJobRequest', [
-    { name: 'job', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiSelectJobResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'job', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'selectHeros', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('InfiSelectDifficultyReq', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiSelectDifficultyRep', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'selectId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'heroInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
-    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
-    { name: 'stageInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStageInfo', wire: WireType.LENDELIM },
-    { name: 'cards', number: 7, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'shopInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiOpenShopInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiSelectDeckRequest', [
-    { name: 'deckGroupId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiSelectDeckResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'deckGroupId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'itemInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
-    { name: 'stageInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStageInfo', wire: WireType.LENDELIM },
-    { name: 'heroInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
-    { name: 'globalData', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
-    { name: 'cards', number: 8, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'shopInfo', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiOpenShopInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiSelectHeroRequest', [
-    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiSelectHeroResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'hero', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'heroInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
-    { name: 'selectedDeckGroups', number: 5, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('InfiSelectStageRequest', [
-    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiSelectStageResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'index', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'stageInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStageInfo', wire: WireType.LENDELIM },
-    { name: 'eventInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiEventInfo', wire: WireType.LENDELIM },
-    { name: 'shopInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiShopInfo', wire: WireType.LENDELIM },
-    { name: 'innInfo', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiInnInfo', wire: WireType.LENDELIM },
-    { name: 'boxInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiBoxInfo', wire: WireType.LENDELIM },
-    { name: 'globalData', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
-    { name: 'enemyId', number: 10, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiSelectEventRequest', [
-    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'optList', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'OptionParam', wire: WireType.LENDELIM },
-    { name: 'giveup', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiSelectEventResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'index', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'optList', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'OptionParam', wire: WireType.LENDELIM },
-    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
-    { name: 'heroInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
-    { name: 'cards', number: 7, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'costInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'get', number: 9, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-    { name: 'cost', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiBuyItemRequest', [
-    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'itemID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'param', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'slot', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiBuyItemResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'itemID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'param', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'slot', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cards', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'itemInfo', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
-    { name: 'globalData', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
-    { name: 'costInfo', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'get', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-    { name: 'cost', number: 11, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiOpenShopBuyRequest', [
-    { name: 'slot', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiOpenShopBuyResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'slot', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'get', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-    { name: 'cost', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiOpenShopExitRequest', []);
-
-define('InfiOpenShopExitResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'stageInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStageInfo', wire: WireType.LENDELIM },
-    { name: 'cards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiRefreshOpenShopReq', [
-    { name: 'costPack', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiRefreshOpenShopRep', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'shop', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiOpenShopInfo', wire: WireType.LENDELIM },
-    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiGetBoxRequest', [
-    { name: 'slotIndex', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiGetBoxResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'itemInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
-    { name: 'get', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-    { name: 'cost', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiUnlockDifficultyReq', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'costPack', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiUnlockDifficultyRep', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('InfiUpCardRequest', [
-    { name: 'cardID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiUpCardResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
-    { name: 'cardID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
-    { name: 'shopUpCount', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'globalData', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
-    { name: 'costInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'get', number: 9, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-    { name: 'cost', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
-  ]);
-
-define('PushLevelup', [
-    { name: 'levelup', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'LevelupSimple', wire: WireType.LENDELIM },
+define('LogicReconnectionRequest', [
+    { name: 'version', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'ip', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
   ]);
 
 define('LogicReconnectionResponse', [
@@ -1167,162 +347,43 @@ define('LogicReconnectionResponse', [
     { name: 'matchStatus', number: 36, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattleMatchStatus', wire: WireType.LENDELIM },
   ]);
 
-define('TaskPointRewardRequest', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('CreatePVERoomRequest', [
+    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'sid', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('TaskPointRewardResponse', [
+define('CreatePVERoomResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'prizeInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
   ]);
 
-define('TaskDataResponse', [
-    { name: 'list', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'TaskSimple', wire: WireType.LENDELIM },
-    { name: 'taskPoint', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'TaskPointSimple', wire: WireType.LENDELIM },
+define('CancelMatchRequest', [
+    { name: 'roomType', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('TaskDataRequest', []);
-
-define('TaskRewardRequest', [
-    { name: 'taskID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('TaskRewardResponse', [
+define('CancelMatchResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'taskID', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'prizeInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'point', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'newTasks', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'TaskSimple', wire: WireType.LENDELIM },
+    { name: 'battleRoomType', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'RoomType', wire: WireType.VARINT },
+    { name: 'battleAccountToken', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'battleRoomToken', number: 4, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
   ]);
 
-define('ModifyEquipRequest', [
-    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'equips', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'equipType', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
+define('SeasonRewardRequest', []);
 
-define('ModifyEquipResponse', [
+define('SeasonRewardResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'heroEquip', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroEquipSimple', wire: WireType.LENDELIM },
-    { name: 'equipType', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'curSID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'preSID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'ladderLevel', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'prizeInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
   ]);
 
-define('TipsNotice', [
-    { name: 'tp', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'val', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'val2', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'val3', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
+define('GetGiftInfoRequest', []);
 
-define('PayResponse', [
+define('GetGiftInfoResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'productId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'get', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'info', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PayInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('PullActAcceptReq', [
-    { name: 'code', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('PullActAcceptRep', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'code', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'inviterUid', number: 4, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'inviterName', number: 5, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'inviterUFID', number: 6, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('PullActInfoReq', []);
-
-define('PullActInfoRep', [
-    { name: 'inviterInfo', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'PullActInviterInfo', wire: WireType.LENDELIM },
-    { name: 'accepterInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PullActAccepterInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('PullActRewardReq', [
-    { name: 'taskId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('PullActRewardRep', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'taskId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'change', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'taskInfo', number: 6, kind: FieldType.MESSAGE, repeated: true, typeName: 'PullActTaskSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('PushHeroSimpleInfo', [
-    { name: 'heroSimple', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'HeroSimple', wire: WireType.LENDELIM },
-    { name: 'dailyFavors', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'HeroDailyFavor', wire: WireType.LENDELIM },
-  ]);
-
-define('PushLadderComplete', [
-    { name: 'ladderSeason', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'LadderSeasonSimple', wire: WireType.LENDELIM },
-    { name: 'dailyWin', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'upReward', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'hero', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroSimple', wire: WireType.LENDELIM },
-    { name: 'deck', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('PushNoticeRsp', [
-    { name: 'info', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('PushPrizeInfo', [
-    { name: 'get', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'cost', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('GetActivityPveInfoReq', [
-    { name: 'activity_id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('GetActivityPveInfoRsp', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'pve_info', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'ActivityPveSimple', wire: WireType.LENDELIM },
-    { name: 'activity_id', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('PushPVEComplete', [
-    { name: 'chapter', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'stage', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'prize', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'hero', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroSimple', wire: WireType.LENDELIM },
-    { name: 'buffInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemBuffInfo', wire: WireType.LENDELIM },
-    { name: 'isWin', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'dlc4', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'DLC4BattleResultInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('GetDailyPveInfoResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'simple', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DailyPveSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('GetDailyPveInfoRequest', []);
-
-define('QueryExpressionInfoReq', []);
-
-define('QueryExpressionInfoRsp', [
-    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ExpressionInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('QueryFriendInfoReq', []);
-
-define('QueryFriendInfoRsp', [
-    { name: 'self', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'FriendInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('QueryPersonalInfoReq', []);
-
-define('QueryPersonalInfoRsp', [
-    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'PersonalSimpleInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('QueryUserTitelInfoReq', []);
-
-define('QueryUserTitelInfoRsp', [
-    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'UserTitleInfo', wire: WireType.LENDELIM },
+    { name: 'gifts', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'GiftInfoSimple', wire: WireType.LENDELIM },
+    { name: 'delGifts', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'GiftInfoSimple', wire: WireType.LENDELIM },
   ]);
 
 define('ReceiveGiftRequest', [
@@ -1336,211 +397,14 @@ define('ReceiveGiftResponse', [
     { name: 'delGifts', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'GiftInfoSimple', wire: WireType.LENDELIM },
   ]);
 
-define('FavorRecordRequest', [
-    { name: 'code', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+define('ChapterRewardRequest', [
+    { name: 'cid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('FavorRecordResponse', [
+define('ChapterRewardResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'code', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('DeleteRecordRequest', [
-    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'deleteAll', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'deleteCodes', number: 3, kind: FieldType.STRING, repeated: true, wire: WireType.LENDELIM },
-  ]);
-
-define('DeleteRecordResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'type', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'deleteAll', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'deleteCodes', number: 4, kind: FieldType.STRING, repeated: true, wire: WireType.LENDELIM },
-  ]);
-
-define('GetRecordDataRequest', [
-    { name: 'code', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'side', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('GetRecordDataResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'record', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattleRecord', wire: WireType.LENDELIM },
-  ]);
-
-define('AnnounceLamp', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'content', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'circleTimes', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'priority', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'paras', number: 5, kind: FieldType.STRING, repeated: true, wire: WireType.LENDELIM },
-    { name: 'twcontent', number: 6, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'isGmSend', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'endTime', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('PveBuyPush', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'productId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'buyInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PVEBuyInfoSimple', wire: WireType.LENDELIM },
-    { name: 'change', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('ShopBuyResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'type', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'buyID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'buyCount', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'items', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'ItemInfoSimple', wire: WireType.LENDELIM },
-    { name: 'change', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'shopInfo', number: 7, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShopSimpleInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('SeasonRewardResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'curSID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'preSID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'ladderLevel', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'prizeInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('SeasonRewardRequest', []);
-
-define('SetDefaultShortcutReq', [
-    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetDefaultShortcutRsp', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetExpressionShortcutReq', [
-    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'location', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'id', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetExpressionShortcutRsp', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'shortcuts', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('SetHeadInfoReq', [
-    { name: 'headPic', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'headPicEx', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetHeadInfoRsp', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'headPic', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'headPicEx', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetHeadPicExReq', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetHeadPicExRsp', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetHeadPicReq', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetHeadPicRsp', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetHeroSkinRequest', [
-    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'skin', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetHeroSkinResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'hero', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'skin', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetPlayerNameRequest', [
-    { name: 'name', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'gender', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetPlayerNameResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'name', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'gender', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'headPic', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'personalInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PersonalSimpleInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('SetUserTitleReq', [
-    { name: 'titleA', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'titleB', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'backGround', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SetUserTitleRsp', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'title', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'backGround', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'titleA', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'titleB', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ShareDeckReq', [
-    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'tag', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ShareDeckRep', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'deck', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('ShopBuyRequest', [
-    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'buyID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'buyCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'couponBuyCount', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'costPack', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
-  ]);
-
-define('ArenaBattleRequest', []);
-
-define('ArenaBattleResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-  ]);
-
-define('ChampBattleRequest', [
-    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChampBattleResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-  ]);
-
-define('MatchLadderRoomRequest', [
-    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'type', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('MatchLadderRoomResponse', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-  ]);
-
-define('TransChatInfoRpt', [
-    { name: 'content', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChatContent', wire: WireType.LENDELIM },
-  ]);
-
-define('TransChatInfoNtf', [
-    { name: 'content', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChatContent', wire: WireType.LENDELIM },
+    { name: 'cid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'prize', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
   ]);
 
 define('SectionRewardRequest', [
@@ -1553,61 +417,47 @@ define('SectionRewardResponse', [
     { name: 'prize', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
   ]);
 
-define('UnloadExpressionShortcutReq', [
-    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'location', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('EditSettingRequest', [
+    { name: 'setting', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'SettingSimple', wire: WireType.LENDELIM },
   ]);
 
-define('UnloadExpressionShortcutRsp', [
+define('EditSettingResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'shortcuts', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
+    { name: 'setting', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'SettingSimple', wire: WireType.LENDELIM },
   ]);
 
-define('UpdateQuestionnaireRequest', [
-    { name: 'isCommit', number: 1, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'data', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'QuestionnaireData', wire: WireType.LENDELIM },
+define('ExchangeGiftCodeRequest', [
+    { name: 'giftCode', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
   ]);
 
-define('UseItemRequest', [
-    { name: 'item', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('UseItemResponse', [
+define('ExchangeGiftCodeResponse', [
     { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'getInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'costInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-    { name: 'buffInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemBuffInfo', wire: WireType.LENDELIM },
   ]);
 
-define('UseSharedDeckNt', [
-    { name: 'id', number: 1, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+define('PushPVEComplete', [
+    { name: 'chapter', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'stage', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'prize', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'hero', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroSimple', wire: WireType.LENDELIM },
+    { name: 'buffInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemBuffInfo', wire: WireType.LENDELIM },
+    { name: 'isWin', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'dlc4', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'DLC4BattleResultInfo', wire: WireType.LENDELIM },
   ]);
 
-define('UseSkinReq', [
-    { name: 'heroID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'skinID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'isKanBan', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+define('PushLevelup', [
+    { name: 'levelup', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'LevelupSimple', wire: WireType.LENDELIM },
   ]);
 
-define('UseSkinRsp', [
-    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
-    { name: 'heroID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'skinID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'isKanBan', number: 4, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+define('PushLadderComplete', [
+    { name: 'ladderSeason', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'LadderSeasonSimple', wire: WireType.LENDELIM },
+    { name: 'dailyWin', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'upReward', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'hero', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroSimple', wire: WireType.LENDELIM },
+    { name: 'deck', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
   ]);
 
-define('ChangeCardRequest', [
-    { name: 'cardUids', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'quickBattle', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ChangeCardResponse', [
-    { name: 'changedCards', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple_2', wire: WireType.LENDELIM },
-    { name: 'quickBattle', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'actions', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'Action', wire: WireType.LENDELIM },
-    { name: 'selectedCards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'logs', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleLogSimple', wire: WireType.LENDELIM },
+define('BattleReadyRequest', [
+    { name: 'version', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
   ]);
 
 define('BattleStartResponse', [
@@ -1624,20 +474,95 @@ define('BattleStartResponse', [
     { name: 'enemyID', number: 11, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('LogicReconnectionRequest', [
+define('ChangeCardRequest', [
+    { name: 'cardUids', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'quickBattle', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChangeCardResponse', [
+    { name: 'changedCards', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple_2', wire: WireType.LENDELIM },
+    { name: 'quickBattle', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'actions', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'Action', wire: WireType.LENDELIM },
+    { name: 'selectedCards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'logs', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleLogSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('DeploymentStartResponse', [
+    { name: 'waitingTime', number: 1, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+    { name: 'battlers', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattlerSimple', wire: WireType.LENDELIM },
+    { name: 'logs', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleLogSimple', wire: WireType.LENDELIM },
+    { name: 'penaltyTimes', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'dealCached', number: 5, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('DeploymentCompleteRequest', [
+    { name: 'action', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'DeployActionSimple', wire: WireType.LENDELIM },
+    { name: 'penalty', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('FightStartResponse', [
+    { name: 'roundNum', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'battlers', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattlerSimple', wire: WireType.LENDELIM },
+    { name: 'logs', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleLogSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('BattleEmojiRequest', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('BattleEmojiResponse', [
+    { name: 'side', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetAutoDeployRequest', [
+    { name: 'autoDeploy', number: 1, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetAutoDeployResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'autoDeploy', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('BattleReconnectionRequest', [
     { name: 'version', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'ip', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'accountToken', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'ip', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
   ]);
 
-define('ClickStatistic', [
-    { name: 'clickCount', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'bannerCount', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'IdPair', wire: WireType.LENDELIM },
-    { name: 'boardClick', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'IdPair', wire: WireType.LENDELIM },
+define('BattleReconnectionResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'token', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'roomToken', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'roomType', number: 4, kind: FieldType.ENUM, repeated: false, typeName: 'RoomType', wire: WireType.VARINT },
+    { name: 'quickBattle', number: 5, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'roundNum', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'step', number: 7, kind: FieldType.ENUM, repeated: false, typeName: 'StepType', wire: WireType.VARINT },
+    { name: 'needFlush', number: 8, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'side', number: 9, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'selfWin', number: 10, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'enemyWin', number: 11, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'battlers', number: 12, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattlerSimple', wire: WireType.LENDELIM },
+    { name: 'infos', number: 13, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattlerInfoSimple', wire: WireType.LENDELIM },
+    { name: 'selectedCards', number: 14, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'waitingTime', number: 15, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+    { name: 'enemyID', number: 16, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'logs', number: 17, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleLogSimple', wire: WireType.LENDELIM },
+    { name: 'autoDeploy', number: 18, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'deployAction', number: 19, kind: FieldType.MESSAGE, repeated: true, typeName: 'DeployActionSimple', wire: WireType.LENDELIM },
+    { name: 'penaltyTimes', number: 20, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'dealCached', number: 21, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
   ]);
 
-define('TimeStampSimple', [
-    { name: 'time', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'zone', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('PushBattleWaiting', [
+    { name: 'token', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'roomToken', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'roomType', number: 3, kind: FieldType.ENUM, repeated: false, typeName: 'RoomType', wire: WireType.VARINT },
+    { name: 'overtime', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('BattleCommonError', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
   ]);
 
 define('PlayerInfoSimple', [
@@ -1655,130 +580,6 @@ define('PlayerInfoSimple', [
     { name: 'lastChangeNameTime', number: 12, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('CardLibrarySimple', [
-    { name: 'cards', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
-    { name: 'cardBacks', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('DeckLibrarySimple', [
-    { name: 'decks', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'DeckSimple', wire: WireType.LENDELIM },
-    { name: 'cardBack', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('HeroLibrarySimple', [
-    { name: 'heros', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'HeroSimple', wire: WireType.LENDELIM },
-    { name: 'dailyFavors', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'HeroDailyFavor', wire: WireType.LENDELIM },
-    { name: 'rewardInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroFavorRewardInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('ItemInfoSimple', [
-    { name: 'items', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ItemSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('EquipmentInfoSimple', [
-    { name: 'equipments', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'EquipmentSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('ItemBuffInfo', [
-    { name: 'buffs', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ItemBuffSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('PVEInfoSimple', [
-    { name: 'chapters', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ChapterSimple', wire: WireType.LENDELIM },
-    { name: 'stages', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'StageSimple', wire: WireType.LENDELIM },
-    { name: 'rewardedSections', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'buyInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PVEBuyInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('LadderSeasonSimple', [
-    { name: 'sid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'ladderLevel', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'ladderStar', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'meritPoint', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'dailyWinCount', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'historyBestLevel', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'curBestLevel', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('SettingSimple', [
-    { name: 'backgroundMusic', number: 1, kind: FieldType.FLOAT, repeated: false, wire: WireType.FIXED32 },
-    { name: 'soundEffect', number: 2, kind: FieldType.FLOAT, repeated: false, wire: WireType.FIXED32 },
-    { name: 'kanban', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'disableBGM', number: 4, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'disableSE', number: 5, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'quickBattle', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'ignoreQBRequest', number: 7, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ActivitySimple', [
-    { name: 'actID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'value', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'completeCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('GuiderInfo', [
-    { name: 'value', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('DailySignInInfo', [
-    { name: 'nextSignInId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'lastSignInTime', number: 2, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
-    { name: 'signInCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'canSign', number: 4, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('AchieveData', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'value', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'reward', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('HeroEquipSimple', [
-    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'equips', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('LoginActivitySimple', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'rewardIds', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'flag', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'waitForRewards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'loginDays', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('ShopSimpleInfo', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'buyCount', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'totalBuyCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'type', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'floorCounts', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'FloorCount', wire: WireType.LENDELIM },
-  ]);
-
-define('PayInfo', [
-    { name: 'payProducts', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('ChampSimpleInfo', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'state', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'exitTimes', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'battleInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampBattleInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('PersonalSimpleInfo', [
-    { name: 'headPic_list', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'headPicEx_list', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('ExpressionInfo', [
-    { name: 'expressionList', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('UserTitleInfo', [
-    { name: 'userTitleList', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'backGroundList', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
 define('PlayerExtraInfoSimple', [
     { name: 'headPic', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'headPicEx', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
@@ -1790,13 +591,32 @@ define('PlayerExtraInfoSimple', [
     { name: 'cur_shortcut', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('SkinInfo', [
-    { name: 'skinList', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'skinData', wire: WireType.LENDELIM },
+define('MoneySimple', [
+    { name: 'gold', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'sliver', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'diamond', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'ash', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'jade', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('GildingInfo', [
-    { name: 'gildingList', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'GildingSimple', wire: WireType.LENDELIM },
-    { name: 'useList', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'GildingSimple', wire: WireType.LENDELIM },
+define('LevelInfoSimple', [
+    { name: 'level', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'exp', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('CardLibrarySimple', [
+    { name: 'cards', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
+    { name: 'cardBacks', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('CardSimple', [
+    { name: 'cid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('DeckLibrarySimple', [
+    { name: 'decks', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'DeckSimple', wire: WireType.LENDELIM },
+    { name: 'cardBack', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('DeckSimple', [
@@ -1815,35 +635,6 @@ define('DeckSimple', [
     { name: 'shared', number: 13, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('BattleMatchStatus', [
-    { name: 'status', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'type', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'RoomType', wire: WireType.VARINT },
-  ]);
-
-define('PrizeInfoSimple', [
-    { name: 'prize', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'PrizeSimple', wire: WireType.LENDELIM },
-    { name: 'money', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'MoneySimple', wire: WireType.LENDELIM },
-    { name: 'levelInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'LevelInfoSimple', wire: WireType.LENDELIM },
-    { name: 'cards', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
-    { name: 'items', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'ItemSimple', wire: WireType.LENDELIM },
-    { name: 'equips', number: 6, kind: FieldType.MESSAGE, repeated: true, typeName: 'EquipmentSimple', wire: WireType.LENDELIM },
-    { name: 'hero', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroSimple', wire: WireType.LENDELIM },
-    { name: 'cardBacks', number: 8, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'personalInfo', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'PersonalSimpleInfo', wire: WireType.LENDELIM },
-    { name: 'expressionInfo', number: 10, kind: FieldType.MESSAGE, repeated: false, typeName: 'ExpressionInfo', wire: WireType.LENDELIM },
-    { name: 'userTitleInfo', number: 11, kind: FieldType.MESSAGE, repeated: false, typeName: 'UserTitleInfo', wire: WireType.LENDELIM },
-    { name: 'skinInfo', number: 12, kind: FieldType.MESSAGE, repeated: false, typeName: 'SkinInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('GiftInfoSimple', [
-    { name: 'mid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'title', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'content', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'attachList', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'PrizeSimple', wire: WireType.LENDELIM },
-    { name: 'expireTime', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'tmpId', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
 define('HeroSimple', [
     { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'unlockState', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
@@ -1851,75 +642,6 @@ define('HeroSimple', [
     { name: 'favorLv', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'curSkin', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'kanBanSkin', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('DLC4BattleResultInfo', [
-    { name: 'isFristReward', number: 1, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'starInfo', number: 2, kind: FieldType.BOOL, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('LevelupSimple', [
-    { name: 'level', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'prizeInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('BattlerSimple', [
-    { name: 'heroInfo', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroInfo', wire: WireType.LENDELIM },
-    { name: 'hand', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple_2', wire: WireType.LENDELIM },
-    { name: 'battleFields', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleFieldSimple', wire: WireType.LENDELIM },
-    { name: 'deckIDs', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'cemeteryIDs', number: 5, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'equipIDs', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('Action', [
-    { name: 'b1', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'Battlefield', wire: WireType.LENDELIM },
-    { name: 'b2', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'Battlefield', wire: WireType.LENDELIM },
-    { name: 'skillId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'attackType', number: 4, kind: FieldType.ENUM, repeated: false, typeName: 'AttackType', wire: WireType.VARINT },
-    { name: 'hits', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'Hit', wire: WireType.LENDELIM },
-    { name: 'isPassive', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'heros', number: 7, kind: FieldType.MESSAGE, repeated: true, typeName: 'HeroInfo', wire: WireType.LENDELIM },
-    { name: 'talk', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'Talk', wire: WireType.LENDELIM },
-  ]);
-
-define('BattlerInfoSimple', [
-    { name: 'side', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'name', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'hero', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'job', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cardBack', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'ladderLv', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'ladderStar', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'meritPoint', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'playerTitle', number: 9, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'skin', number: 10, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'gildingUse', number: 11, kind: FieldType.MESSAGE, repeated: true, typeName: 'GildingSimple', wire: WireType.LENDELIM },
-  ]);
-
-define('CardSimple_2', [
-    { name: 'uid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cost', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'isMaterialized', number: 4, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'abilitie', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'Abilitie', wire: WireType.LENDELIM },
-  ]);
-
-define('BattleLogSimple', [
-    { name: 'type', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'BattleLogType', wire: WireType.VARINT },
-    { name: 'side', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'BattleLogSide', wire: WireType.VARINT },
-    { name: 'battleParams', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleLogParams', wire: WireType.LENDELIM },
-  ]);
-
-define('ExpressionSimpleInfo', [
-    { name: 'shortcut_1', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
-    { name: 'shortcut_2', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
-    { name: 'shortcut_3', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
-  ]);
-
-define('CardSimple', [
-    { name: 'cid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('HeroDailyFavor', [
@@ -1932,16 +654,46 @@ define('HeroFavorRewardInfo', [
     { name: 'rewardId', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
   ]);
 
+define('HeroLibrarySimple', [
+    { name: 'heros', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'HeroSimple', wire: WireType.LENDELIM },
+    { name: 'dailyFavors', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'HeroDailyFavor', wire: WireType.LENDELIM },
+    { name: 'rewardInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroFavorRewardInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('ItemInfoSimple', [
+    { name: 'items', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ItemSimple', wire: WireType.LENDELIM },
+  ]);
+
 define('ItemSimple', [
     { name: 'iid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'updateTime', number: 3, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
   ]);
 
+define('EquipmentInfoSimple', [
+    { name: 'equipments', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'EquipmentSimple', wire: WireType.LENDELIM },
+  ]);
+
 define('EquipmentSimple', [
     { name: 'sid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'eid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'updateTime', number: 3, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('BufferInfoSimple', [
+    { name: 'buffers', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'BufferSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('BufferSimple', [
+    { name: 'bid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'endTime', number: 2, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('PVEInfoSimple', [
+    { name: 'chapters', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ChapterSimple', wire: WireType.LENDELIM },
+    { name: 'stages', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'StageSimple', wire: WireType.LENDELIM },
+    { name: 'rewardedSections', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'buyInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PVEBuyInfoSimple', wire: WireType.LENDELIM },
   ]);
 
 define('ChapterSimple', [
@@ -1962,50 +714,58 @@ define('PVEBuyInfoSimple', [
     { name: 'dlc4', number: 4, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
   ]);
 
+define('PrizeInfoSimple', [
+    { name: 'prize', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'PrizeSimple', wire: WireType.LENDELIM },
+    { name: 'money', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'MoneySimple', wire: WireType.LENDELIM },
+    { name: 'levelInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'LevelInfoSimple', wire: WireType.LENDELIM },
+    { name: 'cards', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
+    { name: 'items', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'ItemSimple', wire: WireType.LENDELIM },
+    { name: 'equips', number: 6, kind: FieldType.MESSAGE, repeated: true, typeName: 'EquipmentSimple', wire: WireType.LENDELIM },
+    { name: 'hero', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroSimple', wire: WireType.LENDELIM },
+    { name: 'cardBacks', number: 8, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'personalInfo', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'PersonalSimpleInfo', wire: WireType.LENDELIM },
+    { name: 'expressionInfo', number: 10, kind: FieldType.MESSAGE, repeated: false, typeName: 'ExpressionInfo', wire: WireType.LENDELIM },
+    { name: 'userTitleInfo', number: 11, kind: FieldType.MESSAGE, repeated: false, typeName: 'UserTitleInfo', wire: WireType.LENDELIM },
+    { name: 'skinInfo', number: 12, kind: FieldType.MESSAGE, repeated: false, typeName: 'SkinInfo', wire: WireType.LENDELIM },
+  ]);
+
 define('PrizeSimple', [
     { name: 'itemId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('MoneySimple', [
-    { name: 'gold', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'sliver', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'diamond', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'ash', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'jade', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('LevelInfoSimple', [
+define('LevelupSimple', [
     { name: 'level', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'exp', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'prizeInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
   ]);
 
-define('Abilitie', [
-    { name: 'skillId', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'passiveSkillId', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'skillExpander', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'SkillExpander', wire: WireType.LENDELIM },
-    { name: 'atk', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'curDef', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'maxDef', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'isPrepare', number: 7, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'flyLayer', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'auraSkillId', number: 9, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+define('LadderSeasonSimple', [
+    { name: 'sid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'ladderLevel', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'ladderStar', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'meritPoint', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'dailyWinCount', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'historyBestLevel', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'curBestLevel', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('HeroInfo', [
-    { name: 'side', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'heroID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'heroSkillID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'heroSkillCD', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'curMana', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'maxMana', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'curHP', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'maxHP', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'atk', number: 9, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'handCount', number: 10, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'deckCount', number: 11, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cemeteryCount', number: 12, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'tmpMana', number: 13, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('GiftInfoSimple', [
+    { name: 'mid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'title', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'content', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'attachList', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'PrizeSimple', wire: WireType.LENDELIM },
+    { name: 'expireTime', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'tmpId', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SettingSimple', [
+    { name: 'backgroundMusic', number: 1, kind: FieldType.FLOAT, repeated: false, wire: WireType.FIXED32 },
+    { name: 'soundEffect', number: 2, kind: FieldType.FLOAT, repeated: false, wire: WireType.FIXED32 },
+    { name: 'kanban', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'disableBGM', number: 4, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'disableSE', number: 5, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'quickBattle', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'ignoreQBRequest', number: 7, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('BattleFieldSimple', [
@@ -2015,9 +775,35 @@ define('BattleFieldSimple', [
     { name: 'orgIndex', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('GildingSimple', [
-    { name: 'gildingId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cardGroups', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+define('CardSimple_2', [
+    { name: 'uid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cost', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'isMaterialized', number: 4, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'abilitie', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'Abilitie', wire: WireType.LENDELIM },
+  ]);
+
+define('BattlerSimple', [
+    { name: 'heroInfo', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroInfo', wire: WireType.LENDELIM },
+    { name: 'hand', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple_2', wire: WireType.LENDELIM },
+    { name: 'battleFields', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleFieldSimple', wire: WireType.LENDELIM },
+    { name: 'deckIDs', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'cemeteryIDs', number: 5, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'equipIDs', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('BattlerInfoSimple', [
+    { name: 'side', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'name', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'hero', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'job', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cardBack', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'ladderLv', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'ladderStar', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'meritPoint', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'playerTitle', number: 9, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'skin', number: 10, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'gildingUse', number: 11, kind: FieldType.MESSAGE, repeated: true, typeName: 'GildingSimple', wire: WireType.LENDELIM },
   ]);
 
 define('TaskSimple', [
@@ -2027,9 +813,52 @@ define('TaskSimple', [
     { name: 'group', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
+define('TaskRewardRequest', [
+    { name: 'taskID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('TaskRewardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'taskID', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'prizeInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'point', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'newTasks', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'TaskSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('TaskDataRequest', []);
+
+define('TaskDataResponse', [
+    { name: 'list', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'TaskSimple', wire: WireType.LENDELIM },
+    { name: 'taskPoint', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'TaskPointSimple', wire: WireType.LENDELIM },
+  ]);
+
 define('TaskPointSimple', [
     { name: 'point', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'record', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('TaskPointRewardRequest', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('TaskPointRewardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'prizeInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('ActivitySimple', [
+    { name: 'actID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'value', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'completeCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('LoginActivitySimple', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'rewardIds', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'flag', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'waitForRewards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'loginDays', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('GuiderUpdateInfo', [
@@ -2038,9 +867,177 @@ define('GuiderUpdateInfo', [
     { name: 'state', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
+define('GuiderUpdateRequest', [
+    { name: 'infoList', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'GuiderUpdateInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('GuiderUpdateResponse', []);
+
+define('ChangeDeckNameRequest', [
+    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'name', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('ChangeDeckNameResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'did', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'name', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('ChangeDefaultCardBackRequest', [
+    { name: 'cardBack', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChangeDefaultCardBackResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'cardBack', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChangeDeckCardBackRequest', [
+    { name: 'dids', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'cardBack', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChangeDeckCardBackResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'dids', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'cardBack', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('CardResolveRequest', [
+    { name: 'cards', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('CardResolveResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'request', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
+    { name: 'success', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
+    { name: 'getInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'costInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'deckInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckLibrarySimple', wire: WireType.LENDELIM },
+  ]);
+
+define('CardCompoundRequest', [
+    { name: 'cards', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('CardCompoundResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'request', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
+    { name: 'success', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardSimple', wire: WireType.LENDELIM },
+    { name: 'getInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'costInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('ItemBuffInfo', [
+    { name: 'buffs', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ItemBuffSimple', wire: WireType.LENDELIM },
+  ]);
+
 define('ItemBuffSimple', [
     { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'leftCount', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('CookRequest', [
+    { name: 'recipeId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('CookResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'recipeId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'buffInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemBuffInfo', wire: WireType.LENDELIM },
+    { name: 'costInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('CookClearRequest', []);
+
+define('CookClearResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'buffInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemBuffInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('UseItemRequest', [
+    { name: 'item', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('UseItemResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'getInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'costInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'buffInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemBuffInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('SetPlayerNameRequest', [
+    { name: 'name', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'gender', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetPlayerNameResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'name', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'gender', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'headPic', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'personalInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PersonalSimpleInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('ChangePlayerNameRequest', [
+    { name: 'name', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('ChangePlayerNameResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'name', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'lastChangeNameTime', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('DealStepResponse', [
+    { name: 'roundNum', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'actions', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'Action', wire: WireType.LENDELIM },
+    { name: 'logs', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleLogSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('FightStepResponse', [
+    { name: 'roundNum', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'actions', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'Action', wire: WireType.LENDELIM },
+    { name: 'logs', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleLogSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('BattleEndResponse', [
+    { name: 'winInfo', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'roundNum', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'quit', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetGuiderRequest', [
+    { name: 'value', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('SetGuiderResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'value', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('GiveMeFiveRequest', [
+    { name: 'cmd', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'info', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('GiveMeFiveResponse', [
+    { name: 'result', number: 1, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'prizeInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'playerInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PlayerInfoSimple', wire: WireType.LENDELIM },
+    { name: 'pveInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PVEInfoSimple', wire: WireType.LENDELIM },
+    { name: 'ladderSeason', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'LadderSeasonSimple', wire: WireType.LENDELIM },
+    { name: 'signInInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'DailySignInInfo', wire: WireType.LENDELIM },
+    { name: 'battlers', number: 7, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattlerSimple', wire: WireType.LENDELIM },
+    { name: 'heroInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroLibrarySimple', wire: WireType.LENDELIM },
+    { name: 'battlePass', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattlePassResponse', wire: WireType.LENDELIM },
+    { name: 'equipmentInfo', number: 10, kind: FieldType.MESSAGE, repeated: false, typeName: 'EquipmentInfoSimple', wire: WireType.LENDELIM },
+    { name: 'buffInfo', number: 11, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemBuffInfo', wire: WireType.LENDELIM },
+    { name: 'cmd', number: 12, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'get', number: 13, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'cost', number: 14, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
   ]);
 
 define('ArenaBattleCountInfo', [
@@ -2060,11 +1057,91 @@ define('ArenaCardSelectGroup', [
     { name: 'cards', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
   ]);
 
-define('CostPack', [
-    { name: 'type', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'CostType', wire: WireType.VARINT },
-    { name: 'cost1', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cost2', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'transferCount', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('ArenaEnterRequest', []);
+
+define('ArenaEnterResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
+    { name: 'selectCombines', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'countInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaBattleCountInfo', wire: WireType.LENDELIM },
+    { name: 'deckInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaHeroDeckInfo', wire: WireType.LENDELIM },
+    { name: 'groupInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaCardSelectGroup', wire: WireType.LENDELIM },
+  ]);
+
+define('ArenaBuyTicketRequest', [
+    { name: 'costPack', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
+  ]);
+
+define('ArenaBuyTicketResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
+    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'selectCombines', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('ArenaSelectHeroRequest', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ArenaSelectHeroResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
+    { name: 'id', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'groupInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaCardSelectGroup', wire: WireType.LENDELIM },
+    { name: 'deckInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaHeroDeckInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('ArenaSelectCardsRequest', [
+    { name: 'defineId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'selectIdxs', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('ArenaSelectCardsResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
+    { name: 'defineId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'groupInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaCardSelectGroup', wire: WireType.LENDELIM },
+    { name: 'deckInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaHeroDeckInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('ArenaGetRewardRequest', []);
+
+define('ArenaGetRewardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
+    { name: 'getInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('ArenaBattleRequest', []);
+
+define('ArenaBattleResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+  ]);
+
+define('ArenaBattleComplete', [
+    { name: 'state', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
+    { name: 'countInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'ArenaBattleCountInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('ArenaGiveUpRequest', []);
+
+define('ArenaGiveUpResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EArenaState', wire: WireType.VARINT },
+  ]);
+
+define('InfiAssets', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiSingleStage', [
+    { name: 'floor', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'type', number: 3, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiStageType', wire: WireType.VARINT },
+    { name: 'nextStages', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'pathId', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'isRandomType', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('InfiStageInfo', [
@@ -2085,6 +1162,12 @@ define('InfiHeroInfo', [
     { name: 'deckGroupId', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
+define('InfiTreasure', [
+    { name: 'uniqueID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'treasureID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'leftCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
 define('InfiItemInfo', [
     { name: 'silver', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'spellEquips', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiTreasure', wire: WireType.LENDELIM },
@@ -2092,27 +1175,13 @@ define('InfiItemInfo', [
     { name: 'badSouls', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiTreasure', wire: WireType.LENDELIM },
   ]);
 
-define('InfiGlobalData', [
-    { name: 'upCardCount', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'delCardCount', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'freeUpCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'freeDelCount', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiOpenShopInfo', [
-    { name: 'items', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiShopItem', wire: WireType.LENDELIM },
-    { name: 'buyCount', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'refreshCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('OptionParam', [
-    { name: 'param1', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'param2', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiAssets', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('InfiEventOpt', [
+    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'eventOptID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'param1', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'param2', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'valid', number: 5, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'success', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('InfiEventInfo', [
@@ -2120,10 +1189,28 @@ define('InfiEventInfo', [
     { name: 'opts', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiEventOpt', wire: WireType.LENDELIM },
   ]);
 
+define('InfiShopCard', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'baseCost', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'realCost', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
 define('InfiShopInfo', [
     { name: 'cards', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiShopCard', wire: WireType.LENDELIM },
     { name: 'upCardCount', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'freeUpCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiShopItem', [
+    { name: 'slot', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'sold', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiOpenShopInfo', [
+    { name: 'items', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiShopItem', wire: WireType.LENDELIM },
+    { name: 'buyCount', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'refreshCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('InfiInnInfo', [
@@ -2136,16 +1223,17 @@ define('InfiBoxInfo', [
     { name: 'rewards', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
   ]);
 
-define('InfiBattleSource', [
-    { name: 'stageType', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiStageType', wire: WireType.VARINT },
-    { name: 'enemyID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'param', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('InfiGlobalData', [
+    { name: 'upCardCount', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'delCardCount', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'freeUpCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'freeDelCount', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('BattleReward', [
-    { name: 'silver', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cards', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'items', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+define('InfiScoreDetail', [
+    { name: 'scoreId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'score', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('InfiScoreInfo', [
@@ -2162,6 +1250,351 @@ define('InfiStaticData', [
     { name: 'unlockDeckGroups', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
   ]);
 
+define('OptionParam', [
+    { name: 'param1', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'param2', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiEnterRequest', [
+    { name: 'resetFlag', number: 1, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiEnterResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'round', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'state', number: 3, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'selectJobs', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'selectHeros', number: 5, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'cards', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'stageInfo', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStageInfo', wire: WireType.LENDELIM },
+    { name: 'heroInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
+    { name: 'itemInfo', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
+    { name: 'globalData', number: 10, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
+    { name: 'shopInfo', number: 11, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiOpenShopInfo', wire: WireType.LENDELIM },
+    { name: 'passDifficulty', number: 12, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'selectDifficulty', number: 13, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'selectedDeckGroups', number: 14, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('InfiSelectJobRequest', [
+    { name: 'job', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiSelectJobResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'job', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'selectHeros', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('InfiSelectHeroRequest', [
+    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiSelectHeroResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'hero', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'heroInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
+    { name: 'selectedDeckGroups', number: 5, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('InfiSelectDeckRequest', [
+    { name: 'deckGroupId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiSelectDeckResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'deckGroupId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'itemInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
+    { name: 'stageInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStageInfo', wire: WireType.LENDELIM },
+    { name: 'heroInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
+    { name: 'globalData', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
+    { name: 'cards', number: 8, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'shopInfo', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiOpenShopInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiSelectEventRequest', [
+    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'optList', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'OptionParam', wire: WireType.LENDELIM },
+    { name: 'giveup', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiSelectEventResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'index', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'optList', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'OptionParam', wire: WireType.LENDELIM },
+    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
+    { name: 'heroInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
+    { name: 'cards', number: 7, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'costInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'get', number: 9, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+    { name: 'cost', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiSelectStageRequest', [
+    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiSelectStageResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'index', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'stageInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStageInfo', wire: WireType.LENDELIM },
+    { name: 'eventInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiEventInfo', wire: WireType.LENDELIM },
+    { name: 'shopInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiShopInfo', wire: WireType.LENDELIM },
+    { name: 'innInfo', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiInnInfo', wire: WireType.LENDELIM },
+    { name: 'boxInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiBoxInfo', wire: WireType.LENDELIM },
+    { name: 'globalData', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
+    { name: 'enemyId', number: 10, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiUpCardRequest', [
+    { name: 'cardID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiUpCardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'cardID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
+    { name: 'shopUpCount', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'globalData', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
+    { name: 'costInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'get', number: 9, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+    { name: 'cost', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiDelCardRequest', [
+    { name: 'cardID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiDelCardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'cardID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
+    { name: 'innDelCount', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'globalData', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
+    { name: 'costInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'get', number: 9, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+    { name: 'cost', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiBuyItemRequest', [
+    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'itemID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'param', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'slot', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiBuyItemResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'itemID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'param', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'slot', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cards', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'itemInfo', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
+    { name: 'globalData', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
+    { name: 'costInfo', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'get', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+    { name: 'cost', number: 11, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+  ]);
+
+define('BattleReward', [
+    { name: 'silver', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cards', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'items', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('InfiBattleSource', [
+    { name: 'stageType', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiStageType', wire: WireType.VARINT },
+    { name: 'enemyID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'param', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiBattleComplete', [
+    { name: 'state', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'isWin', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'source', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiBattleSource', wire: WireType.LENDELIM },
+    { name: 'heroInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
+    { name: 'reward', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattleReward', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiSelectRewardRequest', [
+    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'option', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'OptionParam', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiSelectRewardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'type', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
+    { name: 'heroInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
+    { name: 'globalData', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiGlobalData', wire: WireType.LENDELIM },
+    { name: 'costInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'getInfo', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'get', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+    { name: 'cost', number: 11, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiRecoverRequest', []);
+
+define('InfiRecoverResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'heroInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiExitStageRequest', []);
+
+define('InfiExitStageResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+  ]);
+
+define('InfiGetBoxRequest', [
+    { name: 'slotIndex', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiGetBoxResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'itemInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
+    { name: 'get', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+    { name: 'cost', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiAssetsChange', [
+    { name: 'get', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+    { name: 'cost', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiReplaceTreasureRequest', [
+    { name: 'srcID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'dstID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiReplaceTreasureResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'itemInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiDelSpellEquipRequest', [
+    { name: 'slotIndex', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiDelSpellEquipResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'slotIndex', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiStateChangePush', [
+    { name: 'curHP', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'maxHP', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'silver', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiRoundEndPush', [
+    { name: 'curRound', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'isPassed', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'scoreInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiScoreInfo', wire: WireType.LENDELIM },
+    { name: 'historyState', number: 4, kind: FieldType.ENUM, repeated: false, typeName: 'InfiScoreState', wire: WireType.VARINT },
+    { name: 'get', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'difficulty', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiUnlockDifficultyReq', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'costPack', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiUnlockDifficultyRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiBuyMessageReq', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'costPack', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiBuyMessageRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiUnlockEventReq', [
+    { name: 'eventId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'costPack', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiUnlockEventRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'eventId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiSelectDifficultyReq', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiSelectDifficultyRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'selectId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'heroInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiHeroInfo', wire: WireType.LENDELIM },
+    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
+    { name: 'stageInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStageInfo', wire: WireType.LENDELIM },
+    { name: 'cards', number: 7, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'shopInfo', number: 8, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiOpenShopInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiGetStaticDataReq', []);
+
+define('InfiGetStaticDataRep', [
+    { name: 'data', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStaticData', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiRefreshOpenShopReq', [
+    { name: 'costPack', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiRefreshOpenShopRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'shop', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiOpenShopInfo', wire: WireType.LENDELIM },
+    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiOpenShopBuyRequest', [
+    { name: 'slot', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('InfiOpenShopBuyResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'slot', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'get', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiAssets', wire: WireType.LENDELIM },
+    { name: 'cost', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('InfiOpenShopExitRequest', []);
+
+define('InfiOpenShopExitResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiState', wire: WireType.VARINT },
+    { name: 'stageInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiStageInfo', wire: WireType.LENDELIM },
+    { name: 'cards', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'itemInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiItemInfo', wire: WireType.LENDELIM },
+  ]);
+
 define('InfiUnlockData', [
     { name: 'unlockJobs', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
     { name: 'unlockCards', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
@@ -2169,6 +1602,42 @@ define('InfiUnlockData', [
     { name: 'unlockTreasures', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
     { name: 'unlockDifficulty', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'unlockDeckGroups', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('InfiGetSimpleDataRequest', []);
+
+define('InfiGetSimpleDataResponse', [
+    { name: 'unlockData', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiUnlockData', wire: WireType.LENDELIM },
+  ]);
+
+define('DailySignInInfo', [
+    { name: 'nextSignInId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'lastSignInTime', number: 2, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+    { name: 'signInCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'canSign', number: 4, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('DailySignInRequest', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('DailySignInResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'info', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DailySignInInfo', wire: WireType.LENDELIM },
+    { name: 'reward', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('GetSignInInfoRequest', []);
+
+define('GetSignInInfoResponse', [
+    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'DailySignInInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('ActivityEventData', [
+    { name: 'actID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'eventID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'value', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'completeCount', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('ActivityInfo', [
@@ -2182,16 +1651,76 @@ define('ActivityInfo', [
     { name: 'totalPoint', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('ActivityEventData', [
-    { name: 'actID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'eventID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'value', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'completeCount', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
 define('ActivityTradeInfo', [
     { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'rewardCount', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetActitiviesRequest', []);
+
+define('GetActitiviesResponse', [
+    { name: 'activities', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ActivityInfo', wire: WireType.LENDELIM },
+    { name: 'data', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'ActivityEventData', wire: WireType.LENDELIM },
+    { name: 'trade', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'ActivityTradeInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('GetActivityRewardRequest', [
+    { name: 'actID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'eventID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'costPack', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
+    { name: 'otherIDs', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('GetActivityRewardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'actID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'eventID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'data', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ActivityEventData', wire: WireType.LENDELIM },
+    { name: 'get', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'cost', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'point', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'totalPoint', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'change', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'otherDatas', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'ActivityEventData', wire: WireType.LENDELIM },
+  ]);
+
+define('GetActivityTradeRewardRequest', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetActivityTradeRewardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'info', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'ActivityTradeInfo', wire: WireType.LENDELIM },
+    { name: 'get', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'cost', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('ActivityEventDataPush', [
+    { name: 'data', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ActivityEventData', wire: WireType.LENDELIM },
+  ]);
+
+define('GetLoginActivityDataRep', [
+    { name: 'data', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'LoginActivitySimple', wire: WireType.LENDELIM },
+  ]);
+
+define('GetLoginActivityRewardReq', [
+    { name: 'groupId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetLoginActivityRewardRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'groupId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'rewardIds', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'data', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'LoginActivitySimple', wire: WireType.LENDELIM },
+    { name: 'get', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('ShopSimpleInfo', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'buyCount', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'totalBuyCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'type', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'floorCounts', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'FloorCount', wire: WireType.LENDELIM },
   ]);
 
 define('FloorCount', [
@@ -2199,9 +1728,29 @@ define('FloorCount', [
     { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
+define('PersonalSimpleInfo', [
+    { name: 'headPic_list', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'headPicEx_list', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
 define('ShortcutInfo', [
     { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ExpressionSimpleInfo', [
+    { name: 'shortcut_1', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
+    { name: 'shortcut_2', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
+    { name: 'shortcut_3', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('ExpressionInfo', [
+    { name: 'expressionList', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('UserTitleInfo', [
+    { name: 'userTitleList', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'backGroundList', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
   ]);
 
 define('skinData', [
@@ -2209,10 +1758,108 @@ define('skinData', [
     { name: 'overdueTimes', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
+define('SkinInfo', [
+    { name: 'skinList', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'skinData', wire: WireType.LENDELIM },
+  ]);
+
+define('GetShopInfoRequest', [
+    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetShopInfoResponse', [
+    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'info', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShopSimpleInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('ShopBuyRequest', [
+    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'buyID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'buyCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'couponBuyCount', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'costPack', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
+  ]);
+
+define('ShopBuyResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'type', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'buyID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'buyCount', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'items', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'ItemInfoSimple', wire: WireType.LENDELIM },
+    { name: 'change', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'shopInfo', number: 7, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShopSimpleInfo', wire: WireType.LENDELIM },
+  ]);
+
 define('QuestionnaireData', [
     { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'choice', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
     { name: 'content', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('GetQuestionnaireRequest', []);
+
+define('GetQuestionnaireResponse', [
+    { name: 'data', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'QuestionnaireData', wire: WireType.LENDELIM },
+  ]);
+
+define('UpdateQuestionnaireRequest', [
+    { name: 'isCommit', number: 1, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'data', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'QuestionnaireData', wire: WireType.LENDELIM },
+  ]);
+
+define('AnnounceLamp', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'content', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'circleTimes', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'priority', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'paras', number: 5, kind: FieldType.STRING, repeated: true, wire: WireType.LENDELIM },
+    { name: 'twcontent', number: 6, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'isGmSend', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'endTime', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('AnnounceLampCancel', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('AchieveData', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'value', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'reward', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetAchieveInfoRequest', []);
+
+define('GetAchieveInfoResponse', [
+    { name: 'data', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'AchieveData', wire: WireType.LENDELIM },
+    { name: 'point', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetAchieveRewardRequest', [
+    { name: 'idList', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('GetAchieveRewardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'reqIds', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'success', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'get', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'point', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'addAchi', number: 6, kind: FieldType.MESSAGE, repeated: true, typeName: 'AchieveData', wire: WireType.LENDELIM },
+  ]);
+
+define('StorySkip', [
+    { name: 'storyID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('RankCommonDisplayData', [
+    { name: 'rank', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'uid', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'name', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'score', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'userTitle', number: 5, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'background', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'headPic', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'headPicEx', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('LadderRankSimple', [
@@ -2232,6 +1879,39 @@ define('ChampRankSimple', [
     { name: 'common', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'RankCommonDisplayData', wire: WireType.LENDELIM },
     { name: 'win', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'lose', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetRankRequest', [
+    { name: 'rankType', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'begin', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'end', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetRankResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'rankType', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'beginIdx', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'endIdx', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'selfRank', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'selfScore', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'ladder', number: 7, kind: FieldType.MESSAGE, repeated: true, typeName: 'LadderRankSimple', wire: WireType.LENDELIM },
+    { name: 'infi', number: 8, kind: FieldType.MESSAGE, repeated: true, typeName: 'InfiRankSimple', wire: WireType.LENDELIM },
+    { name: 'selfInfi', number: 9, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiRankSimple', wire: WireType.LENDELIM },
+    { name: 'champ', number: 10, kind: FieldType.MESSAGE, repeated: true, typeName: 'ChampRankSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('GetRankDetailRequest', [
+    { name: 'rankType', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'uid', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('GetRankDetailResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'rankType', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'uid', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'ladder', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'LadderRankDetail', wire: WireType.LENDELIM },
+    { name: 'infi', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'InfiRankDetail', wire: WireType.LENDELIM },
+    { name: 'champ', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampRankDetail', wire: WireType.LENDELIM },
   ]);
 
 define('LadderRankDetail', [
@@ -2268,15 +1948,148 @@ define('ChampRankDetail', [
     { name: 'lose', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
-define('RankCommonDisplayData', [
-    { name: 'rank', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'uid', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'name', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'score', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'userTitle', number: 5, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'background', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'headPic', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'headPicEx', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('GetRPGInfoResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'characters', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'RPGCharacterSimple', wire: WireType.LENDELIM },
+    { name: 'equipments', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'RPGEquipmentSimple', wire: WireType.LENDELIM },
+    { name: 'chapters', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'stages', number: 5, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'expedition', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('RPGCharacterSimple', [
+    { name: 'cid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'level', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'exp', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equipSlot1', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equipSlot2', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equipSlot3', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equipSlot4', number: 7, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equipSlot5', number: 8, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equipSlot6', number: 9, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'usable', number: 10, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('RPGEquipmentSimple', [
+    { name: 'sid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'eid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equipped', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('EditCharacterRequest', [
+    { name: 'character', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'RPGCharacterSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('EditCharacterResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'character', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'RPGCharacterSimple', wire: WireType.LENDELIM },
+    { name: 'equipments', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'RPGEquipmentSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('EditExpeditionRequest', [
+    { name: 'expedition', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('EditExpeditionResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'expedition', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('PlayStoryRequest', [
+    { name: 'chapter', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'stage', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'characters', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('PlayStoryResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'token', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'roomToken', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'stageType', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('PVESkipRequest', [
+    { name: 'cid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'sid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'hero', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'job', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('PVESkipResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+  ]);
+
+define('PushRPGInfo', [
+    { name: 'characters', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'RPGCharacterSimple', wire: WireType.LENDELIM },
+    { name: 'equipments', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'RPGEquipmentSimple', wire: WireType.LENDELIM },
+    { name: 'chapters', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'stages', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('ChallengeHeroRequest', [
+    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'deckId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChallengeHeroResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'hero', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'token', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'roomToken', number: 4, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('ChallengeHeroComplete', [
+    { name: 'heroSimple', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroSimple', wire: WireType.LENDELIM },
+    { name: 'buffInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'ItemBuffInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('PushHeroSimpleInfo', [
+    { name: 'heroSimple', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'HeroSimple', wire: WireType.LENDELIM },
+    { name: 'dailyFavors', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'HeroDailyFavor', wire: WireType.LENDELIM },
+  ]);
+
+define('HeroGiveGiftRequest', [
+    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'itemId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'count', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('HeroGiveGiftResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'heroSimple', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroSimple', wire: WireType.LENDELIM },
+    { name: 'dailyFavor', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroDailyFavor', wire: WireType.LENDELIM },
+    { name: 'cost', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('GetFavorRewardRequest', [
+    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'favorRewardId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetFavorRewardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'hero', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'favorRewardId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'reward', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'rewardInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroFavorRewardInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('SetHeroSkinRequest', [
+    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'skin', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetHeroSkinResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'hero', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'skin', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('TipsNotice', [
+    { name: 'tp', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'val', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'val2', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'val3', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('BattlePassInfo', [
@@ -2290,6 +2103,56 @@ define('BattlePassQuest', [
     { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'val', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('BattlePassRequest', []);
+
+define('BattlePassResponse', [
+    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattlePassInfo', wire: WireType.LENDELIM },
+    { name: 'freeRewardFlag', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'rewardFlag', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'quest', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattlePassQuest', wire: WireType.LENDELIM },
+  ]);
+
+define('BattlePassRewardRequest', [
+    { name: 'lv', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'free', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('BattlePassRewardResponse', [
+    { name: 'freeRewardFlag', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'rewardFlag', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'reward', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'error', number: 4, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+  ]);
+
+define('BattlePassBuyExpRequest', [
+    { name: 'lv', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'costPack', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
+  ]);
+
+define('BattlePassBuyExpResponse', [
+    { name: 'level', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'exp', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'error', number: 3, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'diamondCost', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'change', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('BattlePassActiveRequest', []);
+
+define('BattlePassActiveResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'info', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattlePassInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('BattleRecordUnit', [
+    { name: 'msgid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'msgInfo', number: 2, kind: FieldType.BYTES, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('BattleRecord', [
+    { name: 'battleInfo', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleRecordUnit', wire: WireType.LENDELIM },
   ]);
 
 define('FriendInfo', [
@@ -2320,6 +2183,88 @@ define('InviteFriendInfo', [
     { name: 'info', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'FriendInfo', wire: WireType.LENDELIM },
   ]);
 
+define('FriendInfoRpt', []);
+
+define('FriendInfoNtf', [
+    { name: 'self', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'FriendInfo', wire: WireType.LENDELIM },
+    { name: 'invite', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'InviteFriendInfo', wire: WireType.LENDELIM },
+    { name: 'other', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'FriendInfo', wire: WireType.LENDELIM },
+    { name: 'search_list', number: 4, kind: FieldType.MESSAGE, repeated: true, typeName: 'FriendInfo', wire: WireType.LENDELIM },
+    { name: 'last_refresh_time', number: 5, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('FriendBehaviorRpt', [
+    { name: 'tp', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'EFriendBehaviorOp', wire: WireType.VARINT },
+    { name: 'ufid', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'did', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'fast', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('FriendBehaviorNtf', [
+    { name: 'tp', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'EFriendBehaviorOp', wire: WireType.VARINT },
+    { name: 'ufid', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'info', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'FriendInfo', wire: WireType.LENDELIM },
+    { name: 'over_fightwait_time', number: 4, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('FriendStateNtf', [
+    { name: 'uid', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'state', number: 2, kind: FieldType.ENUM, repeated: false, typeName: 'EFriendState', wire: WireType.VARINT },
+    { name: 'offlineTime', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('FriendOpStatusNtf', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'battleAccountToken', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'battleRoomToken', number: 3, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('FriendRefreshRearchNtf', [
+    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'FriendInfo', wire: WireType.LENDELIM },
+    { name: 'refresh_time', number: 2, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('FriendRefreshScenceRpt', [
+    { name: 'scene', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'FriendSceneState', wire: WireType.VARINT },
+  ]);
+
+define('GetInfiStoryRequest', []);
+
+define('GetInfiStoryResponse', [
+    { name: 'storyEvents', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('HeroEquipSimple', [
+    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equips', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('ModifyEquipRequest', [
+    { name: 'hero', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equips', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'equipType', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ModifyEquipResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'heroEquip', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'HeroEquipSimple', wire: WireType.LENDELIM },
+    { name: 'equipType', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ModifyDeckCardsRequest', [
+    { name: 'deckId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'deckName', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'job', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'hero', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'modifyCards', number: 5, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'cards', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('ModifyDeckCardsResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'deck', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
+  ]);
+
 define('ChatContent', [
     { name: 'from', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
     { name: 'to', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
@@ -2328,6 +2273,67 @@ define('ChatContent', [
     { name: 'createTime', number: 5, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
     { name: 'type', number: 6, kind: FieldType.ENUM, repeated: false, typeName: 'ContentType', wire: WireType.VARINT },
     { name: 'info', number: 7, kind: FieldType.MESSAGE, repeated: false, typeName: 'RecordBaseInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('ChatInfoRpt', [
+    { name: 'tp', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChatInfoNtf', [
+    { name: 'content', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ChatContent', wire: WireType.LENDELIM },
+  ]);
+
+define('TransChatInfoRpt', [
+    { name: 'content', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChatContent', wire: WireType.LENDELIM },
+  ]);
+
+define('TransChatInfoNtf', [
+    { name: 'content', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChatContent', wire: WireType.LENDELIM },
+  ]);
+
+define('SetHeadPicReq', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetHeadPicRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetHeadPicExReq', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetHeadPicExRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetHeadFaceRpt', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'url', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('ClientLuaResponse', [
+    { name: 'lua', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('GetDeckCodeReq', [
+    { name: 'deck', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('GetDeckCodeRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'code', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('GetDeckDataReq', [
+    { name: 'code', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('GetDeckDataRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'deck', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
   ]);
 
 define('SharedDeckInfoSimple', [
@@ -2344,13 +2350,203 @@ define('SharedDeckInfoSimple', [
     { name: 'job', number: 11, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
+define('GetSharedDecksReq', []);
+
+define('GetSharedDecksRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'infos', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'SharedDeckInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('ShareDeckReq', [
+    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'tag', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ShareDeckRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'deck', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('UseSharedDeckNt', [
+    { name: 'id', number: 1, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('PushPrizeInfo', [
+    { name: 'get', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'cost', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('PushNoticeRsp', [
+    { name: 'info', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('QueryPersonalInfoReq', []);
+
+define('QueryPersonalInfoRsp', [
+    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'PersonalSimpleInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('QueryExpressionInfoReq', []);
+
+define('QueryExpressionInfoRsp', [
+    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ExpressionInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('SetExpressionShortcutReq', [
+    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'location', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'id', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetExpressionShortcutRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'shortcuts', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('UnloadExpressionShortcutReq', [
+    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'location', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('UnloadExpressionShortcutRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'shortcuts', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('ClearExpressionShortcutReq', [
+    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ClearExpressionShortcutRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetDefaultShortcutReq', [
+    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetDefaultShortcutRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('QueryUserTitelInfoReq', []);
+
+define('QueryUserTitelInfoRsp', [
+    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'UserTitleInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('SetUserTitleReq', [
+    { name: 'titleA', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'titleB', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'backGround', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetUserTitleRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'title', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'backGround', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'titleA', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'titleB', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('PayInfo', [
+    { name: 'payProducts', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('PayResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'productId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'get', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'info', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PayInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('FirstChargePush', [
+    { name: 'firstCharge', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('FirstChargeRewardReq', []);
+
+define('FirstChargeRewardRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'get', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'firstCharge', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('PveBuyPush', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'productId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'buyInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PVEBuyInfoSimple', wire: WireType.LENDELIM },
+    { name: 'change', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('CostPack', [
+    { name: 'type', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'CostType', wire: WireType.VARINT },
+    { name: 'cost1', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cost2', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'transferCount', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('PveBuyRequest', [
+    { name: 'buyType', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'buyId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'costPack', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
+  ]);
+
+define('PveBuyResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'buyType', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'buyId', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'change', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'buyInfo', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PVEBuyInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('DailyMatchupSimple', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'rewardTimes', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'passedStage', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
 define('DailyPveSimple', [
     { name: 'matchup', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'DailyMatchupSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('GetDailyPveInfoRequest', []);
+
+define('GetDailyPveInfoResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'simple', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DailyPveSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('QueryExpressionShortcutReq', []);
+
+define('QueryExpressionShortcutRsp', [
+    { name: 'shortcuts', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'ShortcutInfo', wire: WireType.LENDELIM },
   ]);
 
 define('ActivityPveSimple', [
     { name: 'chapters', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
     { name: 'passedStages', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('GetActivityPveInfoReq', [
+    { name: 'activity_id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetActivityPveInfoRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'pve_info', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'ActivityPveSimple', wire: WireType.LENDELIM },
+    { name: 'activity_id', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChampSimpleInfo', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'exitTimes', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'battleInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampBattleInfo', wire: WireType.LENDELIM },
   ]);
 
 define('ChampBattleInfo', [
@@ -2362,6 +2558,17 @@ define('ChampBattleInfo', [
     { name: 'historyLose', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
+define('ChampRewardInfo', [
+    { name: 'winRewards', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'winExtraRewards', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'rankReward', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChampDeckInfo', [
+    { name: 'limitDeckId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'deckLibrary', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckLibrarySimple', wire: WireType.LENDELIM },
+  ]);
+
 define('ChampInfo', [
     { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
     { name: 'state', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
@@ -2371,10 +2578,170 @@ define('ChampInfo', [
     { name: 'deckInfo', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampDeckInfo', wire: WireType.LENDELIM },
   ]);
 
-define('ChampRewardInfo', [
-    { name: 'winRewards', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'winExtraRewards', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'rankReward', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+define('ChampGetInfoRequest', []);
+
+define('ChampGetInfoResponse', [
+    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('ChampBuyTicketRequest', [
+    { name: 'costPack', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
+  ]);
+
+define('ChampBuyTicketResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'info', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampInfo', wire: WireType.LENDELIM },
+    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('ChampEditDeckRequest', [
+    { name: 'deck', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('ChampEditDeckResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'deck', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('ChampDelDeckRequest', [
+    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChampDelDeckResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'did', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChampBattleRequest', [
+    { name: 'did', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChampBattleResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+  ]);
+
+define('ChampGetWinRewardRequest', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('ChampGetWinRewardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'rewardInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampRewardInfo', wire: WireType.LENDELIM },
+    { name: 'change', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('ChampGetRankRewardRequest', []);
+
+define('ChampGetRankRewardResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'change', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('ChampBattleComplete', [
+    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'state', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'battleInfo', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'ChampBattleInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('SetHeadInfoReq', [
+    { name: 'headPic', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'headPicEx', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SetHeadInfoRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'headPic', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'headPicEx', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('SteamDLCCheckReq', []);
+
+define('SteamDLCCheckRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+  ]);
+
+define('QueryFailChargeOrderIDReq', []);
+
+define('QueryFailChargeOrderIDRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'OrderID', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'status', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('QuerySkinInfoReq', []);
+
+define('QuerySkinInfoRsp', [
+    { name: 'info', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'SkinInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('UseSkinReq', [
+    { name: 'heroID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'skinID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'isKanBan', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('UseSkinRsp', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'heroID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'skinID', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'isKanBan', number: 4, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GildingSimple', [
+    { name: 'gildingId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cardGroups', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('GildingInfo', [
+    { name: 'gildingList', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'GildingSimple', wire: WireType.LENDELIM },
+    { name: 'useList', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'GildingSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('GildingRequest', [
+    { name: 'gildingId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'cards', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'costPack', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'CostPack', wire: WireType.LENDELIM },
+  ]);
+
+define('GildingResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'gildingId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'change', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'simple', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'GildingSimple', wire: WireType.LENDELIM },
+    { name: 'simpleUse', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'GildingSimple', wire: WireType.LENDELIM },
+    { name: 'cards', number: 6, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('GildingResetRequest', [
+    { name: 'cards', number: 1, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('GildingResetResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'cards', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'useList', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'GildingSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('CardMakeTimeData', [
+    { name: 'Open', number: 1, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+    { name: 'End', number: 2, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+    { name: 'CompoundItem', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'CompoundItemNumber', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'ResolveGetItem', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'ResolveGetItemNumber', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('CardMakeData', [
+    { name: 'cardID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'datas', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'CardMakeTimeData', wire: WireType.LENDELIM },
+  ]);
+
+define('BattlePassRateData', [
+    { name: 'ID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'Rate', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'Open', number: 3, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
+    { name: 'End', number: 4, kind: FieldType.INT64, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('RecordBaseInfo', [
@@ -2385,8 +2752,83 @@ define('RecordBaseInfo', [
     { name: 'battlers', number: 5, kind: FieldType.MESSAGE, repeated: true, typeName: 'RecordBattlerInfo', wire: WireType.LENDELIM },
   ]);
 
-define('BattleRecord', [
-    { name: 'battleInfo', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleRecordUnit', wire: WireType.LENDELIM },
+define('RecordBattlerInfo', [
+    { name: 'uid', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'name', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'side', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'hero', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'job', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'win', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetRecordListRequest', []);
+
+define('GetRecordListResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'recentRecords', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'RecordBaseInfo', wire: WireType.LENDELIM },
+    { name: 'favorRecords', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'RecordBaseInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('GetRecordInfoRequest', [
+    { name: 'code', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('GetRecordInfoResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'code', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'info', number: 3, kind: FieldType.MESSAGE, repeated: false, typeName: 'RecordBaseInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('GetRecordDataRequest', [
+    { name: 'code', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'side', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('GetRecordDataResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'record', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'BattleRecord', wire: WireType.LENDELIM },
+  ]);
+
+define('FavorRecordRequest', [
+    { name: 'code', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('FavorRecordResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'code', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('DeleteRecordRequest', [
+    { name: 'type', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'deleteAll', number: 2, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'deleteCodes', number: 3, kind: FieldType.STRING, repeated: true, wire: WireType.LENDELIM },
+  ]);
+
+define('DeleteRecordResponse', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'type', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'deleteAll', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'deleteCodes', number: 4, kind: FieldType.STRING, repeated: true, wire: WireType.LENDELIM },
+  ]);
+
+define('QueryFriendInfoReq', []);
+
+define('QueryFriendInfoRsp', [
+    { name: 'self', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'FriendInfo', wire: WireType.LENDELIM },
+  ]);
+
+define('PingPong', []);
+
+define('PullActAcceptReq', [
+    { name: 'code', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+  ]);
+
+define('PullActAcceptRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'code', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'inviterUid', number: 4, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'inviterName', number: 5, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'inviterUFID', number: 6, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
   ]);
 
 define('PullActTaskSimple', [
@@ -2395,10 +2837,33 @@ define('PullActTaskSimple', [
     { name: 'completeCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
+define('PullActRewardReq', [
+    { name: 'taskId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('PullActRewardRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'taskId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'change', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
+    { name: 'taskInfo', number: 6, kind: FieldType.MESSAGE, repeated: true, typeName: 'PullActTaskSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('PullActInfoReq', []);
+
+define('PullActInfoRep', [
+    { name: 'inviterInfo', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'PullActInviterInfo', wire: WireType.LENDELIM },
+    { name: 'accepterInfo', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'PullActAccepterInfo', wire: WireType.LENDELIM },
+  ]);
+
 define('PullActInviterInfo', [
     { name: 'inviteCode', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
     { name: 'accepterList', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'AccepterSimple', wire: WireType.LENDELIM },
     { name: 'taskInfo', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'PullActTaskSimple', wire: WireType.LENDELIM },
+  ]);
+
+define('AccepterSimple', [
+    { name: 'nickname', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
+    { name: 'level', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
   ]);
 
 define('PullActAccepterInfo', [
@@ -2407,9 +2872,12 @@ define('PullActAccepterInfo', [
     { name: 'taskInfo', number: 3, kind: FieldType.MESSAGE, repeated: true, typeName: 'PullActTaskSimple', wire: WireType.LENDELIM },
   ]);
 
-define('AccepterSimple', [
-    { name: 'nickname', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'level', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('DLC4GetInfoReq', []);
+
+define('DLC4GetInfoRep', [
+    { name: 'stageInfos', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'DLC4StageSimple', wire: WireType.LENDELIM },
+    { name: 'characterInfos', number: 2, kind: FieldType.MESSAGE, repeated: true, typeName: 'DLC4CharacterSimple', wire: WireType.LENDELIM },
+    { name: 'equipments', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
   ]);
 
 define('DLC4StageSimple', [
@@ -2423,125 +2891,42 @@ define('DLC4CharacterSimple', [
     { name: 'equipInfo', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
   ]);
 
-define('SkillExpander', [
-    { name: 'skillID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'expander', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('DLC4BattleResultInfo', [
+    { name: 'isFristReward', number: 1, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
+    { name: 'starInfo', number: 2, kind: FieldType.BOOL, repeated: true, wire: WireType.VARINT },
   ]);
 
-define('Battlefield', [
-    { name: 'side', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('DLC4SetTalentReq', [
+    { name: 'cid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'talentInfo', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
   ]);
 
-define('Hit', [
-    { name: 'field', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'Battlefield', wire: WireType.LENDELIM },
-    { name: 'bufferId', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'hurt', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'card', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'CardRelated', wire: WireType.LENDELIM },
-    { name: 'abilitie', number: 5, kind: FieldType.MESSAGE, repeated: false, typeName: 'Abilitie', wire: WireType.LENDELIM },
-    { name: 'attacker', number: 6, kind: FieldType.MESSAGE, repeated: false, typeName: 'Battlefield', wire: WireType.LENDELIM },
-  ]);
-
-define('Talk', [
-    { name: 'field', number: 1, kind: FieldType.MESSAGE, repeated: false, typeName: 'Battlefield', wire: WireType.LENDELIM },
-    { name: 'talkIDs', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('BattleLogParams', [
-    { name: 'units', number: 1, kind: FieldType.MESSAGE, repeated: true, typeName: 'BattleLogUnit', wire: WireType.LENDELIM },
-    { name: 'intParams', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('IdPair', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiSingleStage', [
-    { name: 'floor', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'index', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'type', number: 3, kind: FieldType.ENUM, repeated: false, typeName: 'EInfiStageType', wire: WireType.VARINT },
-    { name: 'nextStages', number: 4, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'pathId', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'isRandomType', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiTreasure', [
-    { name: 'uniqueID', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'treasureID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'leftCount', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiEventOpt', [
-    { name: 'index', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'eventOptID', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'param1', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'param2', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'valid', number: 5, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'success', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiShopCard', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'baseCost', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'realCost', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiShopItem', [
-    { name: 'slot', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'id', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'sold', number: 3, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('InfiScoreDetail', [
-    { name: 'scoreId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'count', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'score', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('BattleRecordUnit', [
-    { name: 'msgid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'msgInfo', number: 2, kind: FieldType.BYTES, repeated: false, wire: WireType.LENDELIM },
-  ]);
-
-define('DailyMatchupSimple', [
-    { name: 'id', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'rewardTimes', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'passedStage', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-  ]);
-
-define('ChampDeckInfo', [
-    { name: 'limitDeckId', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'deckLibrary', number: 2, kind: FieldType.MESSAGE, repeated: false, typeName: 'DeckLibrarySimple', wire: WireType.LENDELIM },
-  ]);
-
-define('RecordBattlerInfo', [
-    { name: 'uid', number: 1, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'name', number: 2, kind: FieldType.STRING, repeated: false, wire: WireType.LENDELIM },
-    { name: 'side', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'hero', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'job', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'win', number: 6, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-  ]);
-
-define('CardRelated', [
-    { name: 'uid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+define('DLC4SetTalentRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
     { name: 'cid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cost', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'isMaterialized', number: 4, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'locationStatus', number: 5, kind: FieldType.ENUM, repeated: false, typeName: 'LocationStatus', wire: WireType.VARINT },
+    { name: 'talentInfo', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
   ]);
 
-define('BattleLogUnit', [
-    { name: 'side', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'field', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'cid', number: 3, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'atk', number: 4, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'def', number: 5, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'maxDef', number: 6, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
-    { name: 'isMaterialized', number: 7, kind: FieldType.BOOL, repeated: false, wire: WireType.VARINT },
-    { name: 'activeSkills', number: 8, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
-    { name: 'passiveSkills', number: 9, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+define('DLC4SetEquipmentReq', [
+    { name: 'cid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equipInfo', number: 2, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('DLC4SetEquipmentRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'cid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equipInfo', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+  ]);
+
+define('DLC4ForgingReq', [
+    { name: 'eid', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+  ]);
+
+define('DLC4ForgingRep', [
+    { name: 'error', number: 1, kind: FieldType.ENUM, repeated: false, typeName: 'ErrorCode', wire: WireType.VARINT },
+    { name: 'eid', number: 2, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
+    { name: 'equipments', number: 3, kind: FieldType.INT32, repeated: true, wire: WireType.VARINT },
+    { name: 'costInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
   ]);
 
 
