@@ -48,6 +48,9 @@ export class BattleRoom {
 
     public Battlers: BattlePlayer[] = [];
 
+    /** 每个参战者的异步初始化的 Promise（以 uid 为键），供后到者等待全部就绪 */
+    private initPromises: Record<string, Promise<void>> = {};
+
     /**
      * 是否可以发送战斗开始的消息
      * 每位玩家准备完毕则+1
@@ -131,17 +134,33 @@ export class BattleRoom {
         Logger.LogInfo(`BattleRoom[${this.RoomToken}] SetBattler ${uid} ${NewBallter.side}`);
 
         /**
-         * 必须等待战斗信息初始化完成，否则 BattleStart 时主将/手牌仍为空
+         * 必须等待战斗信息初始化完成，否则 BattleStart 时主将/手牌仍为空。
+         *
+         * 异步初始化存在竞态：第二位玩家（真人的 SetBattler）就位时，
+         * 第一位玩家（如机器人的数据库初始化）可能尚未完成。这里先把
+         * 「该参战者的初始化完成后置标志」的 Promise 登记起来，供后到者在
+         * 开战前统一等待全部就绪。
          */
-        try {
+        const initDone = (async () => {
             await NewBallter.InitBattleInfo(preset);
+            NewBallter.hasInited = true;
+        })();
+        this.initPromises[uid] = initDone;
+        try {
+            await initDone;
         } catch (err) {
             this.IsReady--;
             Logger.LogError(`BattleRoom[${this.RoomToken}] SetBattler ${uid} 初始化战斗信息失败`,err);
             return this.IsReady;
         }
 
-        this.TryBattleStart();
+        // 最后一个参战者就位时，等待所有（含较慢的异步初始化）都完成再开战
+        if (this.IsReady >= 2 && !this.BattleStarted) {
+            await Promise.all(Object.values(this.initPromises));
+            if (!this.BattleStarted) {
+                this.TryBattleStart();
+            }
+        }
         return this.IsReady;
     }
 
@@ -335,7 +354,7 @@ export class BattleRoom {
                 dealCached: dealCached,
             };
 
-            Logger.LogInfo(`BattleRoom[${this.RoomToken}] 发送部署开始：${MESSAGE_ID.DEPLOYMENT_START_REP}`);
+            Logger.LogInfo(`BattleRoom[${this.RoomToken}] 发送部署开始：${MESSAGE_ID.DEPLOYMENT_START_REP}`, rep);
             battler.SendMessage(MESSAGE_ID.DEPLOYMENT_START_REP, rep);
         }
 

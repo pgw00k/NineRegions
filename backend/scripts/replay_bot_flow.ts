@@ -16,6 +16,10 @@ import { BattleBotRoom } from '../src/Battle/BattleBotRoom';
 import { BattlePlayer } from '../src/Battle/BattlePlayer';
 import { BattleConst } from '../src/Battle/BattleConst';
 import { BattleHero } from '../src/Battle/BattleHero';
+import { BattleCard } from '../src/Battle/BattleCard';
+import { BattleField } from '../src/Battle/BattleField';
+import { AppDataSource, PostDBInit } from '../src/database/DataSource';
+import { DeckService } from '../src/database/service/Deck.service';
 
 /** 回放中捕获到的一条 S2C */
 interface CapturedS2C {
@@ -47,8 +51,9 @@ class ReplayHuman extends BattlePlayer {
 
     override async InitBattleInfo(_preset: any): Promise<void> {
         for (let i = 0; i < 40; i++) {
-            this.DeckCards.push({
-                uid: this.side * 1000 + i + 1,
+            let cardUid = this.side * 1000 + i + 1;
+            this.AllCards[cardUid] = new BattleCard(10000 + i, {
+                uid: cardUid,
                 cid: 10000 + i,
                 cost: 1,
                 isMaterialized: false,
@@ -64,14 +69,15 @@ class ReplayHuman extends BattlePlayer {
                     auraSkillId: [],
                 },
             });
+            this.DeckUIDs.push(cardUid);
         }
         this.hero = new BattleHero({ side: this.side, heroID: 1, heroSkillID: 100001 });
         this.job = 1;
         this.cardBack = 50001;
 
-        this.battleFields = [];
+        this.BattleFields = {};
         for (let i = 0; i < BattleConst.FIELD_SIZE; i++) {
-            this.battleFields.push({ index: i, hasCard: false, orgIndex: i });
+            this.BattleFields[i] = new BattleField();
         }
         this.DrawCard(BattleConst.INIT_HAND);
     }
@@ -83,6 +89,16 @@ function sleep(ms: number): Promise<void> {
 }
 
 async function main() {
+    /**
+     * 机器人直接沿用数据库（PlayerService/DeckService），故必须先连库：
+     * 初始化 DataSource 并完成各 Service 的注册。
+     * 真人侧 ReplayHuman 走内存卡组（内存 override），不受数据库数据影响。
+     */
+    if (!AppDataSource.isInitialized) {
+        await AppDataSource.initialize();
+    }
+    PostDBInit();
+
     /** 关闭机器人延迟，让测试快速跑完 */
     BattleBotRoom.BotDeployDelayMs = 0;
     BattleBotRoom.BotShowEndDelayMs = 0;
@@ -95,12 +111,10 @@ async function main() {
     });
 
     /**
-     * 让机器人使用「不换牌 + 每轮上 3 张」的默认回放脚本；
-     * side=2 时手牌 uid 落于 2001..2006。
+     * 让机器人使用「不换牌 + 每轮上 2 张」的默认回放脚本（无需设置，默认值即可）。
+     * 机器人当前置为空脚本即可；若想自定义，可注入 BuildDefaultReplayScript(rounds, perRound)。
      */
-    if (room.Bot) {
-        room.Bot.Script.ChangeCardUids = [];
-    }
+    // room.Bot 默认使用 BuildDefaultReplayScript()，无需额外设置。
 
     /** 真人入场（side=1），机器人在构造函数中已自动入场（side=2） */
     await room.SetBattler({ uid: '1001', client: humanClient }, ReplayHuman as any);

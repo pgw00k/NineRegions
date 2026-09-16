@@ -26,6 +26,8 @@ import { BattleRoom } from '../src/Battle/BattleRoom';
 import { BattlePlayer } from '../src/Battle/BattlePlayer';
 import { BattleConst } from '../src/Battle/BattleConst';
 import { BattleHero } from '../src/Battle/BattleHero';
+import { BattleCard } from '../src/Battle/BattleCard';
+import { BattleField } from '../src/Battle/BattleField';
 
 /** 回放中捕获到的一条 S2C */
 interface CapturedS2C {
@@ -55,8 +57,9 @@ class ReplayPlayer extends BattlePlayer {
     /** 覆盖数据库读取，直接给出最小卡组 */
     override async InitBattleInfo(_preset: any): Promise<void> {
         for (let i = 0; i < 40; i++) {
-            this.DeckCards.push({
-                uid: this.side * 1000 + i + 1,
+            let cardUid = this.side * 1000 + i + 1;
+            this.AllCards[cardUid] = new BattleCard(10000 + i, {
+                uid: cardUid,
                 cid: 10000 + i,
                 cost: 1,
                 isMaterialized: false,
@@ -72,6 +75,7 @@ class ReplayPlayer extends BattlePlayer {
                     auraSkillId: [],
                 },
             });
+            this.DeckUIDs.push(cardUid);
         }
 
         this.hero = new BattleHero({
@@ -82,9 +86,9 @@ class ReplayPlayer extends BattlePlayer {
         this.job = 1;
         this.cardBack = 50001;
 
-        this.battleFields = [];
+        this.BattleFields = {};
         for (let i = 0; i < BattleConst.FIELD_SIZE; i++) {
-            this.battleFields.push({ index: i, hasCard: false, orgIndex: i });
+            this.BattleFields[i] = new BattleField();
         }
 
         this.DrawCard(BattleConst.INIT_HAND);
