@@ -1,5 +1,6 @@
 import {
     Action,
+    AttackType,
     BattleLogSide,
     BattleLogSimple,
     BattleLogType,
@@ -11,6 +12,9 @@ import {
     DeploymentStartResponse,
     FightStartResponse,
     FightStepResponse,
+    Hit,
+    BattleLogUnit,
+    LocationStatus,
     MESSAGE_ID,
     RoomType,
 } from "mc-local-share";
@@ -340,6 +344,7 @@ export class BattleRoom {
         this.ShowEndDone = false;
 
         for (let battler of this.Battlers) {
+            battler.BeginDeployment();
             let battlers = this.Battlers.map((b) => b.GetBattler());
             let logs = [
                 battler.MakeLog(BattleLogType.Snapshot1, BattleLogSide.SideA),
@@ -544,14 +549,233 @@ export class BattleRoom {
     }
 
     /**
-     * 战斗结算核心。
+     * 全局战斗结算（编排层，不依赖任何单一 BattlePlayer 的内部实现）。
      *
-     * 当前仅还原「表现日志与动画动作的生成顺序」，不包含真实卡牌技能数值计算：
-     *   RoundBegin → RoundFight → [FieldWarn → DisplayBorn]×逐格 → RoundEnd
-     * 每个实体动作同时产出对应 logs（BattleLogSimple）与 actions（Action），
-     * 后续可在此基础上接入卡牌技能/Aura/碰撞等具体规则（见 BattlePlayer.SimulateFight）。
+     * 承担所有需要「同时看到双方」的跨玩家逻辑：
+     *   - **逐格并行（问题 1）**：双方 6 个地块按 index 0..5 同步推进，每个格位上双方单位
+     *     “同时”结算，而不是先结算某方 6 格、再结算另一方 6 格。
+     *   - **区分新登场与已在场（问题 2）**：只有「本轮新部署」的单位才 DisplayBorn（召唤登场），
+     *     已在场（上一轮翻开）的单位不再重复召唤，转为执行攻击动作。
+     *
+     * 各 BattlePlayer 仅通过自己的「单实例原语」（GetFieldCard/GetFieldAtk/CanActFieldUnit/
+     * MakeBornAction/DealFieldDamage/HeroTakeDamage …）协作，彼此不直接引用。
+     *
+     * 单个格位的结算顺序：
+     *   ① FieldWarn 标出本格进入行动结算；
+     *   ② 翻开本格双方「本轮新部署」的单位；
+     *   ③ 结算本格双方「已在场」单位的攻击（被阻挡则相拼，无阻挡则打主将；飞行仅被飞行阻挡）。
      */
-    protected SimulateFight() {
-        return this.Battlers[0].SimulateFight(this.Battlers, this.RoundNum);
+    protected SimulateFight(): { logs: BattleLogSimple[]; actions: Action[] } {
+        let logs: BattleLogSimple[] = [];
+        let actions: Action[] = [];
+        let battlers = this.Battlers;
+
+        /** 战斗回合开始节点 */
+        logs.push(this.MakeRoomLog(BattleLogType.RoundBegin, [], [this.RoundNum]));
+        logs.push(this.MakeRoomLog(BattleLogType.RoundFight, [], [this.RoundNum]));
+        actions.push(this.MakeRoomStep(AttackType.RoundBeginStep));
+
+        /** 逐格并行结算：双方第 index 个地块“同时”进入结算 */
+        for (let index = 0; index < BattleConst.FIELD_SIZE; index++) {
+            let occupied = battlers.filter((b) => b.GetFieldCardUid(index) > 0);
+            if (occupied.length === 0) {
+                continue;
+            }
+
+            /** 标出本格进入行动结算（FieldWarn, NullSide, 结算位置 index） */
+            logs.push(this.MakeRoomLog(BattleLogType.FieldWarn, [], [index]));
+            actions.push(this.MakeRoomStep(AttackType.FieldWarn, occupied[0].side, index));
+
+            /** 先翻开本格双方本轮新部署的单位 */
+            for (let battler of battlers) {
+                this.ResolveBorn(battlers, battler, index, logs, actions);
+            }
+
+            /** 再结算本格双方已在场单位的攻击 */
+            this.ResolveFieldAttacks(battlers, index, logs, actions);
+        }
+
+        /** 回合结束节点 */
+        logs.push(this.MakeRoomLog(BattleLogType.RoundEnd, [], [this.RoundNum]));
+        actions.push(this.MakeRoomStep(AttackType.RoundEndStep));
+
+        return { logs, actions };
+    }
+
+    /**
+     * 结算某个玩家「本轮新部署」在该格上的单位（翻开/召唤登场）。
+     * 只对位于 NewBornUIDs 中的卡 DisplayBorn，避免已在场单位每轮被重复召唤。
+     */
+    protected ResolveBorn(battlers: BattlePlayer[], battler: BattlePlayer, index: number, logs: BattleLogSimple[], actions: Action[]): void {
+        let uid = battler.GetFieldCardUid(index);
+        if (uid <= 0 || !battler.IsNewBornCard(uid)) {
+            return;
+        }
+        let bornLog = battler.MakeBornLog(index);
+        if (bornLog) {
+            logs.push(bornLog);
+        }
+        let bornAction = battler.MakeBornAction(index);
+        if (bornAction) {
+            actions.push(bornAction);
+        }
+    }
+
+    /**
+     * 结算某个格位上双方「已在场」单位的攻击。
+     *
+     * 规则：
+     *   - 目标为该格对方的单位——若对方此格有单位且能阻挡攻击者（飞行仅被飞行阻挡），
+     *     则双方单位相拼（互相造成等额攻击力伤害）；
+     *   - 若无阻挡单位，则攻击者直接攻击对方主将造成伤害。
+     *   - 本轮新部署的单位（在 NewBornUIDs）默认不攻击，除非持“冲锋”技能（暂未接入）。
+     */
+    protected ResolveFieldAttacks(battlers: BattlePlayer[], index: number, logs: BattleLogSimple[], actions: Action[]): void {
+        for (let atkIdx = 0; atkIdx < battlers.length; atkIdx++) {
+            let attacker = battlers[atkIdx];
+            if (!attacker || !attacker.CanActFieldUnit(index)) {
+                continue;
+            }
+            let defender = battlers[1 - atkIdx];
+
+            if (defender && this.CanBlock(attacker, defender, index)) {
+                this.ResolveBlockAttack(attacker, defender, index, logs, actions);
+            } else {
+                this.ResolveHeroAttack(attacker, defender, index, logs, actions);
+            }
+        }
+    }
+
+    /**
+     * 阻挡判定：攻击方是飞行单位时，仅可被同为飞行的单位阻挡。
+     */
+    protected CanBlock(atk: BattlePlayer, def: BattlePlayer, index: number): boolean {
+        let defUid = def.GetFieldCardUid(index);
+        if (defUid <= 0) {
+            return false;
+        }
+        let atkFly = atk.GetFlyLayer(index) > 0;
+        let defFly = def.GetFlyLayer(index) > 0;
+        /* 对方该格单位已阵亡（curDef 归零）不能阻挡 */
+        if (!def.CanActFieldUnit(index) && !def.IsNewBornCard(defUid)) {
+            return false;
+        }
+        return !atkFly || defFly;
+    }
+
+    /**
+     * 被阻挡的战斗：攻击方与防守方单位相拼，双方互相造成等额攻击力伤害。
+     */
+    protected ResolveBlockAttack(atk: BattlePlayer, def: BattlePlayer, index: number, logs: BattleLogSimple[], actions: Action[]): void {
+        let dmgA = atk.GetFieldAtk(index);
+        let dmgD = def.GetFieldAtk(index);
+
+        def.DealFieldDamage(index, dmgA);
+        logs.push(def.MakeFieldHurtLog(index, dmgA));
+        let hitA = this.MakeAttackAction(atk, index, def, index, dmgA);
+        if (hitA) {
+            actions.push(hitA);
+        }
+
+        atk.DealFieldDamage(index, dmgD);
+        logs.push(atk.MakeFieldHurtLog(index, dmgD));
+        let hitD = this.MakeAttackAction(def, index, atk, index, dmgD);
+        if (hitD) {
+            actions.push(hitD);
+        }
+    }
+
+    /**
+     * 无阻挡：攻击方直接攻击对方主将，扣减主将 curHP。
+     */
+    protected ResolveHeroAttack(atk: BattlePlayer, def: BattlePlayer | undefined, index: number, logs: BattleLogSimple[], actions: Action[]): void {
+        if (!def) {
+            return;
+        }
+        let dmg = atk.GetFieldAtk(index);
+        def.HeroTakeDamage(dmg);
+        logs.push(def.MakeLog(BattleLogType.HeroHurt, BattleLogSide.NullSide, [], [dmg]));
+        let heroAction = this.MakeHeroAttackAction(atk, index, def);
+        if (heroAction) {
+            actions.push(heroAction);
+        }
+    }
+
+    /**
+     * 生成一条「单位攻击单位」的动作（AttackType.Attack）。
+     *
+     * b1 = 攻击方格位，b2 = 目标格位；hits[0] 承载目标卡快照、命中伤害与攻击方格位，
+     * 供客户端播放攻击方前冲、命中判定动画。
+     */
+    protected MakeAttackAction(atk: BattlePlayer, atkIdx: number, def: BattlePlayer, defIdx: number, dmg: number): Action | undefined {
+        let dCard = def.GetFieldCard(defIdx);
+        if (!dCard) {
+            return undefined;
+        }
+        let dAbi = dCard.abilitie;
+        let hit: Hit = {
+            field: { side: def.side, index: defIdx },
+            hurt: dmg,
+            card: {
+                uid: dCard.uid ?? 0,
+                cid: dCard.cid ?? 0,
+                cost: dCard.cost ?? 0,
+                isMaterialized: true,
+                locationStatus: LocationStatus.FIELD_TO_CEMETERY,
+            },
+            abilitie: {
+                skillId: [...(dAbi?.skillId ?? [])],
+                passiveSkillId: [...(dAbi?.passiveSkillId ?? [])],
+                skillExpander: (dAbi?.skillExpander ?? []).map((e) => ({ ...e })),
+                atk: dAbi?.atk ?? 0,
+                curDef: dAbi?.curDef ?? 0,
+                maxDef: dAbi?.maxDef ?? 0,
+                isPrepare: dAbi?.isPrepare ?? false,
+                flyLayer: dAbi?.flyLayer ?? 0,
+                auraSkillId: [...(dAbi?.auraSkillId ?? [])],
+            },
+            attacker: { side: atk.side, index: atkIdx },
+        };
+        return {
+            b1: { side: atk.side, index: atkIdx },
+            b2: { side: def.side, index: defIdx },
+            attackType: AttackType.Attack,
+            hits: [hit],
+            heros: [],
+        };
+    }
+
+    /**
+     * 生成一条「单位攻击主将」的动作（AttackType.AttackFace）；攻击方已不在场时返回 undefined。
+     */
+    protected MakeHeroAttackAction(atk: BattlePlayer, atkIdx: number, def: BattlePlayer): Action | undefined {
+        if (atk.GetFieldCardUid(atkIdx) <= 0) {
+            return undefined;
+        }
+        return {
+            b1: { side: atk.side, index: atkIdx },
+            attackType: AttackType.AttackFace,
+            hits: [],
+            heros: [def.GetHeroInfo()],
+        };
+    }
+
+    /** 生成一条房间级战斗表现日志（节点：RoundBegin/RoundFight/RoundEnd/FieldWarn 等）。 */
+    protected MakeRoomLog(type: BattleLogType, units: BattleLogUnit[] = [], intParams: number[] = []): BattleLogSimple {
+        return {
+            type: type,
+            side: BattleLogSide.NullSide,
+            battleParams: [{ units: units, intParams: intParams }],
+        };
+    }
+
+    /** 生成一条房间级战斗表现动作（节点步骤：RoundBeginStep/FieldWarn/…）。 */
+    protected MakeRoomStep(attackType: AttackType, side?: number, index?: number): Action {
+        return {
+            b1: side !== undefined && index !== undefined ? { side, index } : undefined,
+            attackType,
+            hits: [],
+            heros: [],
+        };
     }
 }
