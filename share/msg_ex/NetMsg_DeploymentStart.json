@@ -1,0 +1,8 @@
+{
+  "TageName": "DeploymentStart",
+  "reqId": "",
+  "reqProto": "",
+  "recId": "DEPLOYMENT_START_REP",
+  "recvProto": "DeploymentStartResponse",
+  "needParseLua": true
+}

@@ -1,0 +1,8 @@
+{
+  "TageName": "DeploymentComplete",
+  "reqId": "DEPLOYMENT_COMPLETE_REQ",
+  "reqProto": "DeploymentCompleteRequest",
+  "recId": "",
+  "recvProto": "",
+  "needParseLua": true
+}

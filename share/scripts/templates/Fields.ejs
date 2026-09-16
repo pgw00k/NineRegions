@@ -4,6 +4,11 @@
 import { FieldType, WireType } from '../common';
 import { define, FieldSchema, ID_BY_NAME } from '../schema';
 import { MESSAGE_ID } from '../MESSAGE_ID';
+// 手工补充的消息类型（不在 pack_msg 中，见 message_ex.ts 说明）。
+// 此处负责：a) 导出这些类型（上层经 'mc-local-share' 可直接引用）；
+//            b) 让手工 define('ShowEndRequest', []) 与 ID_BY_NAME 映射在既有逻辑中生效。
+import './message_ex';
+export * from './message_ex';
 
 <% defines.forEach(d => { %><%- d %>
 

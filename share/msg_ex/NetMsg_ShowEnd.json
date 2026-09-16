@@ -1,0 +1,8 @@
+{
+  "TageName": "ShowEnd",
+  "reqId": "SHOW_END_REQ",
+  "reqProto": "ShowEndRequest",
+  "recId": "",
+  "recvProto": "",
+  "needParseLua": true
+}

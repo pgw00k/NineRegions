@@ -1,0 +1,8 @@
+{
+  "TageName": "BattleEnd",
+  "reqId": "",
+  "reqProto": "",
+  "recId": "BATTLE_END_REP",
+  "recvProto": "BattleEndResponse",
+  "needParseLua": true
+}

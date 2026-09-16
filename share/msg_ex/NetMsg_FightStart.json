@@ -1,0 +1,8 @@
+{
+  "TageName": "FightStart",
+  "reqId": "",
+  "reqProto": "",
+  "recId": "FIGHT_START_REP",
+  "recvProto": "FightStartResponse",
+  "needParseLua": true
+}
