@@ -76,6 +76,24 @@ export class BattlePlayer {
     /** 战场：6 个格子，索引 0..5，与 FIELD_SIZE 对应 */
     public BattleFields: Record<number, BattleField> = {};
 
+    /**
+     * 本轮新部署（翻开/召唤）上场的卡 UID 集合。
+     *
+     * 用于结算时区分「本回合刚翻开」与「早已在场」的单位：
+     *   - 新 IN 该集合 → 走 DisplayBorn（召唤登场）；
+     *   - 不在该集合 → 走攻击动作（已在场单位，不再重复召唤）。
+     * 每轮部署阶段开始时由 BeginDeployment() 清空，即集合永远只属于「当前轮」。
+     */
+    public NewBornUIDs: number[] = [];
+
+    /**
+     * 本轮部署阶段开始：清空「本轮新登场」标记，供 SimulateFight 区分 Born 与 Attack。
+     * 必须在下发 25005（部署开始）之前调用，否则上一轮的标记会污染本轮结算。
+     */
+    BeginDeployment(): void {
+        this.NewBornUIDs = [];
+    }
+
     constructor(preset?: any) {
         /**
          * 有客户端信息的绑定客户端信息
@@ -342,6 +360,13 @@ export class BattlePlayer {
                      * 从手牌中移除这张牌
                      */
                     this.HandUIDs.splice(this.HandUIDs.indexOf(cardUid), 1);
+
+                    /**
+                     * 记录为本轮新部署的卡（结算时走 DisplayBorn 召唤登场）
+                     */
+                    if (cardUid && !this.NewBornUIDs.includes(cardUid)) {
+                        this.NewBornUIDs.push(cardUid);
+                    }
                     break;
                 case ActionType.PUSH:
                     /**
@@ -428,67 +453,117 @@ export class BattlePlayer {
         return units;
     }
 
-    /**
-     * 回合战斗结算 —— 生成配对的两组表现数据：logs（历史文本/内部状态）与 actions（客户端播放动画）。
-     *
-     * 严格按日志实证与 BattleHistoryMgr.lua 语义表还原：
-     *   - 节点日志（RoundBegin/RoundFight/RoundEnd）side 固定 NullSide，intParams=[回合数]
-     *   - FieldWarn 与 DisplayBorn **逐格交错**：先对某格发 FieldWarn(结算位置=index, NullSide)，
-     *     再对该格翻面的卡牌发 DisplayBorn(NullSide, units)。
-     *   - DisplayBorn 的 units 是该格要翻面/召唤上场的卡牌（1~2 个），side 固定 NullSide。
-     *   - 每个实体动作在 actions 里配一条 Action（Born/FieldWarn 等），供客户端播放卡牌翻面/召唤动画。
-     *
-     * @param battlers 参战双方（index 0 为 SideA，index 1 为 SideB）
-     * @param roundNum 当前回合号（服务端权威，写入节点日志 intParams）
-     */
-    SimulateFight(battlers: BattlePlayer[], roundNum: number): { logs: BattleLogSimple[]; actions: Action[] } {
-        let logs: BattleLogSimple[] = [];
-        let actions: Action[] = [];
+    // ===========================================================================
+    // 下述各方法均为「单实例」原语/访问器：只读取/操作**自己**的状态，
+    // 不引用、也不感知其他 BattlePlayer。跨玩家结算编排统一放在 BattleRoom。
+    // ===========================================================================
 
-        /** 战斗回合开始节点 */
-        logs.push(this.MakeLog(BattleLogType.RoundBegin, BattleLogSide.NullSide, [], [roundNum]));
-        logs.push(this.MakeLog(BattleLogType.RoundFight, BattleLogSide.NullSide, [], [roundNum]));
-        actions.push(this.MakeAction(AttackType.RoundBeginStep));
-
-        /** 主视角在前（battlers[0]=SideA），逐格结算：先预警该格，再翻面该格的卡牌 */
-
-        for (let order = 0; order < 2; order++) {
-            let battler = battlers[order];
-            if (!battler) {
-                continue;
-            }
-            Object.entries(this.BattleFields).forEach(([i, slot]) => {
-                if (!slot.hasCard || !slot.cardUid) {
-                    return;
-                }
-
-                let index = Number(i);
-                let card = this.AllCards[slot.cardUid].Current;
-                let abilitie = card.abilitie;
-
-                let unit = battler.MakeLogUnit(
-                    battler.side, index, card.cid ?? 0,
-                    abilitie?.atk ?? 0,
-                    abilitie?.curDef ?? 0,
-                    abilitie?.maxDef ?? 0,
-                );
-    
-                /** 第 1 步：标出本格进入行动结算（FieldWarn, NullSide, 结算位置） */
-                logs.push(this.MakeLog(BattleLogType.FieldWarn, BattleLogSide.NullSide, [], [index]));
-                actions.push(this.MakeAction(AttackType.FieldWarn, battler.side, index));
-
-                /** 第 2 步：本格卡牌翻面/召唤登场（DisplayBorn, NullSide, 翻面卡牌） */
-                logs.push(this.MakeLog(BattleLogType.DisplayBorn, BattleLogSide.NullSide, [unit]));
-                actions.push(this.MakeBornAction(battler, slot, index));
-
-            });
+    /** 读取自己某个地块上的卡（单实例访问器，不感知对手）。 */
+    GetFieldCard(index: number): CardSimple_2 | undefined {
+        let slot = this.BattleFields[index];
+        if (!slot || !slot.hasCard || !slot.cardUid) {
+            return undefined;
         }
+        return this.AllCards[slot.cardUid].Current;
+    }
 
-        /** 回合结束节点 */
-        logs.push(this.MakeLog(BattleLogType.RoundEnd, BattleLogSide.NullSide, [], [roundNum]));
-        actions.push(this.MakeAction(AttackType.RoundEndStep));
+    /** 读取自己某个地块上的卡 UID（无卡返回 0）。 */
+    GetFieldCardUid(index: number): number {
+        let slot = this.BattleFields[index];
+        return slot && slot.hasCard ? slot.cardUid : 0;
+    }
 
-        return { logs, actions };
+    /** 读取某格单位的攻击力。 */
+    GetFieldAtk(index: number): number {
+        return this.GetFieldCard(index)?.abilitie?.atk ?? 0;
+    }
+
+    /** 读取某格单位的飞行层数（>0 视为飞行单位）。 */
+    GetFlyLayer(index: number): number {
+        return this.GetFieldCard(index)?.abilitie?.flyLayer ?? 0;
+    }
+
+    /** 某卡是否为本轮新部署（翻开/召唤）。 */
+    IsNewBornCard(cardUid: number): boolean {
+        return this.NewBornUIDs.includes(cardUid);
+    }
+
+    /**
+     * 自己某个地块的单位是否「可行动」：在场、非本轮新部署、且尚未阵亡（curDef>0）。
+     * 用于让 BattleRoom 判断该格是否产生攻击。
+     */
+    CanActFieldUnit(index: number): boolean {
+        let card = this.GetFieldCard(index);
+        if (!card) {
+            return false;
+        }
+        if (this.IsNewBornCard(this.GetFieldCardUid(index))) {
+            return false;
+        }
+        return (card.abilitie?.curDef ?? 0) > 0;
+    }
+
+    /** 生成自己某个地块单位的战斗日志单元（BattleLogUnit）；无卡返回 undefined。 */
+    GetFieldUnitLog(index: number): BattleLogUnit | undefined {
+        let card = this.GetFieldCard(index);
+        if (!card) {
+            return undefined;
+        }
+        let abilitie = card.abilitie;
+        return this.MakeLogUnit(
+            this.side, index, card.cid ?? 0,
+            abilitie?.atk ?? 0,
+            abilitie?.curDef ?? 0,
+            abilitie?.maxDef ?? 0,
+        );
+    }
+
+    /**
+     * 自己某个地块的单位受击：扣减 curDef；归零标记阵亡并移出战场、进入墓地。
+     * @returns 受击后 curDef
+     */
+    DealFieldDamage(index: number, dmg: number): number {
+        let slot = this.BattleFields[index];
+        let card = this.AllCards[slot.cardUid].Current;
+        let cur = card.abilitie?.curDef ?? 0;
+        let next = Math.max(0, cur - dmg);
+        if (card.abilitie) {
+            card.abilitie.curDef = next;
+        }
+        if (next <= 0) {
+            slot.cardUid = 0;
+            this.CemeteryIDs.push(card.uid ?? 0);
+        }
+        return next;
+    }
+
+    /**
+     * 自己主将受击：扣减 curHP（下限 0）。
+     * @returns 受击后 curHP
+     */
+    HeroTakeDamage(dmg: number): number {
+        this.hero.curHP = Math.max(0, (this.hero.curHP ?? 0) - dmg);
+        return this.hero.curHP;
+    }
+
+    /** 读取自己主将信息（单实例访问器）。 */
+    GetHeroInfo(): HeroInfo {
+        return this.hero.GetInfo();
+    }
+
+    /** 生成自己某个地块单位受击的 DisplayHurt 日志。 */
+    MakeFieldHurtLog(index: number, dmg: number): BattleLogSimple {
+        let unit = this.GetFieldUnitLog(index);
+        return this.MakeLog(BattleLogType.DisplayHurt, BattleLogSide.NullSide, unit ? [unit] : [], [dmg]);
+    }
+
+    /** 生成自己某个地块单位翻面/召唤登场的 DisplayBorn 日志；本格无单位时返回 undefined。 */
+    MakeBornLog(index: number): BattleLogSimple | undefined {
+        let unit = this.GetFieldUnitLog(index);
+        if (!unit) {
+            return undefined;
+        }
+        return this.MakeLog(BattleLogType.DisplayBorn, BattleLogSide.NullSide, [unit]);
     }
 
     /**
@@ -509,18 +584,21 @@ export class BattlePlayer {
     }
 
     /**
-     * 生成一条「卡牌翻面/召唤上场」动作（AttackType.Born）。
+     * 生成一条我方「卡牌翻面/召唤上场」动作（AttackType.Born），单实例方法。
      *
      * 客户端据此在 b1 指定格子播放卡面翻起、角色上场的动画。hits[0].card 携带该卡
      * 的 uid/cid/费用/物质化与 locationStatus=HAND_TO_FIELD(13)，hits[0].abilitie 携带
      * 身上已生效的攻防与异能，供客户端重建该格卡牌的表现。
+     * @param index 自己某块地块的索引
      */
-    MakeBornAction(battler: BattlePlayer, slot: BattleField, index: number): Action {
-
-        let card = this.AllCards[slot.cardUid].Current;
+    MakeBornAction(index: number): Action | undefined {
+        let card = this.GetFieldCard(index);
+        if (!card) {
+            return undefined;
+        }
         let abilitie = card.abilitie;
         let hit: Hit = {
-            field: { side: battler.side, index },
+            field: { side: this.side, index },
             card: {
                 uid: card.uid ?? 0,
                 cid: card.cid ?? 0,
@@ -539,10 +617,10 @@ export class BattlePlayer {
                 flyLayer: abilitie?.flyLayer ?? 0,
                 auraSkillId: [...(abilitie?.auraSkillId ?? [])],
             },
-            attacker: { side: battler.side, index },
+            attacker: { side: this.side, index },
         };
         return {
-            b1: { side: battler.side, index },
+            b1: { side: this.side, index },
             attackType: AttackType.Born,
             hits: [hit],
             heros: [],
