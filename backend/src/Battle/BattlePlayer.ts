@@ -1,4 +1,4 @@
-import { Action, AttackType, BattleLogParams, BattleLogSide, BattleLogSimple, BattleLogType, BattleLogUnit, BattleFieldSimple, BattlerInfoSimple, BattlerSimple, CardSimple_2, ChangeCardRequest, ChangeCardResponse, DeployActionSimple, HeroInfo, Hit, LocationStatus, MESSAGE_ID, ActionType } from "mc-local-share";
+import { Action, AttackType, BattleLogParams, BattleLogSide, BattleLogSimple, BattleLogType, BattleLogUnit, BattleFieldSimple, BattlerInfoSimple, BattlerSimple, CardSimple_2, ChangeCardRequest, ChangeCardResponse, DeployActionSimple, HeroInfo, Hit, LocationStatus, MESSAGE_ID, ActionType, Battlefield } from "mc-local-share";
 import { BattleHero } from "./BattleHero";
 import { BattleConst } from "./BattleConst";
 import { DeckService } from "../database/service/Deck.service";
@@ -47,13 +47,27 @@ export class BattlePlayer {
 
     /** 
      * 对应玩家的所有卡牌，用来检索和记录数据
-    */
+     * <CardUID, BattleCard>
+     */
     public AllCards: Record<number, BattleCard> = {};
 
-    /** 手牌 */
-    public HandIDs: number[] = [];
-    /** 剩余牌组 */
-    public DeckIDs: number[] = [];
+    /** 初始化是否完成（InitBattleInfo 成功结束后置 true）。
+     * 用于让 BattleRoom 在集齐双方时等待所有参战者的战斗信息就绪，避免异步初始化的竞态。 */
+    public hasInited: boolean = false;
+
+    /** 
+     * UID 是运行时生成的单卡ID，每张卡不同
+     * ID 是卡牌的牌型ID，用来进行效果处理
+     */
+
+    /** 手牌UID列表
+     * 手牌记录的是UID
+     */
+    public HandUIDs: number[] = [];
+    /** 
+     * 牌组也用UID
+     */
+    public DeckUIDs: number[] = [];
     /** 墓地牌 */
     public CemeteryIDs: number[] = [];
     /** 装备ID */
@@ -118,9 +132,11 @@ export class BattlePlayer {
             cardDict[Number(card.cid)] = card;
         });
 
-        info.cards.forEach((cid, index) => {
-            let cardRaw = cardDict[cid];
+        info.cards.forEach((cidKey, index) => {
+            let cardRaw = cardDict[cidKey];
             let cardUid = this.side * 1000 + index + 1;
+
+            let cid = Number(cidKey);
 
             let raw: CardSimple_2 = {
                 /**
@@ -147,7 +163,7 @@ export class BattlePlayer {
                 },
             }
             this.AllCards[cardUid] = new BattleCard(cid, raw);
-            this.DeckIDs.push(cardUid);
+            this.DeckUIDs.push(cardUid);
         });
 
         /**
@@ -156,7 +172,7 @@ export class BattlePlayer {
         this.hero = new BattleHero({
             side: this.side,
             heroID: info.hero,
-            heroSkillID: info.skill,
+            heroSkillID: Number(info.skill),
             curHP: BattleConst.INIT_HP,
             maxHP: BattleConst.INIT_HP,
             curMana: BattleConst.INIT_MANA,
@@ -183,6 +199,9 @@ export class BattlePlayer {
         // 初始手牌
         this.DrawCard(BattleConst.INIT_HAND);
 
+        // 标记初始化完成，供房间判断是否可开战
+        this.hasInited = true;
+
         Logger.LogInfo(`BattlePlayer InitBattleInfo [${this.uid}]`);
     }
 
@@ -191,9 +210,9 @@ export class BattlePlayer {
      * 洗牌
      */
     ShuffleDeck(): void {
-        for (let i = this.DeckIDs.length - 1; i > 0; i--) {
+        for (let i = this.DeckUIDs.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [this.DeckIDs[i], this.DeckIDs[j]] = [this.DeckIDs[j], this.DeckIDs[i]];
+            [this.DeckUIDs[i], this.DeckUIDs[j]] = [this.DeckUIDs[j], this.DeckUIDs[i]];
         }
     }
 
@@ -202,14 +221,14 @@ export class BattlePlayer {
      */
     DrawCard(count: number = 1): number[] {
         let cards: number[] = [];
-        if (this.DeckIDs.length == 0) {
+        if (this.DeckUIDs.length == 0) {
             // 此时应该直接判负
             return cards;
         }
         // 抽牌
         for (let i = 0; i < count; i++) {
-            let cardUid = this.DeckIDs.shift()!;
-            this.HandIDs.push(cardUid);
+            let cardUid = this.DeckUIDs.shift()!;
+            this.HandUIDs.push(cardUid);
             cards.push(cardUid);
         }
         return cards;
@@ -223,20 +242,27 @@ export class BattlePlayer {
         let heroInfo: HeroInfo = {
             ...this.hero.GetInfo(),
             side: this.side,
-            handCount: this.HandIDs.length,
-            deckCount: this.DeckIDs.length,
+            handCount: this.HandUIDs.length,
+            deckCount: this.DeckUIDs.length,
             cemeteryCount: this.CemeteryIDs.length,
         }
         return {
             heroInfo: heroInfo,
-            hand: this.HandIDs.map((uid) => this.AllCards[uid].Current),
-            battleFields: Object.values(this.BattleFields).map((field) => {
-                return {
+            hand: this.HandUIDs.map((uid) => this.AllCards[uid].Current),
+            battleFields: Object.values(this.BattleFields).map((field, index) => {
+
+                let fieldSimple:BattleFieldSimple = {
+                    index: Number(index),
                     ...field.GetSimple(),
-                    cardUid: field.cardUid,
-                };
+                }
+
+                if(fieldSimple.hasCard) {
+                    fieldSimple.card = this.AllCards[field.cardUid].Current;
+                }
+
+                return fieldSimple;
             }),
-            deckIDs: this.DeckIDs,
+            deckIDs: this.DeckUIDs.map((uid) => this.AllCards[uid].cid),
             cemeteryIDs: this.CemeteryIDs,
             equipIDs: this.EquipIDs,
         }
@@ -263,10 +289,10 @@ export class BattlePlayer {
      */
     ChangeCard(req: ChangeCardRequest): ChangeCardResponse {
         req.cardUids.forEach((uid) => {
-            let uidIndex = this.HandIDs.findIndex((u) => u === uid);
+            let uidIndex = this.HandUIDs.findIndex((u) => u === uid);
             if (uidIndex >= 0) {
-                this.HandIDs.splice(uidIndex, 1);
-                this.DeckIDs.push(uid);
+                this.HandUIDs.splice(uidIndex, 1);
+                this.DeckUIDs.push(uid);
             }
         });
         let cards = this.DrawCard(req.cardUids.length);
@@ -315,7 +341,7 @@ export class BattlePlayer {
                     /**
                      * 从手牌中移除这张牌
                      */
-                    this.HandIDs.splice(this.HandIDs.indexOf(cardUid), 1);
+                    this.HandUIDs.splice(this.HandUIDs.indexOf(cardUid), 1);
                     break;
                 case ActionType.PUSH:
                     /**
@@ -391,7 +417,7 @@ export class BattlePlayer {
             units.push(this.MakeLogUnit(
                 this.side,
                 Number(index),
-                slot.cardUid ?? 0,
+                card.cid ?? 0,
                 abilitie?.atk ?? 0,
                 abilitie?.curDef ?? 0,
                 abilitie?.maxDef ?? 0,
@@ -489,15 +515,17 @@ export class BattlePlayer {
      * 的 uid/cid/费用/物质化与 locationStatus=HAND_TO_FIELD(13)，hits[0].abilitie 携带
      * 身上已生效的攻防与异能，供客户端重建该格卡牌的表现。
      */
-    MakeBornAction(battler: BattlePlayer, slot: BattleFieldSimple, index: number): Action {
-        let abilitie = slot.card?.abilitie;
+    MakeBornAction(battler: BattlePlayer, slot: BattleField, index: number): Action {
+
+        let card = this.AllCards[slot.cardUid].Current;
+        let abilitie = card.abilitie;
         let hit: Hit = {
             field: { side: battler.side, index },
             card: {
-                uid: slot.card?.uid ?? 0,
-                cid: slot.card?.cid ?? 0,
-                cost: slot.card?.cost ?? 0,
-                isMaterialized: slot.card?.isMaterialized ?? false,
+                uid: card.uid ?? 0,
+                cid: card.cid ?? 0,
+                cost: card.cost ?? 0,
+                isMaterialized: card.isMaterialized ?? false,
                 locationStatus: LocationStatus.HAND_TO_FIELD,
             },
             abilitie: {
