@@ -1,0 +1,8 @@
+{
+  "TageName": "DealStep",
+  "reqId": "",
+  "reqProto": "",
+  "recId": "DEAL_STEP_REP",
+  "recvProto": "DealStepResponse",
+  "needParseLua": true
+}

@@ -1,4 +1,4 @@
-import { BattleStartResponse, ChangeCardRequest, MESSAGE_ID, PushBattleWaiting, RoomType } from "mc-local-share";
+import { BattleStartResponse, ChangeCardRequest, DeploymentCompleteRequest, MESSAGE_ID, PushBattleWaiting, RoomType } from "mc-local-share";
 import { Client } from "../net/Client";
 import { BattleRoom } from "./BattleRoom";
 import { Logger } from "../core/Logger";
@@ -97,5 +97,30 @@ export class BattleServer {
             return room.ChangeCard(client.uid,req);
         }
         return undefined as any;
+    }
+
+    /**
+     * 玩家布阵完成（C2S 25006）
+     *
+     * 无独立应答（25006 没有对应的 REP），双方都提交后由房间广播 25007 + 25011。
+     * @param client 客户端
+     * @param req 布阵动作
+     */
+    public async DeploymentComplete(client: Client, req: DeploymentCompleteRequest) {
+        let room = await this.GetRoomByClient(client);
+        if (room) {
+            return room.DeploymentComplete(client.uid, req);
+        }
+    }
+
+    /**
+     * 客户端播放完毕本轮表现（C2S 25012），推进到下一轮或结束战斗
+     * @param client 客户端
+     */
+    public async ShowEnd(client: Client) {
+        let room = await this.GetRoomByClient(client);
+        if (room) {
+            return room.ShowEnd(client.uid);
+        }
     }
 }

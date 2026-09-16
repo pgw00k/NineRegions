@@ -4,6 +4,11 @@
 import { FieldType, WireType } from '../common';
 import { define, FieldSchema, ID_BY_NAME } from '../schema';
 import { MESSAGE_ID } from '../MESSAGE_ID';
+// 手工补充的消息类型（不在 pack_msg 中，见 message_ex.ts 说明）。
+// 此处负责：a) 导出这些类型（上层经 'mc-local-share' 可直接引用）；
+//            b) 让手工 define('ShowEndRequest', []) 与 ID_BY_NAME 映射在既有逻辑中生效。
+import './message_ex';
+export * from './message_ex';
 
 define('BattleTarget', [
     { name: 'side', number: 1, kind: FieldType.INT32, repeated: false, wire: WireType.VARINT },
@@ -2929,6 +2934,8 @@ define('DLC4ForgingRep', [
     { name: 'costInfo', number: 4, kind: FieldType.MESSAGE, repeated: false, typeName: 'PrizeInfoSimple', wire: WireType.LENDELIM },
   ]);
 
+define('ShowEndRequest', []);
+
 
 
 ID_BY_NAME[MESSAGE_ID.GET_ACHIEVE_INFO_REQ] = 'GetAchieveInfoRequest';
@@ -3214,7 +3221,14 @@ ID_BY_NAME[MESSAGE_ID.USE_ITEM_REQ] = 'UseItemRequest';
 ID_BY_NAME[MESSAGE_ID.USE_SHAREDDECK_NT] = 'UseSharedDeckNt';
 ID_BY_NAME[MESSAGE_ID.USE_SKIN_REQ] = 'UseSkinReq';
 ID_BY_NAME[MESSAGE_ID.USE_SKIN_RSP] = 'UseSkinRsp';
+ID_BY_NAME[MESSAGE_ID.BATTLE_END_REP] = 'BattleEndResponse';
 ID_BY_NAME[MESSAGE_ID.CHANGE_CARD_REP] = 'ChangeCardResponse';
 ID_BY_NAME[MESSAGE_ID.CHANGE_CARD_REQ] = 'ChangeCardRequest';
+ID_BY_NAME[MESSAGE_ID.DEAL_STEP_REP] = 'DealStepResponse';
+ID_BY_NAME[MESSAGE_ID.DEPLOYMENT_COMPLETE_REQ] = 'DeploymentCompleteRequest';
+ID_BY_NAME[MESSAGE_ID.DEPLOYMENT_START_REP] = 'DeploymentStartResponse';
+ID_BY_NAME[MESSAGE_ID.FIGHT_START_REP] = 'FightStartResponse';
+ID_BY_NAME[MESSAGE_ID.FIGHT_STEP_REP] = 'FightStepResponse';
 ID_BY_NAME[MESSAGE_ID.BATTLE_START_REP] = 'BattleStartResponse';
 ID_BY_NAME[MESSAGE_ID.LOGIC_RECONNECTION_REQ] = 'LogicReconnectionRequest';
+ID_BY_NAME[MESSAGE_ID.SHOW_END_REQ] = 'ShowEndRequest';

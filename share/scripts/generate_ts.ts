@@ -151,6 +151,22 @@ function genFieldsTs(
     defineLines.push(`define('${flat}', ${genFieldArrayDecl(msg, ctx)});`);
   }
 
+  // ②.5 收集「手工补充类型」：JSON 里引用了、但 pack_msg 里解析不到的消息体名
+  //     （这些类型声明在 message_ex.ts，字段为空结构，此处补 define('', [])）。
+  const exNames = new Set<string>();
+  for (const n of nets) {
+    for (const proto of [n.reqProto, n.recvProto]) {
+      if (!proto) continue;
+      if (!ctx.shortToFlat.has(proto) && !seen.has(proto)) {
+        exNames.add(proto);
+      }
+    }
+  }
+  for (const name of exNames) {
+    seen.add(name);
+    defineLines.push(`define('${name}', []);`);
+  }
+
   // ③ 生成 MESSAGE_ID → 拍平名 映射行（id 合法才登记）。
   //    请求（reqId/reqProto）与响应（recId/recvProto）都登记，保证 codec 编码请求、解码响应都能查到 schema。
   //    注意：部分协议 reqId 与 recId 数值相同（MESSAGE_ID 中 REQ/REP 同号），此时按数值去重无法两全，
@@ -158,7 +174,8 @@ function genFieldsTs(
   const mapIdProto = (idName: string, proto: string): void => {
     const idNum = idName && msgIdNameToNum.has(idName) ? msgIdNameToNum.get(idName)! : null;
     if (!idNum || !proto) return;
-    const flat = ctx.shortToFlat.get(proto);
+    // 优先 pack_msg 拍平名；解析不到则视为 message_ex 里的手工类型（直接用原名）。
+    const flat = ctx.shortToFlat.get(proto) ?? proto;
     if (!flat) return;
     if (!idSet.has(idNum)) {
       idSet.add(idNum);
@@ -247,8 +264,8 @@ function genHandler(
   msgIdNameToNum: Map<string, number>,
   scriptDir: string,
 ): HandlerResult {
-  const reqType = n.reqProto ? ctx.shortToFlat.get(n.reqProto) : "{}";
-  const resType = n.recvProto ? ctx.shortToFlat.get(n.recvProto) : "{}";
+  const reqType = n.reqProto ? (ctx.shortToFlat.get(n.reqProto) ?? n.reqProto) : "{}";
+  const resType = n.recvProto ? (ctx.shortToFlat.get(n.recvProto) ?? n.recvProto) : "{}";
   const reqIdName = msgIdNameToNum.has(n.reqId) ? n.reqId : 'NETWORK_MESSAGE_BEGIN';
   const recIdName = msgIdNameToNum.has(n.recId) ? n.recId : 'NETWORK_MESSAGE_BEGIN';
   const register = Boolean(n.reqProto && n.recvProto);

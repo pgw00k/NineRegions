@@ -18,7 +18,11 @@ export class Card {
     @Column({ type: 'int', default: 0, comment: '攻击值' })
     atk: number = 0;
 
-    @Column({ type: 'int', default: 0, comment: '防御值' })
+    /**
+     * 虽然叫做防御值，其实就是HP
+     * 估计是九野本来设计的时候有三项数值，后来取消了，但是字段名被保留下来了
+     */
+    @Column({ type: 'int', default: 0, comment: 'HP' })
     def: number = 0;
 
     @Column({ type: 'int', default: 0, comment: '稀有度' })
