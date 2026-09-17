@@ -575,6 +575,16 @@ export class BattleRoom {
         logs.push(this.MakeRoomLog(BattleLogType.RoundFight, [], [this.RoundNum]));
         actions.push(this.MakeRoomStep(AttackType.RoundBeginStep));
 
+        /**
+         * 先播发本轮部署阶段产生的表现日志（如使用法术的 DisplayHandThrow /
+         * DisplayAddToCemetery），再接逐格战斗结算。
+         */
+        for (let battler of battlers) {
+            if (battler.DeployLogs && battler.DeployLogs.length > 0) {
+                logs.push(...battler.DeployLogs);
+            }
+        }
+
         /** 逐格并行结算：双方第 index 个地块“同时”进入结算 */
         for (let index = 0; index < BattleConst.FIELD_SIZE; index++) {
             let occupied = battlers.filter((b) => b.GetFieldCardUid(index) > 0);

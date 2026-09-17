@@ -7,6 +7,9 @@ export class BattleCard {
     /** 牌型ID */
     public cid: number = 0;
 
+    /** 卡牌ID */
+    public IsMagic: boolean = false;
+
     /** 原始数据 */
     public Raw: CardSimple_2 = {};
 
