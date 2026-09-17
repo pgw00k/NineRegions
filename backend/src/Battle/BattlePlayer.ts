@@ -69,7 +69,7 @@ export class BattlePlayer {
      */
     public DeckUIDs: number[] = [];
     /** 墓地牌 */
-    public CemeteryIDs: number[] = [];
+    public CemeteryUIDs: number[] = [];
     /** 装备ID */
     public EquipIDs: number[] = [];
 
@@ -86,12 +86,21 @@ export class BattlePlayer {
      */
     public NewBornUIDs: number[] = [];
 
+
     /**
-     * 本轮部署阶段开始：清空「本轮新登场」标记，供 SimulateFight 区分 Born 与 Attack。
+     * 本轮部署阶段内产生的「待播发」战斗日志（如使用法术的 DisplayHandThrow/
+     * DisplayAddToCemetery）。由 ApplyDeploy 追加、BeginDeployment 清空，
+     * 供 BattleRoom.SimulateFight 在战斗表现开头一并播发。
+     */
+    public DeployLogs: BattleLogSimple[] = [];
+
+    /**
+     * 本轮部署阶段开始：清空「本轮新登场」标记与「本轮法术日志」。
      * 必须在下发 25005（部署开始）之前调用，否则上一轮的标记会污染本轮结算。
      */
     BeginDeployment(): void {
         this.NewBornUIDs = [];
+        this.DeployLogs = [];
     }
 
     constructor(preset?: any) {
@@ -166,8 +175,8 @@ export class BattlePlayer {
                 cost: cardRaw.cost,
                 isMaterialized: false,
                 abilitie: {
-                    skillId: cardRaw.skillId,
-                    passiveSkillId: cardRaw.passiveSkillId,
+                    skillId: [...cardRaw.skillId],
+                    passiveSkillId: [...cardRaw.passiveSkillId],
                     skillExpander: [],
                     atk: cardRaw.atk,
                     /**
@@ -177,10 +186,12 @@ export class BattlePlayer {
                     maxDef: cardRaw.def,
                     isPrepare: false,
                     flyLayer: cardRaw.FlyLayer,
-                    auraSkillId: cardRaw.auraSkillId,
+                    auraSkillId: [...cardRaw.auraSkillId],
                 },
             }
-            this.AllCards[cardUid] = new BattleCard(cid, raw);
+            let NewCard = new BattleCard(cid, raw);
+            NewCard.IsMagic = cardRaw.IsMagic == 1;
+            this.AllCards[cardUid] = NewCard;
             this.DeckUIDs.push(cardUid);
         });
 
@@ -262,7 +273,7 @@ export class BattlePlayer {
             side: this.side,
             handCount: this.HandUIDs.length,
             deckCount: this.DeckUIDs.length,
-            cemeteryCount: this.CemeteryIDs.length,
+            cemeteryCount: this.CemeteryUIDs.length,
         }
         return {
             heroInfo: heroInfo,
@@ -281,7 +292,11 @@ export class BattlePlayer {
                 return fieldSimple;
             }),
             deckIDs: this.DeckUIDs.map((uid) => this.AllCards[uid].cid),
-            cemeteryIDs: this.CemeteryIDs,
+            /**
+             * 服务端墓地内部记录 UID（保证单卡唯一）；发给客户端前通过 UID 反查 CID，
+             * 因为客户端按「卡牌型 ID」识别墓地/回收，而不认运行时的实例 UID。
+             */
+            cemeteryIDs: this.CemeteryUIDs.map((uid) => this.AllCards[uid]?.cid ?? 0),
             equipIDs: this.EquipIDs,
         }
     }
@@ -334,59 +349,106 @@ export class BattlePlayer {
      * @param actions 客户端提交的布阵动作
      */
     ApplyDeploy(actions: DeployActionSimple[]): void {
+        /**
+         * 两遍处理，避免客户端动作顺序影响推挤结果：
+         *   第一遍：PUSH（把已在场的卡从 field.index 挪到 index 落点）；
+         *   第二遍：PUT（放置本回合打出的新牌 / 消耗法术）。
+         * 「先推挤、再落子」保证 PUSH 拿到的永远是部署前的旧占位卡，
+         * 不会把刚放下的新牌误推走（问题2：第二轮部署+PUSH）。
+         */
+        this.ApplyPushActions(actions);
+        this.ApplyPutActions(actions);
+    }
+
+    /** 第一遍：处理所有 PUSH 推挤（旧占位卡从 field.index → index）。 */
+    private ApplyPushActions(actions: DeployActionSimple[]): void {
         actions.forEach((action) => {
-            Logger.LogInfo(`BattlePlayer[${this.uid}] ApplyDeploy`, action);
+            if (action.type !== ActionType.PUSH) {
+                return;
+            }
+            let targetIndex = action.index;
+            let origSlotID = action.field?.index ?? -1;
+            let origSlot = this.BattleFields[origSlotID];
+            if (!origSlot) {
+                Logger.LogError(`BattlePlayer[${this.uid}] PUSH=${targetIndex} 未找到原地块`);
+                return;
+            }
+            let movingUid = origSlot.cardUid;
+            if (movingUid <= 0) {
+                Logger.LogWarn(`BattlePlayer[${this.uid}] PUSH=${targetIndex} 原地块无卡可推`);
+                return;
+            }
+            let targetSlot = this.BattleFields[targetIndex];
+            if (!targetSlot || targetSlot.hasCard) {
+                Logger.LogWarn(`BattlePlayer[${this.uid}] PUSH=${targetIndex} 落点已占用，忽略`);
+                return;
+            }
+            origSlot.cardUid = 0;
+            targetSlot.cardUid = movingUid;
+            Logger.LogInfo(`BattlePlayer[${this.uid}] PUSH ${origSlotID}→${targetIndex} uid=${movingUid}`);
+        });
+    }
+
+    /** 第二遍：处理所有 PUT 落子（法术消耗进墓地；单位占场）。 */
+    private ApplyPutActions(actions: DeployActionSimple[]): void {
+        actions.forEach((action) => {
+            if (action.type !== ActionType.PUT) {
+                return;
+            }
+            let bid = action.index;
+            let cardUid = action.cardUid;
+            let slot = this.BattleFields[bid];
+            if (!slot) {
+                Logger.LogWarn(`BattlePlayer[${this.uid}] PUT=${bid} 地块不存在`);
+                return;
+            }
 
             /**
-             * 先不做校验，直接认定客户端传递过来的数据均合法
-             * */
-            let bid = action.index
-            let cardUid = action.cardUid;
+             * 法术牌：不占战场格位，打出后直接进墓地（问题3）。
+             * 同时产生 DisplayHandThrow → DisplayAddToCemetery 日志，供客户端播发。
+             */
+            if (cardUid && this.AllCards[cardUid].IsMagic) {
+                this.DiscardToCemetery(cardUid);
+                return;
+            }
 
-            switch (action.type) {
-                case ActionType.PUT:
-                    /**
-                     * PUT=1：把牌打出到目标地块
-                     */
-                    let slot = this.BattleFields[bid];
-                    if (!slot || slot.hasCard) {
-                        // 目标地块已占用
-                        Logger.LogWarn(`BattlePlayer[${this.uid}] PUT=${bid} 已占用`);
-                        return;
-                    }
-                    slot.cardUid = cardUid;
+            if (slot.hasCard) {
+                // 目标地块已占用（部署阶段应无此情形，健壮性兜底，避免重叠）
+                Logger.LogWarn(`BattlePlayer[${this.uid}] PUT=${bid} 已占用`);
+                return;
+            }
+            slot.cardUid = cardUid;
 
-                    /**
-                     * 从手牌中移除这张牌
-                     */
-                    this.HandUIDs.splice(this.HandUIDs.indexOf(cardUid), 1);
+            /**
+             * 从手牌中移除这张牌
+             */
+            this.HandUIDs.splice(this.HandUIDs.indexOf(cardUid), 1);
 
-                    /**
-                     * 记录为本轮新部署的卡（结算时走 DisplayBorn 召唤登场）
-                     */
-                    if (cardUid && !this.NewBornUIDs.includes(cardUid)) {
-                        this.NewBornUIDs.push(cardUid);
-                    }
-                    break;
-                case ActionType.PUSH:
-                    /**
-                     * PUSH=2：牌被推挤到了目标地块
-                     * 参数field 中记录了被推过来的牌原来所在的地块信息
-                     * 此时cardUid 为0，需要在服务器端进行处理
-                     */
-                    let origSlotID = action.field?.index || -1;
-                    let origSlot = this.BattleFields[origSlotID];
-                    if (!origSlot) {
-                        Logger.LogError(`BattlePlayer[${this.uid}] PUSH=${bid} 未找到原地块`);
-                        return;
-                    }
-                    origSlot.cardUid = 0;
-                    this.BattleFields[bid].cardUid = cardUid;
-                    break;
-                default:
-                    break;
+            /**
+             * 记录为本轮新部署的卡（结算时走 DisplayBorn 召唤登场）
+             */
+            if (cardUid && !this.NewBornUIDs.includes(cardUid)) {
+                this.NewBornUIDs.push(cardUid);
             }
         });
+    }
+
+    /**
+     * 消耗一张手牌法术：从手牌移除并塞进墓地，同时记录展示日志。
+     * @param cardUid 法术单卡 UID
+     */
+    DiscardToCemetery(cardUid: number): void {
+        let handIndex = this.HandUIDs.indexOf(cardUid);
+        if (handIndex >= 0) {
+            this.HandUIDs.splice(handIndex, 1);
+        }
+        this.CemeteryUIDs.push(cardUid);
+
+        const cid = this.AllCards[cardUid]?.cid ?? 0;
+        let unit = [this.MakeLogUnit(this.side, -1, cid, 0, 0, 0)];
+        this.DeployLogs.push(this.MakeLog(BattleLogType.DisplayHandThrow, BattleLogSide.NullSide, unit, [cardUid]));
+        this.DeployLogs.push(this.MakeLog(BattleLogType.DisplayAddToCemetery, BattleLogSide.NullSide, unit, [cardUid]));
+        Logger.LogInfo(`BattlePlayer[${this.uid}] 法术消耗 uid=${cardUid} cid=${cid} → 墓地`);
     }
 
     /**
@@ -532,7 +594,7 @@ export class BattlePlayer {
         }
         if (next <= 0) {
             slot.cardUid = 0;
-            this.CemeteryIDs.push(card.uid ?? 0);
+            this.CemeteryUIDs.push(card.uid ?? 0);
         }
         return next;
     }

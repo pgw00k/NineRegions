@@ -157,7 +157,18 @@ export class BattlePlayerBotReplay extends BattlePlayerBot {
 
         let action: DeployActionSimple[] = [];
         let slot = 0;
-        for (const cardUid of this.HandUIDs.slice(0, want)) {
+        let placed = 0;
+        for (const cardUid of this.HandUIDs) {
+            if (placed >= want) {
+                break;
+            }
+            /**
+             * 法术牌不占战场格位，若把它当单位 PUT 上去会造成「占用了格位但无实体」、
+             * 进而引发格位错位/重叠（问题1）。这里直接跳过，只让单位牌上场。
+             */
+            if (this.AllCards[cardUid].IsMagic) {
+                continue;
+            }
             while (slot < BattleConst.FIELD_SIZE && this.BattleFields[slot].hasCard) {
                 slot++;
             }
@@ -172,6 +183,7 @@ export class BattlePlayerBotReplay extends BattlePlayerBot {
                 field: { side: this.side, index: slot },
             });
             slot++;
+            placed++;
         }
 
         Logger.LogInfo(`[BotReplay ${this.uid}] 模拟 C2S 25006 布阵 round=${this.ReplayRound} actions=${action.length}`);
