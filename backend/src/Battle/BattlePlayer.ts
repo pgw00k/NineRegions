@@ -10,8 +10,10 @@ import { PlayerInfoService } from "../database/service/PlayerInfo.service";
 import { Card } from "../database/data/Card";
 import { BattleField } from "./BattleField";
 import { BattleCard } from "./BattleCard";
+import { BattleUnit } from "./BattleUnit";
+import { IBattleRound } from "./IBattleState";
 
-export class BattlePlayer {
+export class BattlePlayer implements IBattleRound {
 
     /** 玩家绑定的客户端
      * 用于处理战斗信息
@@ -76,31 +78,127 @@ export class BattlePlayer {
     /** 战场：6 个格子，索引 0..5，与 FIELD_SIZE 对应 */
     public BattleFields: Record<number, BattleField> = {};
 
-    /**
-     * 本轮新部署（翻开/召唤）上场的卡 UID 集合。
-     *
-     * 用于结算时区分「本回合刚翻开」与「早已在场」的单位：
-     *   - 新 IN 该集合 → 走 DisplayBorn（召唤登场）；
-     *   - 不在该集合 → 走攻击动作（已在场单位，不再重复召唤）。
-     * 每轮部署阶段开始时由 BeginDeployment() 清空，即集合永远只属于「当前轮」。
+    /** 单位列表
+     * 6个地块，最多6个单位
      */
-    public NewBornUIDs: number[] = [];
-
+    public Units: Record<number, BattleUnit> = {};
 
     /**
-     * 本轮部署阶段内产生的「待播发」战斗日志（如使用法术的 DisplayHandThrow/
-     * DisplayAddToCemetery）。由 ApplyDeploy 追加、BeginDeployment 清空，
-     * 供 BattleRoom.SimulateFight 在战斗表现开头一并播发。
+     * 本轮部署阶段内产生的「待播发」战斗日志（如部署时立即消耗的表现）。
+     * 由 ApplyDeploy 追加、BeginDeployment 清空，供 BattleRoom.SimulateFight 播发。
      */
     public DeployLogs: BattleLogSimple[] = [];
 
+    /** 本轮部署阶段内产生的「待播发」布阵动作
+     * 需要下发给客户端播放对应的布阵效果
+     */
+    public S2CDeployActions:Action[] = [];
+
     /**
-     * 本轮部署阶段开始：清空「本轮新登场」标记与「本轮法术日志」。
-     * 必须在下发 25005（部署开始）之前调用，否则上一轮的标记会污染本轮结算。
+     * 本轮部署阶段开始：清空「本轮待播发日志」。
+     * 必须在下发 25005（部署开始）之前调用，否则上一轮的日志会污染本轮结算。
      */
     BeginDeployment(): void {
-        this.NewBornUIDs = [];
         this.DeployLogs = [];
+    }
+
+    // ===========================================================================
+    // 回合阶段分发（IBattleRound）
+    // 由 BattleRoom.RoundBegin / RoundFightBegin / RoundFightEnd / RoundEnd 逐层调用，
+    // 再逐层下发给本方每个 BattleUnit，形成「大阶段 Room → Player → Unit」的结算时机。
+    // ===========================================================================
+
+    /**
+     * 回合开始：法力回复 + 抽牌 + 本方各单位 RoundBegin（在场单位解锁攻击）。
+     * @returns 本回合抽到的手牌 UID（供房间组装 dealCached）
+     */
+    RoundBegin(): number[] {
+        /** 每回合开始时，Mana + MANA_ROUND_ADD，已达 MANA_MAX_LIMIT 则不再增加 */
+        this.hero.curMana = Math.min(BattleConst.MANA_MAX_LIMIT, this.hero.curMana + BattleConst.MANA_ROUND_ADD);
+        this.hero.maxMana = Math.min(BattleConst.MANA_MAX_LIMIT, this.hero.maxMana + BattleConst.MANA_ROUND_ADD);
+
+        /** 抽牌阶段 */
+        let drawn = this.DrawCard(BattleConst.DRAW_PER_ROUND);
+
+        /** 遍历本方单位，逐个触发 RoundBegin */
+        Object.values(this.Units).forEach((unit) => unit.RoundBegin());
+
+        return drawn;
+    }
+
+    /** 回合进入战斗：遍历本方单位触发 RoundFightBegin */
+    RoundFightBegin(): void {
+        Object.values(this.Units).forEach((unit) => unit.RoundFightBegin());
+    }
+
+    /** 回合战斗结束：遍历本方单位触发 RoundFightEnd */
+    RoundFightEnd(): void {
+        Object.values(this.Units).forEach((unit) => unit.RoundFightEnd());
+    }
+
+    /** 回合结束：遍历本方单位触发 RoundEnd */
+    RoundEnd(): void {
+        Object.values(this.Units).forEach((unit) => unit.RoundEnd());
+    }
+
+    /**
+     * 一张非法术卡牌在地块上成功召唤出单位后创建的 BattleUnit。
+     * @param cardUid 单卡 UID
+     * @param field 所在地块索引
+     */
+    CreateUnit(cardUid: number, field: number): void {
+        let card = this.AllCards[cardUid];
+        if (!card) {
+            Logger.LogWarn(`BattlePlayer[${this.uid}] CreateUnit 未找到卡 uid=${cardUid}`);
+            return;
+        }
+        let unit = new BattleUnit(card);
+        /** 与 card 无关的战斗属性托管在这里 */
+        unit.uid = cardUid;
+        unit.side = this.side;
+        unit.field = field;
+        unit.Spawn();
+        this.Units[cardUid] = unit;
+        Logger.LogInfo(`BattlePlayer[${this.uid}] 召唤单位 uid=${cardUid} cid=${unit.cid} field=${field} AttackCount=${unit.AttackCount}`);
+    }
+
+    /**
+     * 检索本方一块「空闲」地块（从 index 5 → 0 从后往前找第一块）。
+     *
+     * 空闲判定＝ `!BattleFields[i].hasCard`（即该格无卡牌占位）：
+     *   - 从未部署 / 已结算（法术消耗或单位阵亡后清格）→ 空闲；
+     *   - 已部署但未翻开（含 PUT 法术）→ `hasCard=true`，被视为占用，不可召唤。
+     * 无空地返回 -1。
+     */
+    FindEmptyField(): number {
+        for (let i = BattleConst.FIELD_SIZE - 1; i >= 0; i--) {
+            if (!this.BattleFields[i].hasCard) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 凭空召唤：在本方第一块空地上召唤单位（占格 + CreateUnit + Spawn）。
+     * @param cardUid 要被召唤的卡 UID（须在 AllCards 中，且应为单位牌而非法术）
+     * @returns 落地地块 index；无空地或卡非法时返回 -1
+     */
+    SummonUnit(cardUid: number): number {
+        let target = this.FindEmptyField();
+        if (target < 0) {
+            Logger.LogWarn(`BattlePlayer[${this.uid}] SummonUnit 无空地，取消召唤 uid=${cardUid}`);
+            return -1;
+        }
+        let card = this.AllCards[cardUid];
+        if (!card) {
+            Logger.LogWarn(`BattlePlayer[${this.uid}] SummonUnit 未找到卡 uid=${cardUid}`);
+            return -1;
+        }
+        /** 占格（MakeBornAction 依赖 GetFieldCard 读到该格卡牌快照） */
+        this.BattleFields[target].cardUid = cardUid;
+        this.CreateUnit(cardUid, target);
+        return target;
     }
 
     constructor(preset?: any) {
@@ -280,12 +378,12 @@ export class BattlePlayer {
             hand: this.HandUIDs.map((uid) => this.AllCards[uid].Current),
             battleFields: Object.values(this.BattleFields).map((field, index) => {
 
-                let fieldSimple:BattleFieldSimple = {
+                let fieldSimple: BattleFieldSimple = {
                     index: Number(index),
                     ...field.GetSimple(),
                 }
 
-                if(fieldSimple.hasCard) {
+                if (fieldSimple.hasCard) {
                     fieldSimple.card = this.AllCards[field.cardUid].Current;
                 }
 
@@ -321,25 +419,22 @@ export class BattlePlayer {
      * 换手牌
      */
     ChangeCard(req: ChangeCardRequest): ChangeCardResponse {
-        req.cardUids.forEach((uid) => {
+        let cardUids = req.cardUids || [];
+        cardUids.forEach((uid) => {
             let uidIndex = this.HandUIDs.findIndex((u) => u === uid);
             if (uidIndex >= 0) {
                 this.HandUIDs.splice(uidIndex, 1);
                 this.DeckUIDs.push(uid);
             }
         });
-        let cards = this.DrawCard(req.cardUids.length);
+        let cards = this.DrawCard(cardUids.length);
         this.ShuffleDeck();
         return {
             changedCards: cards.map((uid) => this.AllCards[uid].Current),
             quickBattle: req.quickBattle,
             actions: [],
-            selectedCards: req.cardUids,
-            logs: [{
-                type: BattleLogType.NullType,
-                side: this.side,
-                battleParams: [],
-            }],
+            selectedCards: cardUids,
+            logs: [this.MakeLog(BattleLogType.PlayGame, BattleLogSide.NullSide)],
         }
     }
 
@@ -356,16 +451,23 @@ export class BattlePlayer {
          * 「先推挤、再落子」保证 PUSH 拿到的永远是部署前的旧占位卡，
          * 不会把刚放下的新牌误推走（问题2：第二轮部署+PUSH）。
          */
-        this.ApplyPushActions(actions);
-        this.ApplyPutActions(actions);
+
+        let pushActions = actions.filter((action) => action.type === ActionType.PUSH) || [];
+        let putActions = actions.filter((action) => action.type === ActionType.PUT) || [];
+
+        let otherActions = actions.filter((action) => action.type !== ActionType.PUSH && action.type !== ActionType.PUT) || [];
+
+        otherActions.forEach((action) => {
+            Logger.LogError(`BattlePlayer[${this.uid}] 未知动作=${action.type}`, action);
+        });
+
+        this.ApplyPushActions(pushActions);
+        this.ApplyPutActions(putActions);
     }
 
     /** 第一遍：处理所有 PUSH 推挤（旧占位卡从 field.index → index）。 */
     private ApplyPushActions(actions: DeployActionSimple[]): void {
         actions.forEach((action) => {
-            if (action.type !== ActionType.PUSH) {
-                return;
-            }
             let targetIndex = action.index;
             let origSlotID = action.field?.index ?? -1;
             let origSlot = this.BattleFields[origSlotID];
@@ -385,16 +487,18 @@ export class BattlePlayer {
             }
             origSlot.cardUid = 0;
             targetSlot.cardUid = movingUid;
+            /** 随卡移动的单位同步更新所在地块 */
+            let unit = this.Units[movingUid];
+            if (unit) {
+                unit.field = targetIndex;
+            }
             Logger.LogInfo(`BattlePlayer[${this.uid}] PUSH ${origSlotID}→${targetIndex} uid=${movingUid}`);
         });
     }
 
-    /** 第二遍：处理所有 PUT 落子（法术消耗进墓地；单位占场）。 */
+    /** 第二遍：处理所有 PUT 落子（法术牌与单位牌都先扣着占格，翻牌在结算阶段进行）。 */
     private ApplyPutActions(actions: DeployActionSimple[]): void {
         actions.forEach((action) => {
-            if (action.type !== ActionType.PUT) {
-                return;
-            }
             let bid = action.index;
             let cardUid = action.cardUid;
             let slot = this.BattleFields[bid];
@@ -402,53 +506,61 @@ export class BattlePlayer {
                 Logger.LogWarn(`BattlePlayer[${this.uid}] PUT=${bid} 地块不存在`);
                 return;
             }
-
-            /**
-             * 法术牌：不占战场格位，打出后直接进墓地（问题3）。
-             * 同时产生 DisplayHandThrow → DisplayAddToCemetery 日志，供客户端播发。
-             */
-            if (cardUid && this.AllCards[cardUid].IsMagic) {
-                this.DiscardToCemetery(cardUid);
+            if (!cardUid || !this.AllCards[cardUid]) {
+                Logger.LogWarn(`BattlePlayer[${this.uid}] PUT=${bid} cardUid=${cardUid} 非法`);
                 return;
             }
-
             if (slot.hasCard) {
                 // 目标地块已占用（部署阶段应无此情形，健壮性兜底，避免重叠）
                 Logger.LogWarn(`BattlePlayer[${this.uid}] PUT=${bid} 已占用`);
                 return;
             }
+
             slot.cardUid = cardUid;
 
             /**
-             * 从手牌中移除这张牌
+             * 从手牌中移除这张牌。
+             *
+             * 部署阶段不做牌型区分：法术牌与单位牌都以「扣着的牌（PUT Card）」占格，
+             * 真实效果留到行动阶段逐格翻牌时决定 ——
+             *   法术 → 翻开即消耗进墓；  单位 → 翻开召唤（CreateUnit + Spawn）。
              */
-            this.HandUIDs.splice(this.HandUIDs.indexOf(cardUid), 1);
-
-            /**
-             * 记录为本轮新部署的卡（结算时走 DisplayBorn 召唤登场）
-             */
-            if (cardUid && !this.NewBornUIDs.includes(cardUid)) {
-                this.NewBornUIDs.push(cardUid);
+            let handIndex = this.HandUIDs.indexOf(cardUid);
+            if (handIndex >= 0) {
+                this.HandUIDs.splice(handIndex, 1);
             }
         });
     }
 
     /**
-     * 消耗一张手牌法术：从手牌移除并塞进墓地，同时记录展示日志。
+     * 法术牌被「翻开」后立即消耗：塞进墓地并清空所占格位，同时生成进墓表现。
+     *
+     * ⚠ 调用时机必须是行动阶段的翻牌流程（BattleRoom.ResolveFlip）。
+     * 部署阶段已把法术牌作为扣牌占格并从手牌移除，因此这里不再触碰手牌，
+     * 只负责：进墓地（记录 UID）→ 清格（slot.cardUid=0）→ 产出表现日志。
+     *
      * @param cardUid 法术单卡 UID
+     * @param field   法术牌目前所占的地块索引（用于清格）
+     * @returns 供当格战斗表现追加的进墓日志
      */
-    DiscardToCemetery(cardUid: number): void {
-        let handIndex = this.HandUIDs.indexOf(cardUid);
-        if (handIndex >= 0) {
-            this.HandUIDs.splice(handIndex, 1);
+    DiscardToCemetery(cardUid: number, field: number): BattleLogSimple[] {
+        let logs: BattleLogSimple[] = [];
+
+        if (!this.CemeteryUIDs.includes(cardUid)) {
+            this.CemeteryUIDs.push(cardUid);
         }
-        this.CemeteryUIDs.push(cardUid);
+
+        /** 法术翻开即离场，清掉占用的格位 */
+        let slot = this.BattleFields[field];
+        if (slot && slot.cardUid === cardUid) {
+            slot.cardUid = 0;
+        }
 
         const cid = this.AllCards[cardUid]?.cid ?? 0;
-        let unit = [this.MakeLogUnit(this.side, -1, cid, 0, 0, 0)];
-        this.DeployLogs.push(this.MakeLog(BattleLogType.DisplayHandThrow, BattleLogSide.NullSide, unit, [cardUid]));
-        this.DeployLogs.push(this.MakeLog(BattleLogType.DisplayAddToCemetery, BattleLogSide.NullSide, unit, [cardUid]));
-        Logger.LogInfo(`BattlePlayer[${this.uid}] 法术消耗 uid=${cardUid} cid=${cid} → 墓地`);
+        let unit = [this.MakeLogUnit(this.side, field, cid, 0, 0, 0)];
+        logs.push(this.MakeLog(BattleLogType.DisplayAddToCemetery, BattleLogSide.NullSide, unit, [cardUid]));
+        Logger.LogInfo(`BattlePlayer[${this.uid}] 法术翻开消耗 uid=${cardUid} cid=${cid} → 墓地`);
+        return logs;
     }
 
     /**
@@ -535,9 +647,9 @@ export class BattlePlayer {
         return slot && slot.hasCard ? slot.cardUid : 0;
     }
 
-    /** 读取某格单位的攻击力。 */
+    /** 读取某格单位的攻击力（优先 BattleUnit，退化为卡牌快照）。 */
     GetFieldAtk(index: number): number {
-        return this.GetFieldCard(index)?.abilitie?.atk ?? 0;
+        return this.GetUnit(index)?.atk ?? this.GetFieldCard(index)?.abilitie?.atk ?? 0;
     }
 
     /** 读取某格单位的飞行层数（>0 视为飞行单位）。 */
@@ -545,58 +657,74 @@ export class BattlePlayer {
         return this.GetFieldCard(index)?.abilitie?.flyLayer ?? 0;
     }
 
-    /** 某卡是否为本轮新部署（翻开/召唤）。 */
-    IsNewBornCard(cardUid: number): boolean {
-        return this.NewBornUIDs.includes(cardUid);
-    }
-
-    /**
-     * 自己某个地块的单位是否「可行动」：在场、非本轮新部署、且尚未阵亡（curDef>0）。
-     * 用于让 BattleRoom 判断该格是否产生攻击。
-     */
-    CanActFieldUnit(index: number): boolean {
-        let card = this.GetFieldCard(index);
-        if (!card) {
-            return false;
-        }
-        if (this.IsNewBornCard(this.GetFieldCardUid(index))) {
-            return false;
-        }
-        return (card.abilitie?.curDef ?? 0) > 0;
-    }
-
-    /** 生成自己某个地块单位的战斗日志单元（BattleLogUnit）；无卡返回 undefined。 */
-    GetFieldUnitLog(index: number): BattleLogUnit | undefined {
-        let card = this.GetFieldCard(index);
-        if (!card) {
+    /** 读取自己某个地块上的单位（未召唤/已阵亡时返回 undefined）。 */
+    GetUnit(index: number): BattleUnit | undefined {
+        let uid = this.GetFieldCardUid(index);
+        if (uid <= 0) {
             return undefined;
         }
-        let abilitie = card.abilitie;
-        return this.MakeLogUnit(
-            this.side, index, card.cid ?? 0,
-            abilitie?.atk ?? 0,
-            abilitie?.curDef ?? 0,
-            abilitie?.maxDef ?? 0,
-        );
+        return this.Units[uid];
     }
 
     /**
-     * 自己某个地块的单位受击：扣减 curDef；归零标记阵亡并移出战场、进入墓地。
-     * @returns 受击后 curDef
+     * 自己某个地块上「可主动攻击」的单位：场上存活（def>0）且本回合可攻击（CanAttack）。
+     * 新召唤单位本回合默认不可攻击（除非持冲锋），在场单位经 RoundBegin 解锁。
      */
-    DealFieldDamage(index: number, dmg: number): number {
-        let slot = this.BattleFields[index];
-        let card = this.AllCards[slot.cardUid].Current;
-        let cur = card.abilitie?.curDef ?? 0;
-        let next = Math.max(0, cur - dmg);
-        if (card.abilitie) {
-            card.abilitie.curDef = next;
+    GetCanAttackUnit(index: number): BattleUnit | undefined {
+        let unit = this.GetUnit(index);
+        if (!unit || unit.def <= 0 || unit.AttackCount <= 0) {
+            return undefined;
         }
-        if (next <= 0) {
-            slot.cardUid = 0;
-            this.CemeteryUIDs.push(card.uid ?? 0);
+        return unit;
+    }
+
+    /** 用单位对某格造成伤害：交给 BattleUnit.Damage（归零即死亡），并回写卡牌快照。 */
+    ApplyUnitDamage(unit: BattleUnit, dmg: number): number {
+        /** 伤害 ≤ 0 不触发受击/死亡（0 伤不该有受伤表现） */
+        if (dmg <= 0) {
+            return unit.def;
         }
+        let next = unit.Damage(dmg);
+        this.SyncUnitToCard(unit);
         return next;
+    }
+
+    /** 把单位的实时攻防回写到 AllCards 快照，保证 GetBattler / 客户端快照一致。 */
+    SyncUnitToCard(unit: BattleUnit): void {
+        let card = this.AllCards[unit.uid];
+        if (!card || !card.Current || !card.Current.abilitie) {
+            return;
+        }
+        card.Current.abilitie.atk = unit.atk;
+        card.Current.abilitie.curDef = unit.def;
+        card.Current.abilitie.maxDef = unit.maxDef;
+    }
+
+    /** 单位阵亡处理：进入墓地（记录 UID）→ 清空所在格位 → 移除单位。 */
+    OnUnitDead(unit: BattleUnit): void {
+        if (!this.CemeteryUIDs.includes(unit.uid)) {
+            this.CemeteryUIDs.push(unit.uid);
+        }
+        let slot = this.BattleFields[unit.field];
+        if (slot) {
+            slot.cardUid = 0;
+        }
+        /** 同步回卡牌快照（curDef=0），保证已死亡单位的快照不再显示在场 */
+        let card = this.AllCards[unit.uid];
+        if (card?.Current?.abilitie) {
+            card.Current.abilitie.curDef = 0;
+        }
+        delete this.Units[unit.uid];
+        Logger.LogInfo(`BattlePlayer[${this.uid}] 单位阵亡 → 墓地 uid=${unit.uid} cid=${unit.cid}`);
+    }
+
+    /** 生成自己某个地块单位的战斗日志单元（直接用 BattleUnit.GetLogUnit）；无单位返回 undefined。 */
+    GetFieldUnitLog(index: number): BattleLogUnit | undefined {
+        let unit = this.GetUnit(index);
+        if (unit) {
+            return unit.GetLogUnit();
+        }
+        return undefined;
     }
 
     /**
@@ -649,11 +777,19 @@ export class BattlePlayer {
      * 生成一条我方「卡牌翻面/召唤上场」动作（AttackType.Born），单实例方法。
      *
      * 客户端据此在 b1 指定格子播放卡面翻起、角色上场的动画。hits[0].card 携带该卡
-     * 的 uid/cid/费用/物质化与 locationStatus=HAND_TO_FIELD(13)，hits[0].abilitie 携带
-     * 身上已生效的攻防与异能，供客户端重建该格卡牌的表现。
+     * 的 uid/cid/费用/物质化与登场状态（默认 locationStatus=HAND_TO_FIELD(13)），
+     * hits[0].abilitie 携带身上已生效的攻防与异能，供客户端重建该格卡牌的表现。
+     *
+     * 反编译客户端（BattleMainBorn）确认：Born 由 hit 直接产单位，**没有**「目标格须
+     * 预先有卡牌快照」的前置校验；但 hit.card.locationStatus 必须让客户端把它标记为
+     * 「已在场上」（ENTER_FIELD=7 / DECK_TO_FIELD=10），否则被视为未登场而丢弃。
+     * 部署翻牌沿用默认 HAND_TO_FIELD(13)（该格已被快照接纳，不冲突）；
+     * 凭空召唤场景请显式传 DECK_TO_FIELD(10)（目标不过任何快照）。
+     *
      * @param index 自己某块地块的索引
+     * @param locStatus 登场状态，默认 HAND_TO_FIELD
      */
-    MakeBornAction(index: number): Action | undefined {
+    MakeBornAction(index: number, locStatus: LocationStatus = LocationStatus.HAND_TO_FIELD): Action | undefined {
         let card = this.GetFieldCard(index);
         if (!card) {
             return undefined;
@@ -666,7 +802,7 @@ export class BattlePlayer {
                 cid: card.cid ?? 0,
                 cost: card.cost ?? 0,
                 isMaterialized: card.isMaterialized ?? false,
-                locationStatus: LocationStatus.HAND_TO_FIELD,
+                locationStatus: locStatus,
             },
             abilitie: {
                 skillId: [...(abilitie?.skillId ?? [])],

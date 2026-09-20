@@ -15,7 +15,7 @@ export class BattlePlayerBot extends BattlePlayer {
         /**
          * 机器人不发送消息
          */
-        Logger.LogInfo(`Bot SendMessage:${id} `);
+        Logger.LogInfo(`Bot SendMessage:${id} `, data);
     }
 
 }

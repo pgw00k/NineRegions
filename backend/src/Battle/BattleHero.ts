@@ -1,4 +1,5 @@
 import { HeroInfo } from "mc-local-share";
+import { BattleUnit } from "./BattleUnit";
 
 /**
  * 主将
@@ -8,12 +9,15 @@ export class BattleHero
     side: number = 0;
     heroID: number = 1;
     heroSkillID: number = 100001;
-    heroSkillCD: number = 1;
+    heroSkillCD: number = 0;
     curMana: number = 5;
     maxMana: number = 5;
     curHP: number = 10;
     maxHP: number = 10;
-    atk: number = 1;
+    /*
+     * 主将默认没有攻击力
+     */
+    atk: number = 0;
     handCount: number = 0;
     deckCount: number = 40;
     cemeteryCount: number = 0;
