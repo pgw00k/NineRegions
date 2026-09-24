@@ -31,6 +31,9 @@ import { DecodedC2S } from '../messages/types';
 const WS_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
 export class WsGateway extends Server {
+  /** 单例引用：仅供本地测试端点（/admin/dropConn）主动掐连接用。 */
+  public static Active?: WsGateway;
+
   private server?: net.Server;
   /** connId → socket（多客户端：每条连接各自独立，互不影响）。 */
   private readonly sockets = new Map<string, net.Socket>();
@@ -93,6 +96,7 @@ export class WsGateway extends Server {
   }
 
   async start(): Promise<void> {
+    WsGateway.Active = this;
     this.server = net.createServer((sock) => this.onConnect(sock));
     this.server.on('error', (e) => this.logger.error('ws', `server error: ${(e as Error).message}`));
     await new Promise<void>((resolve, reject) => {
@@ -116,6 +120,26 @@ export class WsGateway extends Server {
       await new Promise<void>((r) => this.server!.close(() => r()));
     }
     this.recorder.close();
+  }
+
+  /**
+   * 【本地测试】主动掐断全部客户端 TCP 连接，用来触发客户端的战斗弱重连。
+   *
+   * 客户端 `JYNetManager` 检测到连接断开后会 `ResetBattle()` 并另建 WebSocket 发 20001，
+   * 而服务端进程与内存里的 BattleRoom 都还在，正好用来单独验证重连链路，
+   * 不必重启客户端（一次客户端启动 + 登录 + 匹配要几十秒）。
+   *
+   * 用 destroy 而非 WS close 帧：实测客户端对前者一定会走 OnConnectionLost 分支。
+   *
+   * @returns 被掐断的连接数
+   */
+  dropAllConnections(): number {
+    let n = 0;
+    for (const [connId, sock] of this.sockets) {
+      this.logger.info('ws', `[${connId}] 【测试】主动断开连接，等待客户端 20001 弱重连`);
+      try { sock.destroy(); n++; } catch { /* ignore */ }
+    }
+    return n;
   }
 
   private onConnect(sock: net.Socket): void {

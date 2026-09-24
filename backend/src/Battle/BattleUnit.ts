@@ -103,9 +103,11 @@ export class BattleUnit implements IBattleUnit {
     Dead() {
     }
     RoundBegin() {
-        /** 默认情况下，单位召唤的那个回合是不会攻击的，CanAttack = false
+        /** 
+         * 默认情况下，单位召唤的那个回合是不会攻击的，CanAttack = false
          * 但是如果该单位已经站场了，在新回合的战斗开始时，赋予其可以主动攻击的能力，CanAttack = true
-        */
+         * 问题 3 修复：对于被推挤到新地块的单位，即使 AttackCount 已经用完，也需要在本轮恢复
+         */
         if (this.AttackCount == 0) {
             this.AttackCount ++;
         }

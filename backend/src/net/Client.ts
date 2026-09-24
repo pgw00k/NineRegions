@@ -105,6 +105,25 @@ export class Client {
   }
 
   /**
+   * 用战斗区间 C2S 的 order 播种本连接的 battleOrder —— **仅在本连接还没发过战斗帧时生效**。
+   *
+   * 为什么只在「首次」生效：客户端战斗弱重连时会 `ResetBattle()` 并**另建一条 WebSocket**
+   * （JYLog：`MC.Framework.NetManager:ResetBattle()` → `CreateWebSocketClient` → 发 20001）。
+   * 新连接对应的 Client 里 order/battleOrder 都是从 0 起算的空对象，而客户端的 battleOrder
+   * 未必归零；若照旧走 pushFrame 的默认播种（以逻辑序 0 为起点），20002 会带 order=1 发出，
+   * 客户端按「order 必须等于 battleOrder+1」校验直接丢弃，表现为重连永远不成功。
+   * 客户端在 C2S 里携带的 order 就是它自己当下的战斗基准，以它为准最稳。
+   *
+   * 已在同一连接上发过战斗帧时不再干预：那条序列由服务端自己逐格推进，客户端每收一帧
+   * 就 +1，中途被某个 C2S 的 order 顶高反而会造成跳号（见 pushFrame 战斗分支的播种说明）。
+   */
+  seedBattleOrder(reqOrder: number): void {
+    if (this.battleSeeded || reqOrder <= this.battleOrder) return;
+    this.battleOrder = reqOrder;
+    this.battleSeeded = true;
+  }
+
+  /**
    * 入队一条 S2C，并按「客户端视角」分配 order。
    *
    * 逻辑区间（msgId < BATTLE_MESSAGE_BEGIN）：order = 当前基准 + 1（严格 +1，不跳号），

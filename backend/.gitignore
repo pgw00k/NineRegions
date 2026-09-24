@@ -5,6 +5,9 @@ dist/
 # 运行日志（保留目录结构，忽略内容）
 logs/
 
+# 战斗房间快照（跨进程重启续战的临时状态，见 src/Battle/BattleSnapshotStore.ts）
+data/
+
 # 本地环境
 .env
 

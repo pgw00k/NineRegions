@@ -23,6 +23,7 @@ import { verHandler } from './VerRoute';
 import { loginHandler } from './LoginRoute';
 import { statisticsHandler } from './StatisticsRoute';
 import { staticHandler } from './StaticRoute';
+import { dropConnHandler } from './AdminRoute';
 import {
   emptyTextHandler,
   ipHandler,
@@ -46,6 +47,9 @@ export function registerRoutes(router: HttpRouter): void {
 
   // 静态资源（补丁列表 / 资源包，Range 续传）
   router.use('/res', staticHandler);
+
+  // 本地测试控制端点（非游戏协议）：主动掐 WS 连接以触发客户端 20001 弱重连
+  router.use('/admin/dropConn', dropConnHandler);
 
   // 补丁器文本端点（对齐 responses.json）
   router.use('/redirector.txt', redirectorHandler);

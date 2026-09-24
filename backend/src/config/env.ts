@@ -75,6 +75,11 @@ export const Config = {
   redisUrl: get('REDIS_URL', 'redis://127.0.0.1:6379'),
   databaseUrl: get('DATABASE_URL', ''),
 
+  // 战斗房间快照（跨进程重启续战，见 Battle/BattleSnapshotStore.ts）
+  battleSnapshotDir: get('BATTLE_SNAPSHOT_DIR', 'data/battleSnapshot'),
+  /** 超过该时长的快照不再恢复：避免陈旧房间把玩家拖回一场早该结束的战斗 */
+  battleSnapshotTtlMinutes: getNum('BATTLE_SNAPSHOT_TTL_MINUTES', 30),
+
   // 日志
   logLevel: get('LOG_LEVEL', 'info'),
   logDir: get('LOG_DIR', 'logs'),

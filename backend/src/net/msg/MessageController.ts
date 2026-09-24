@@ -13,6 +13,7 @@ import { NetMsg_ArenaSelCard } from './NetMsg_ArenaSelCard';
 import { NetMsg_ArenaSelHero } from './NetMsg_ArenaSelHero';
 import { NetMsg_BattleAutoFight_CS } from './NetMsg_BattleAutoFight_CS';
 import { NetMsg_BattleGetEmojiList_CS } from './NetMsg_BattleGetEmojiList_CS';
+import { NetMsg_BattleReconnection } from './NetMsg_BattleReconnection';
 import { NetMsg_BPBuyLevel } from './NetMsg_BPBuyLevel';
 import { NetMsg_BPLevelReward } from './NetMsg_BPLevelReward';
 import { NetMsg_Buy_PVE } from './NetMsg_Buy_PVE';
@@ -111,6 +112,7 @@ export class MessageController extends MessageControllerBase {
     this.AutoResponser[MESSAGE_ID.ARENA_SELECT_HERO_REQ] = new NetMsg_ArenaSelHero();
     this.AutoResponser[MESSAGE_ID.SET_AUTODEPLOY_REQ] = new NetMsg_BattleAutoFight_CS();
     this.AutoResponser[MESSAGE_ID.QUERY_EXPRESSION_SHORECUT_REQ] = new NetMsg_BattleGetEmojiList_CS();
+    this.AutoResponser[MESSAGE_ID.BATTLE_RECONNECTION_REQ] = new NetMsg_BattleReconnection();
     this.AutoResponser[MESSAGE_ID.BATTLEPASS_BUY_EXP_REQ] = new NetMsg_BPBuyLevel();
     this.AutoResponser[MESSAGE_ID.BATTLEPASS_REWARD_REQ] = new NetMsg_BPLevelReward();
     this.AutoResponser[MESSAGE_ID.PVE_BUY_REQ] = new NetMsg_Buy_PVE();

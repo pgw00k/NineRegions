@@ -18,6 +18,7 @@ import { NetMsg_BattleReady_CN_Mod } from './NetMsg_BattleReady_CN_Mod';
 import { NetMsg_ChangeCard_Mod } from './NetMsg_ChangeCard_Mod';
 import { NetMsg_DeploymentComplete_Mod } from './NetMsg_DeploymentComplete_Mod';
 import { NetMsg_ShowEnd_Mod } from './NetMsg_ShowEnd_Mod';
+import { NetMsg_BattleReconnection_Mod } from './NetMsg_BattleReconnection_Mod';
 
 
 export class MessageControllerMod extends MessageController {
@@ -52,5 +53,7 @@ export class MessageControllerMod extends MessageController {
     this.AutoResponser[MESSAGE_ID.CHANGE_CARD_REQ] = new NetMsg_ChangeCard_Mod();
     this.AutoResponser[MESSAGE_ID.DEPLOYMENT_COMPLETE_REQ] = new NetMsg_DeploymentComplete_Mod();
     this.AutoResponser[MESSAGE_ID.SHOW_END_REQ] = new NetMsg_ShowEnd_Mod();
+    // 战斗弱重连（客户端等待战斗消息超时后另建 socket 发 20001）
+    this.AutoResponser[MESSAGE_ID.BATTLE_RECONNECTION_REQ] = new NetMsg_BattleReconnection_Mod();
   }
 }

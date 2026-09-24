@@ -222,3 +222,6 @@ __marimo__/
 .tmp/
 node_modules/
 LUA/
+_il2cpp/
+Test/
+GameAssembly/
