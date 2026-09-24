@@ -21,13 +21,14 @@
  *
  * 该脚本不依赖数据库：直接构造 BattleRoom / BattlePlayer 并注入内存中的最小卡组。
  */
-import { MESSAGE_ID } from 'mc-local-share';
+import { MESSAGE_ID, ActionType, AttackType, DeployActionSimple } from 'mc-local-share';
 import { BattleRoom } from '../src/Battle/BattleRoom';
 import { BattlePlayer } from '../src/Battle/BattlePlayer';
 import { BattleConst } from '../src/Battle/BattleConst';
 import { BattleHero } from '../src/Battle/BattleHero';
 import { BattleCard } from '../src/Battle/BattleCard';
 import { BattleField } from '../src/Battle/BattleField';
+import { BattleEffectTable } from '../src/Battle/BattleEffectTable';
 
 /** 回放中捕获到的一条 S2C */
 interface CapturedS2C {
@@ -80,8 +81,13 @@ class ReplayPlayer extends BattlePlayer {
 
         this.hero = new BattleHero({
             side: this.side,
-            heroID: 1,
-            heroSkillID: 100001,
+            heroID: 6,
+            /**
+             * 用 100006（幻日英灵）而不是随便一个未实现的主将技：末轮提交的
+             * SKILL(3) 布阵动作要靠它从 BattleEffectTable 建出主将技卡，
+             * 才能走到「翻牌 → SpecialSummon」这条路径。
+             */
+            heroSkillID: 100006,
         });
         this.job = 1;
         this.cardBack = 50001;
@@ -131,6 +137,11 @@ function buildExpectedFlow(rounds: number): number[] {
 
 async function main() {
     const rounds = Number(process.argv[2] ?? 3);
+    if (rounds % 2 === 0) {
+        console.error(`回放轮数必须是奇数：结束条件 RoundNum >= MaxRoundNum*2 与「每轮 +1」的回合号
+只有奇数轮才能恰好落在最后一轮播完时（见下方 MaxRoundNum 推导）。`);
+        process.exit(2);
+    }
 
     const humanClient = new MockClient('1001');
     const botClient = new MockClient('1');
@@ -145,11 +156,28 @@ async function main() {
     await room.SetBattler({ uid: '1', client: botClient }, ReplayPlayer as any);
 
     /**
-     * 回放轮数受房间最大回合数约束：ShowEnd 中判定 `RoundNum >= MaxRoundNum * 2` 即结束。
-     * 首轮换牌为 1，之后每轮 +2（FightStart / ShowEnd 各 +1），因此 N 轮后 RoundNum = 2N+1。
-     * 令 MaxRoundNum = rounds，使第 rounds 轮播完后正好触发 BATTLE_END。
+     * 结束条件（BattleRoom.IsBattleOver）是 `RoundNum >= MaxRoundNum * 2`，
+     * 而服务端的回合号推进是：BattleStart 置 1 → 换牌阶段 RoundBegin → 2，
+     * 之后每次「播完一轮表现」（ShowEnd → RoundBegin）**+1**
+     * ⇒ 第 r 轮战斗时 RoundNum = 1 + r。
+     * 要在第 `rounds` 轮打完后立刻收尾（BATTLE_END 紧跟该轮 FIGHT_STEP），需要
+     *   1 + rounds >= 2 * MaxRoundNum  且  1 + (rounds-1) < 2 * MaxRoundNum
+     * ⇒ 2 * MaxRoundNum 必须落在区间 (rounds, rounds+1] 内，而它是偶数，
+     * 所以只有奇数 rounds 才有解：MaxRoundNum = (rounds + 1) / 2。
      */
-    (room as any).MaxRoundNum = rounds;
+    (room as any).MaxRoundNum = (rounds + 1) / 2;
+
+    /**
+     * 末轮由真人放下主将技卡：C2S 25006 带一条
+     * `{ type=SKILL(3), index=<地块>, cardUid=<主将技卡 cid> }`。
+     * 客户端原生链路（JYBattleOpStateDone.<DoProcedure>d__7.MoveNext 0x158C890）是
+     * `MCCard.IsHeroSkillCard(card)` → `CreateBattleDeployPutAction(card, pos, isHeroSkill)`
+     * → actionType = isHeroSkill*2+1，即**与普通落子同一条路**，只是类型码为 3。
+     * 服务端把它当一张扣在地块上的 Magic 牌，翻牌时才结算出 4 个召唤物。
+     */
+    const heroSkillDeploy: DeployActionSimple[] = [
+        { type: ActionType.SKILL, index: 0, cardUid: 100006 },
+    ];
 
     /**
      * C2S 25003 换牌（仅开局一次；换 0 张，模拟直接跳过）。
@@ -174,25 +202,40 @@ async function main() {
         humanClient.captured.push(...broadcasts);
     }
 
-    /** 逐轮回放：布阵完成 → 播放完毕 */
+    /** 逐轮回放：布阵完成 → 双方播完表现 */
+    let fights = 0;
     for (let r = 1; r <= rounds; r++) {
         /** C2S 25006 布阵完成（双方提交；这里机器人同步提交） */
-        await room.DeploymentComplete('1001', { action: [] });
+        await room.DeploymentComplete('1001', { action: r === rounds ? heroSkillDeploy : [] });
         await room.DeploymentComplete('1', { action: [] });
+        fights++;
 
-        /** C2S 25012 播放完毕，推进下一轮（末轮触发 BATTLE_END） */
+        /**
+         * C2S 25012 播完表现，推进下一轮（末轮触发 BATTLE_END）。
+         * 必须双方都上报：ShowEnd 只认「两边都播完」，只报一方会卡在本轮。
+         */
         await room.ShowEnd('1001');
+        await room.ShowEnd('1');
+
+        if (room.IsFinished()) {
+            break;
+        }
+    }
+
+    if (!room.IsFinished()) {
+        console.error(`❌ 第 ${fights} 轮打完后战斗仍未结束：MaxRoundNum 推导或回合号推进已与实际不符`);
+        process.exit(1);
     }
 
     /** 比对：期望序列 vs 实际产出（以真人客户端收到的为准） */
-    const expected = buildExpectedFlow(rounds);
+    const expected = buildExpectedFlow(fights);
     const actual = humanClient.captured.map((c) => c.msgId);
     const botActual = botClient.captured.map((c) => c.msgId);
 
     const name = (id: number) => MESSAGE_ID[id] ?? String(id);
 
     console.log('──────────────────────────────────────────────');
-    console.log(`回放轮数: ${rounds}`);
+    console.log(`回放轮数: ${fights}`);
     console.log('──────────────────────────────────────────────');
     console.log('期望 S2C 序列:');
     console.log('  ' + expected.map(name).join('\n  '));
@@ -212,8 +255,82 @@ async function main() {
 
     console.log(`机器人 side2 收到 ${botActual.length} 条`);
     console.log('──────────────────────────────────────────────');
-    console.log(ok ? '✅ 战斗流程回放通过：S2C 交互顺序与日志完全一致' : '❌ 战斗流程回放失败：S2C 交互顺序存在偏差');
+
+    ok = verifyHeroSkillMagic(humanClient, room) && ok;
+
+    console.log(ok ? '✅ 战斗流程回放通过：S2C 交互顺序与日志一致，且主将技只播一次特写' : '❌ 战斗流程回放失败');
     process.exit(ok ? 0 : 1);
+}
+
+/**
+ * 断言主将技（100006）作为 Magic 牌的完整链路：
+ *   布阵落格 → 翻牌进墓 → Cards.SkillList→Skills→Buffers 派发 SpecialSummon
+ *   → **一条** Skill 动作带 4 个 hit（客户端一次特写召唤 4 个单位）+ 4 条 Born。
+ * 同时核对服务端状态（场上 4 个 100106）。
+ */
+function verifyHeroSkillMagic(client: MockClient, room: BattleRoom): boolean {
+    let ok = true;
+    const fail = (msg: string) => {
+        ok = false;
+        console.log(`✗ ${msg}`);
+    };
+
+    /** 末轮 25011（FightStepResponse）里的 actions */
+    const steps = client.captured.filter((c) => c.msgId === MESSAGE_ID.FIGHT_STEP_REP);
+    const actions: any[] = steps.length > 0 ? (steps[steps.length - 1].data?.actions ?? []) : [];
+    const skillActions = actions.filter((a) => a.attackType === AttackType.Skill);
+    const bornActions = actions.filter((a) => a.attackType === AttackType.Born);
+
+    console.log(`末轮 25011：actions=${actions.length} Skill=${skillActions.length} Born=${bornActions.length}`);
+    console.log(`  Skill hits=[${skillActions.map((a) => a.hits.length).join(',')}] ` +
+        `落点=[${skillActions.flatMap((a) => a.hits.map((h: any) => h.field?.index)).join(',')}]`);
+
+    /** 4 个召唤物必须是**一条**动作 ⇒ 客户端只播一次 Ultra 特写（旧实现是 4 条动作 = 4 次特写） */
+    if (skillActions.length !== 1) {
+        fail(`Skill 动作应为 1 条（一次特写），实际 ${skillActions.length} 条`);
+    } else if (skillActions[0].hits.length !== 4) {
+        fail(`Skill 动作应带 4 个 hit，实际 ${skillActions[0].hits.length} 个`);
+    } else {
+        const spec = BattleEffectTable.GetCard(100106)!;
+        for (let h of skillActions[0].hits) {
+            if (h.bufferId !== 100100006) { fail(`hit.bufferId 应为 100100006，实际 ${h.bufferId}`); break; }
+            if (h.card?.cid !== 100106) { fail(`hit.card.cid 应为 100106，实际 ${h.card?.cid}`); break; }
+            if (h.abilitie?.atk !== spec.atk || h.abilitie?.curDef !== spec.def) {
+                fail(`hit.abilitie 应为 ${spec.atk}/${spec.def}，实际 ${h.abilitie?.atk}/${h.abilitie?.curDef}`);
+                break;
+            }
+            /** 冲锋（1000001）必须带上，否则召唤物当回合不能进攻 */
+            if (!(h.abilitie?.passiveSkillId ?? []).includes(1000001)) {
+                fail(`hit.abilitie.passiveSkillId 应含 1000001（冲锋）`);
+                break;
+            }
+        }
+    }
+
+    if (bornActions.length !== 4) {
+        fail(`Born 动作应为 4 条（逐落点登场），实际 ${bornActions.length} 条`);
+    }
+
+    /** 服务端状态：末轮应留下 4 个 cid=100106 的单位 */
+    const human = room.Battlers.find((b) => b.uid === '1001')!;
+    const summons = Object.values(human.Units).filter((u) => u.cid === 100106);
+    const fields = Object.entries(human.BattleFields)
+        .filter(([, f]) => f.hasCard)
+        .map(([i, f]) => `${i}:cid=${human.AllCards[f.cardUid]?.cid}`);
+    console.log(`  服务端：100106 单位=${summons.length} 占格=[${fields.join(' ')}]`);
+    if (summons.length !== 4) {
+        fail(`服务端应有 4 个 100106 单位，实际 ${summons.length} 个`);
+    }
+
+    /** 主将技卡自身必须已进墓（翻开即消耗），不能还留在地块上 */
+    if (!human.CemeteryUIDs.some((uid) => human.AllCards[uid]?.cid === 100006)) {
+        fail(`主将技卡 100006 未进墓（说明翻牌/消耗链路没走到）`);
+    }
+
+    if (ok) {
+        console.log('✅ 主将技 Magic 链路通过：1 条 Skill 动作（4 hit）+ 4 条 Born，一次特写召唤 4 个单位');
+    }
+    return ok;
 }
 
 main().catch((e) => {

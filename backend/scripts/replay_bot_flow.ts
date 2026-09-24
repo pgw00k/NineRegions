@@ -12,83 +12,16 @@
  * 该脚本不依赖数据库：直接构造 BattleBotRoom 并注入内存卡组。
  */
 import { MESSAGE_ID } from 'mc-local-share';
+import { Logger } from '../src/core/Logger';
 import { BattleBotRoom } from '../src/Battle/BattleBotRoom';
-import { BattlePlayer } from '../src/Battle/BattlePlayer';
-import { BattleConst } from '../src/Battle/BattleConst';
-import { BattleHero } from '../src/Battle/BattleHero';
-import { BattleCard } from '../src/Battle/BattleCard';
-import { BattleField } from '../src/Battle/BattleField';
+import { BattleSnapshotStore } from '../src/Battle/BattleSnapshotStore';
 import { AppDataSource, PostDBInit } from '../src/database/DataSource';
-import { DeckService } from '../src/database/service/Deck.service';
-
-/** 回放中捕获到的一条 S2C */
-interface CapturedS2C {
-    msgId: number;
-    data: any;
-}
-
-/** 只记录消息、不做真实网络发送的测试客户端 */
-class MockClient {
-    public uid: string;
-    public captured: CapturedS2C[] = [];
-    /** 每次收到指定消息时触发（用于把测试循环改成事件驱动） */
-    public OnMessage?: (msgId: number, data: any) => void;
-    constructor(uid: string) {
-        this.uid = uid;
-    }
-    PushMessage(msgId: number, data: any): void {
-        this.captured.push({ msgId, data });
-        this.OnMessage?.(msgId, data);
-    }
-}
-
-/** 使用内存卡组的真人玩家（绕过数据库） */
-class ReplayHuman extends BattlePlayer {
-    /** 覆盖基类读库逻辑：无数据库场景下直接使用默认玩家资料 */
-    override async InitPlayerInfo(): Promise<void> {
-        this.name = `真人测试${this.uid}`;
-    }
-
-    override async InitBattleInfo(_preset: any): Promise<void> {
-        for (let i = 0; i < 40; i++) {
-            let cardUid = this.side * 1000 + i + 1;
-            this.AllCards[cardUid] = new BattleCard(10000 + i, {
-                uid: cardUid,
-                cid: 10000 + i,
-                cost: 1,
-                isMaterialized: false,
-                abilitie: {
-                    skillId: [],
-                    passiveSkillId: [],
-                    skillExpander: [],
-                    atk: 1,
-                    curDef: 1,
-                    maxDef: 1,
-                    isPrepare: false,
-                    flyLayer: 0,
-                    auraSkillId: [],
-                },
-            });
-            this.DeckUIDs.push(cardUid);
-        }
-        this.hero = new BattleHero({ side: this.side, heroID: 1, heroSkillID: 100001 });
-        this.job = 1;
-        this.cardBack = 50001;
-
-        this.BattleFields = {};
-        for (let i = 0; i < BattleConst.FIELD_SIZE; i++) {
-            this.BattleFields[i] = new BattleField();
-        }
-        this.DrawCard(BattleConst.INIT_HAND);
-    }
-}
-
-/** 等待若干毫秒 */
-function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { MockClient, ReplayHuman, sleep } from './battle_test_harness';
 
 async function main() {
+    /** 注册 Logger 单例，战斗层/房间层的日志才会打到控制台 */
+    new Logger('botflow');
+
     /**
      * 机器人直接沿用数据库（PlayerService/DeckService），故必须先连库：
      * 初始化 DataSource 并完成各 Service 的注册。
@@ -144,6 +77,13 @@ async function main() {
         if (msgId === MESSAGE_ID.DEPLOYMENT_START_REP) {
             humanDeployCount++;
             room.DeploymentComplete('1001', { action: [] });
+        }
+        /**
+         * 真人也要上报「本轮表现播完」：房间按 side 计数，双方都播完才推进下一轮
+         * （机器人抢跑会让真人整轮部署时间被跳过，见 BattleRoom.ShowEnd）。
+         */
+        if (msgId === MESSAGE_ID.FIGHT_STEP_REP) {
+            room.ShowEnd('1001');
         }
         if (msgId === MESSAGE_ID.BATTLE_END_REP) {
             endSignal = true;
@@ -239,6 +179,8 @@ async function main() {
 
     const ok = hasStart && hasFightStart && hasFightStep && hasEnd && seqOk;
     console.log(ok ? '✅ 人机回放流程通过' : '❌ 人机回放流程失败');
+    /** 清掉本次跑留下的快照文件，别污染真实调试目录 */
+    BattleSnapshotStore.Delete('TestRoom-BotReplay');
     process.exit(ok ? 0 : 1);
 }
 

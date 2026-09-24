@@ -57,6 +57,14 @@ export class MessageRouter {
       client.syncOrder(order);
     }
 
+    /**
+     * 战斗区间（msgId >= BATTLE_MESSAGE_BEGIN，含 20001 弱重连）：用客户端自带的 order
+     * 播种这条连接的 battleOrder（仅首次生效），保证应答落回它期待的那一格。
+     */
+    if (client && msgId >= MESSAGE_ID.BATTLE_MESSAGE_BEGIN) {
+      client.seedBattleOrder(order);
+    }
+
     // 第一层过滤：网络层内部消息（msgId < ACCOUNT_MESSAGE_BEGIN，目前只有 PINGPONG=7）。
     // 这类消息不进入业务应答器，但客户端要求「收到一条同号回包」才算心跳存活 ——
     // 实证见 logs/develop.jsonl：C2S msg=7 order=0 → S2C msg=7 order=0（bodyLen=0 空体，

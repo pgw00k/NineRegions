@@ -11,6 +11,7 @@ import { WsGateway } from './net/WsGateway';
 import { ConnManager } from './net/ConnManager';
 import { HttpServer } from './http/HttpServer';
 import { AppDataSource, PostDBInit } from './database/DataSource';
+import { BattleServer } from './Battle/BattleServer';
 
 
 export async function main(): Promise<void> {
@@ -36,6 +37,8 @@ export async function main(): Promise<void> {
     .then(async () => {
       logger.info('boot', '数据库已连接');
       await PostDBInit();
+      /** 先把上次进程留下的战斗房间读回来，再开始接客：客户端掉线后的重连可能来得很快 */
+      BattleServer.Instance.RestoreRooms();
       return gateway.start();
     })
     .then(() => {

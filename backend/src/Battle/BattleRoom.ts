@@ -18,13 +18,20 @@ import {
     MESSAGE_ID,
     RoomType,
     Battlefield,
+    StepType,
+    BattleReconnectionResponse,
+    ErrorCode,
 } from "mc-local-share";
-import { BattlePlayer } from "./BattlePlayer";
+import { BattlePlayer, SummonSpec } from "./BattlePlayer";
 import { Client } from "../net/Client";
 import { Logger } from "../core/Logger";
 import { BattleConst } from "./BattleConst";
+import { ActiveEffect, BattleEffectTable, BufferDef } from "./BattleEffectTable";
 import { IBattleRound } from "./IBattleState";
 import { BattleCard } from "./BattleCard";
+import { BattleUnit } from "./BattleUnit";
+import { BattleSnapshotStore } from "./BattleSnapshotStore";
+import { BuildBattleSnapshot, RegisterBattleClasses } from "./BattleSnapshot";
 
 /**
  * 战斗房间 —— 严格按客户端历史日志（JYLog_Backup）还原的回合驱动。
@@ -91,6 +98,15 @@ export class BattleRoom implements IBattleRound {
     /** 战斗是否已结束 */
     protected BattleEnded: boolean = false;
 
+    /**
+     * 当前所处阶段（20002 重连应答的 step 字段）。
+     *
+     * 客户端 `JYBattleData.setDataWhenReconnect` 只用 roundNum + step 决定状态机落点
+     * （`BattleUtils.SwitchStateEnum` → `EventBattleWeakReconSuc`），因此服务端必须在每个
+     * 「等待客户端提交」的关口更新它，否则重连后会跳错阶段。
+     */
+    protected CurrentStep: StepType = StepType.NOT_CHANGE;
+
     /** 每个玩家的布阵是否已经提交（按 side 记录），两人都提交才开打 */
     protected DeployCompleted: Record<number, boolean> = {};
 
@@ -105,21 +121,122 @@ export class BattleRoom implements IBattleRound {
     protected FightTriggered: boolean = false;
 
     /**
-     * 本轮是否已经有客户端发来 25012（播完表现）。
+     * 本轮已发来 25012（播完表现）的玩家，按 side 记录。
      *
-     * 防守场景：真人客户端与机器人都会发 25012，后到的那条若不拦截，
-     * 会把已经推进过的回合再推进一次，导致 DEAL_STEP/DEPLOYMENT_START 重复。
+     * 必须等**双方**都播完才推进，不能认第一条：机器人播完只需 ~2s，真人播放一轮
+     * 表现要 5-7s，抢跑的那条会把回合直接推进到下一轮，真人本轮的部署时间窗被整段跳过。
+     */
+    protected ShowEndReceived: Record<number, boolean> = {};
+
+    /**
+     * 本轮 25011 对应的回合号，用于判定 25012 属于哪一轮（见 ShowEnd）。
+     * 双方布阵完成、开始下发表现时写入。
+     */
+    protected ShowEndRound: number = 0;
+
+    /**
+     * 本轮是否已经推进过（25012 的幂等标记）。
+     *
+     * 推进后 DEAL_STEP/DEPLOYMENT_START 会开启新一回合状态，此时若有迟到的 25012
+     * 到达（它属于上一轮），必须忽略，否则表现为回合被重复推进。
      */
     protected ShowEndDone: boolean = false;
 
-    constructor(preset:any) {
+    /**
+     * 【快照恢复】本房间是否由进程重启前的快照重建、尚未补驱动。
+     *
+     * 只在恢复路径上置 true（不落盘语义上等价 false：恢复后立刻消费）。
+     * 恢复出来的房间缺两样东西：出站 Client（重连时换绑）与机器人那一侧的「待提交」
+     * 定时器（随旧进程一起消失了），所以必须补驱动一次，否则房间永远等不到下一步。
+     */
+    public ResumePending: boolean = false;
+
+    constructor(preset: any) {
         Object.assign(this, preset);
     }
 
-    async SetBattler(preset:any,BattlerCtor: new (preset?: any) => BattlePlayer = BattlePlayer): Promise<number> {
-        let uid = preset.uid||preset.client?.uid||undefined
-        if(!uid){
-            Logger.LogWarn(`BattleRoom[${this.RoomToken}] SetBattler 未找到uid`,preset);
+    // ===========================================================================
+    // 快照：落盘 / 重建 / 补驱动
+    // ===========================================================================
+
+    /**
+     * 在「等待客户端提交」的静默点把房间状态落盘。
+     *
+     * 只在这类时刻写：此刻服务端已经发完该阶段的所有消息、正等着 C2S，
+     * 重启后按 CurrentStep 就能自洽地续上。若在两条消息之间落盘（例如 25004 已发、
+     * 25005 未发），恢复出来的状态与客户端已收到的进度就会错位。
+     */
+    protected SaveSnapshot(reason: string): void {
+        BattleSnapshotStore.Save(BuildBattleSnapshot(this));
+        Logger.LogInfo(`BattleRoom[${this.RoomToken}] 快照落盘（${reason}）round=${this.RoundNum} step=${this.CurrentStep}`);
+    }
+
+    /** 战斗已结算：清除快照，下次启动不应再把玩家拖回这场已结束的战斗 */
+    protected DropSnapshot(): void {
+        BattleSnapshotStore.Delete(this.RoomToken);
+    }
+
+    /**
+     * 【快照重建钩子】由 DeserializeBattleRoom 在对象图还原后调用。
+     *
+     * Object.create 会跳过构造函数，因此所有「派生字段」和「非序列化的连接期字段」
+     * 在这里补齐：Battlers 由 BattlersDict 重新排序派生，initPromises 置空（本房间
+     * BattleStarted 已为 true，不会再有人 await 它）。
+     */
+    public AfterRestore(): void {
+        this.initPromises = {};
+        this.Battlers = Object.values(this.BattlersDict).sort((a, b) => a.side - b.side);
+        this.ResumePending = true;
+        Logger.LogInfo(`BattleRoom[${this.RoomToken}] 从快照恢复：round=${this.RoundNum} step=${this.CurrentStep} 参战者=${this.Battlers.map((b) => b.uid).join(',')}`);
+    }
+
+    /**
+     * 【快照恢复】真人重连换绑 Client 之后调用：延后一拍补驱动被中断的阶段。
+     *
+     * 必须异步：本方法是在 20001 的 Handle 里被调用的，若同步下发补发消息，
+     * 它们会排在 20002 之前进队列，客户端战斗状态机还没落到重连点就会收到
+     * 25005/25007，表现为跳阶段或整段被缓存挂起。setImmediate 是宏任务，
+     * 而 Client.process 把 20002 入队在当前微任务里就已完成。
+     */
+    public ResumeAfterRestore(): void {
+        if (!this.ResumePending) {
+            return;
+        }
+        this.ResumePending = false;
+        setImmediate(() => this.ResumePhase());
+    }
+
+    /**
+     * 按当前阶段补驱动。
+     *
+     * 机器人（BattlePlayerBotReplay）的提交动作由服务端下发的事件触发（OnDeploymentStart
+     * / OnFightStep），旧进程里排好的定时器随进程消失，因此这里按阶段重放一次事件。
+     * 各钩子自身带幂等保护（DeploySubmitted / ChangeCardDone），不会重复提交。
+     */
+    protected ResumePhase(): void {
+        switch (this.CurrentStep) {
+            case StepType.BEFORE_DEPLOYMENT:
+                /** 真人重连后落在布阵界面；机器人那一侧的 25006 还没排上 */
+                Logger.LogInfo(`BattleRoom[${this.RoomToken}] 快照恢复：补驱动布阵阶段 round=${this.RoundNum}`);
+                this.NotifyBattlers('OnDeploymentStart');
+                break;
+            case StepType.AFTER_DEPLOYMENT:
+            case StepType.SHOW:
+                /** 战斗表现已下发，缺的是机器人那条 25012 */
+                Logger.LogInfo(`BattleRoom[${this.RoomToken}] 快照恢复：补驱动表现推进 round=${this.RoundNum}`);
+                this.NotifyBattlers('OnFightStep');
+                break;
+            default:
+                /** BEFORE_CHANGE_CARD 等阶段在等真人提交，服务端侧无事可做 */
+                Logger.LogInfo(`BattleRoom[${this.RoomToken}] 快照恢复：step=${this.CurrentStep} 无需补驱动`);
+                break;
+        }
+    }
+
+    async SetBattler(preset: any, BattlerCtor: new (preset?: any) => BattlePlayer = BattlePlayer): Promise<number> {
+        let uid = preset.uid || preset.client?.uid || undefined
+        if (!uid) {
+            Logger.LogWarn(`BattleRoom[${this.RoomToken}] SetBattler 未找到uid`, preset);
             return 0;
         }
         this.IsReady++;
@@ -160,7 +277,7 @@ export class BattleRoom implements IBattleRound {
             await initDone;
         } catch (err) {
             this.IsReady--;
-            Logger.LogError(`BattleRoom[${this.RoomToken}] SetBattler ${uid} 初始化战斗信息失败`,err);
+            Logger.LogError(`BattleRoom[${this.RoomToken}] SetBattler ${uid} 初始化战斗信息失败`, err);
             return this.IsReady;
         }
 
@@ -178,13 +295,13 @@ export class BattleRoom implements IBattleRound {
      * 所有玩家准备完毕且战斗信息全部初始化完成后，才发送战斗开始消息
      */
     protected TryBattleStart() {
-        if (this.BattleStarted || this.IsReady < 2) {   
-            return; 
+        if (this.BattleStarted || this.IsReady < 2) {
+            return;
         }
 
         this.BattleStarted = true;
         /* 战斗开始：按 side 排序，避免字典整数键导致的乱序 */
-        this.Battlers = Object.values(this.BattlersDict).sort((a,b) => a.side - b.side);
+        this.Battlers = Object.values(this.BattlersDict).sort((a, b) => a.side - b.side);
         this.BattleStart();
     }
 
@@ -249,7 +366,7 @@ export class BattleRoom implements IBattleRound {
             roomType: RoomType.LADDER_ROOM,
             token: this.BattleToken!,
             roomToken: this.RoomToken!,
-            waitingTime: 30,
+            waitingTime: BattleConst.PHASE_WAITING_TIME,
             enemyQuickBattle: true,
             roundNum: this.MaxRoundNum,
             /** 为了模拟方便，默认玩家为2号，1号是机器人 */
@@ -261,8 +378,12 @@ export class BattleRoom implements IBattleRound {
 
         Logger.LogInfo(`BattleRoom[${this.RoomToken}] 发送战斗开始信息：${MESSAGE_ID.BATTLE_START_REP}`, info);
         for (let battler of this.Battlers) {
-            battler.SendMessage(MESSAGE_ID.BATTLE_START_REP,info);
+            battler.SendMessage(MESSAGE_ID.BATTLE_START_REP, info);
         }
+
+        /** 进入换牌阶段：等待客户端 25003 */
+        this.CurrentStep = StepType.BEFORE_CHANGE_CARD;
+        this.SaveSnapshot('换牌阶段开始');
     }
 
     /**
@@ -282,9 +403,9 @@ export class BattleRoom implements IBattleRound {
      * @param uid 换牌玩家
      * @param req 换牌参数（cardUids / quickBattle）
      */
-    async ChangeCard(uid:string,req:ChangeCardRequest): Promise<ChangeCardResponse> {
+    async ChangeCard(uid: string, req: ChangeCardRequest): Promise<ChangeCardResponse> {
         let battler = this.BattlersDict[uid];
-        if(!uid||!battler){
+        if (!uid || !battler) {
             Logger.LogWarn(`BattleRoom[${this.RoomToken}] ChangeCard 未找到玩家 ${uid}`);
             return undefined as any;
         }
@@ -306,6 +427,9 @@ export class BattleRoom implements IBattleRound {
          */
         Logger.LogInfo(`BattleRoom[${this.RoomToken}] 换牌应答：${MESSAGE_ID.CHANGE_CARD_REP}`);
         battler.SendMessage(MESSAGE_ID.CHANGE_CARD_REP, rep);
+
+        /** 该玩家换牌已完成：若此刻重连，客户端应落到「换牌后」而不是重复弹换牌界面 */
+        this.CurrentStep = StepType.AFTER_CHANGE_CARD;
 
         /**
          * 再广播 25010 / 25005（房间级，双方都要收到）。
@@ -398,6 +522,7 @@ export class BattleRoom implements IBattleRound {
          */
         this.DeployCompleted = {};
         this.FightTriggered = false;
+        this.ShowEndReceived = {};
         this.ShowEndDone = false;
 
         for (let battler of this.Battlers) {
@@ -409,7 +534,7 @@ export class BattleRoom implements IBattleRound {
             ];
 
             let rep: DeploymentStartResponse = {
-                waitingTime: 30,
+                waitingTime: BattleConst.PHASE_WAITING_TIME,
                 battlers: battlers,
                 logs: logs,
                 penaltyTimes: 0,
@@ -419,6 +544,10 @@ export class BattleRoom implements IBattleRound {
             // Logger.LogInfo(`BattleRoom[${this.RoomToken}] 发送部署开始：${MESSAGE_ID.DEPLOYMENT_START_REP}`, rep);
             battler.SendMessage(MESSAGE_ID.DEPLOYMENT_START_REP, rep);
         }
+
+        /** 部署阶段已开启：等待客户端 25006 */
+        this.CurrentStep = StepType.BEFORE_DEPLOYMENT;
+        this.SaveSnapshot('布阵阶段开始');
 
         /** 通知可编程对手（回放机器人）此处可模拟 C2S 25006 布阵提交 */
         this.NotifyBattlers('OnDeploymentStart');
@@ -435,15 +564,23 @@ export class BattleRoom implements IBattleRound {
      * @param uid 布阵完成的玩家
      * @param req 布阵动作
      */
-    async DeploymentComplete(uid:string, req:DeploymentCompleteRequest): Promise<void> {
+    async DeploymentComplete(uid: string, req: DeploymentCompleteRequest): Promise<void> {
         let battler = this.BattlersDict[uid];
-        if(!battler){
+        if (!battler) {
             Logger.LogWarn(`BattleRoom[${this.RoomToken}] DeploymentComplete 未找到玩家 ${uid}`);
             return;
         }
 
         battler.ApplyDeploy(req.action ?? []);
         this.DeployCompleted[battler.side] = true;
+
+        /**
+         * 记下本轮布阵原文与回合号：客户端在本轮内弱重连时，20002 要回填 deployAction，
+         * 房间也要据此判定「这一侧其实已经提交过」，避免重连后又等一次 25006。
+         */
+        battler.LastDeployActions = req.action ?? [];
+        battler.DeployedRound = this.RoundNum;
+
         Logger.LogInfo(`BattleRoom[${this.RoomToken}] ${uid}(side=${battler.side}) 布阵完成`, req.action);
 
         /**
@@ -462,8 +599,30 @@ export class BattleRoom implements IBattleRound {
         }
 
         this.FightTriggered = true;
+        /** 双方均已提交布阵：等待 25007/25011 下发（此区间重连落在 AFTER_DEPLOYMENT） */
+        this.CurrentStep = StepType.AFTER_DEPLOYMENT;
+        this.ShowEndRound = this.RoundNum;
         this.FightStart();
         this.FightStep();
+        /** 表现已下发：等待客户端 25012 */
+        this.CurrentStep = StepType.SHOW;
+        this.SaveSnapshot('表现待播完');
+
+        /**
+         * 战斗已结束 → **紧接着 25011 下发 25008**，不等客户端 25012。
+         *
+         * 真实服务器录像（LUA/Rec/pve_1000*.rec，tools/rec_stream.py 可读）的报文流是
+         *   25002 25004 [25010 25005 25007 25011]×N 25008
+         * 即最后一轮 25011 之后**没有** 25010，25008 直接跟在 25011 后面。
+         * 客户端每播完一轮就按「下一条期望 DEAL_STEP_REP(25010)」排队消费缓存
+         * （JYLog：`Satrt WaitProcessCacheData Msg : N, Msg Id: DEAL_STEP_REP`）。
+         * 若把 25008 留到收到 25012 之后再发，客户端会一直等那条永远不来的 25010，
+         * BATTLE_END_REP 被缓存却无人消费，约 20 秒后走 `Recon_WaitBattleResult` 重连，
+         * 界面停在「连接中」。
+         */
+        if (this.IsBattleOver()) {
+            this.BattleEnd();
+        }
     }
 
     /**
@@ -488,7 +647,7 @@ export class BattleRoom implements IBattleRound {
              * 单位从旧格迁移到新格；若像旧实现那样 units 为空，被推挤单位在客户端棋盘上仍停在
              * 旧格，导致后续它在新格发起/承接的战斗动作不挂在它身上，表现为「推挤后不再执行动作」。
              */
-            if (this.RoundNum > 2) {
+            if (this.RoundNum >= 2) {  // 修复：从第 2 回合开始就需要 DisplayMove，而不是>2
                 for (let mover of this.Battlers) {
                     let units = mover.GetFieldUnits();
                     if (units.length === 0) {
@@ -550,30 +709,59 @@ export class BattleRoom implements IBattleRound {
      *
      * @param uid 触发推进的玩家
      */
-    async ShowEnd(uid:string): Promise<void> {
+    async ShowEnd(uid: string): Promise<void> {
         if (this.BattleEnded) {
             Logger.LogWarn(`BattleRoom[${this.RoomToken}] ShowEnd 战斗已结束，忽略 ${uid}`);
             return;
         }
 
         /**
-         * 本轮只认第一条 25012。
-         *
-         * 真人与机器人都会发 25012，且机器人是延迟发送的；若两条都放行，
-         * 后到的那条会把已经推进过的回合再推进一次，表现为
-         * DEAL_STEP_REP / DEPLOYMENT_START_REP 成对重复。
+         * 本轮已推进过 → 迟到的 25012（属于上一轮的表现回放），忽略。
          */
         if (this.ShowEndDone) {
             Logger.LogWarn(`BattleRoom[${this.RoomToken}] ${uid} 25012 到达时本轮已推进，忽略`);
             return;
         }
+
+        /**
+         * 只接受「本轮的表现播完」上报。
+         *
+         * 25012 报文里没有任何回合号（ShowEndRequest 是空结构），只能靠服务端状态对齐：
+         * 下一轮的 25005 会把 ShowEndDone 复位，迟到的上一轮上报会被当成新一轮的，
+         * 表现为同一轮重复下发 25010 + 25005（客户端部署计时被重置）。
+         * 用回合号而不是 CurrentStep 判断：25011 是同步下发的，客户端在 SendMessage
+         * 里就地回 25012，那时 CurrentStep 还停在 AFTER_DEPLOYMENT。
+         */
+        if (this.ShowEndRound !== this.RoundNum) {
+            Logger.LogWarn(`BattleRoom[${this.RoomToken}] ${uid} 25012 属于第 ${this.ShowEndRound} 轮，当前 ${this.RoundNum} 轮，忽略`);
+            return;
+        }
+
+        let battler = this.BattlersDict[uid];
+        if (!battler) {
+            Logger.LogWarn(`BattleRoom[${this.RoomToken}] ShowEnd 未找到玩家 ${uid}`);
+            return;
+        }
+
+        /**
+         * 双方都播完表现才推进。
+         *
+         * 机器人延迟远小于真人播放一轮表现的时间，先到先得会让真人被跳过部署，
+         * 所以这里按 side 计数而不是认第一条；同一方重复上报只记一次。
+         */
+        this.ShowEndReceived[battler.side] = true;
+        let waiting = this.Battlers.filter((b) => !this.ShowEndReceived[b.side]).map((b) => b.uid);
+        if (waiting.length > 0) {
+            Logger.LogInfo(`BattleRoom[${this.RoomToken}] ${uid} 播完表现，等待 ${waiting.join(',')} round=${this.RoundNum}`);
+            return;
+        }
         this.ShowEndDone = true;
 
         /**
-         * 胜负判定：任一方主将 HP <= 0，或打满最大回合数
+         * 胜负判定见 IsBattleOver；正常路径下 25008 已随本轮 25011 一并下发（见
+         * DeploymentComplete），此处只会走到「进入下一轮」分支。
          */
-        let dead = this.Battlers.filter((b) => b.hero.curHP <= 0);
-        if (dead.length > 0 || this.RoundNum >= this.MaxRoundNum * 2) {
+        if (this.IsBattleOver()) {
             this.BattleEnd();
             return;
         }
@@ -589,6 +777,15 @@ export class BattleRoom implements IBattleRound {
     }
 
     /**
+     * 本轮结算后战斗是否终止：任一方主将 HP <= 0，或打满最大回合数。
+     * 必须在 SimulateFight 之后调用（HP/死亡由它写入）。
+     */
+    protected IsBattleOver(): boolean {
+        let dead = this.Battlers.filter((b) => b.hero.curHP <= 0);
+        return dead.length > 0 || this.RoundNum >= this.MaxRoundNum * 2;
+    }
+
+    /**
      * 【S2C 25008】战斗结束。
      *
      * BattleEndResponse：{ winInfo, roundNum, quit }。
@@ -596,6 +793,7 @@ export class BattleRoom implements IBattleRound {
      */
     protected BattleEnd() {
         this.BattleEnded = true;
+        this.CurrentStep = StepType.END;
 
         let alive = this.Battlers.filter((b) => b.hero.curHP > 0);
         /**
@@ -614,6 +812,95 @@ export class BattleRoom implements IBattleRound {
             Logger.LogInfo(`BattleRoom[${this.RoomToken}] 发送战斗结束：${MESSAGE_ID.BATTLE_END_REP} winInfo=${winInfo}`);
             battler.SendMessage(MESSAGE_ID.BATTLE_END_REP, rep);
         }
+
+        /** 本局已有结论：删除快照，重启后不该再把玩家拖回已结束的战斗 */
+        this.DropSnapshot();
+    }
+
+    /** 本局是否已结算完毕（25008 已下发）：决定重启后还需不需要把玩家拉回战斗 */
+    public IsFinished(): boolean {
+        return this.BattleEnded;
+    }
+
+    /**
+     * 【C2S 20001 → S2C 20002】战斗弱重连。
+     *
+     * 客户端的弱重连流程（实证 JYLog_Backup/2021-04-08-23-24-44.log 第 1691-2130 行）：
+     *   ① 表现层等待超时 → `NetManager.ResetBattle()` + `StartReconnect('Recon_WaitXxxMsg')`，
+     *      **另建一条 WebSocket**（`CreateWebSocketClient`）并在新连接上发 20001；
+     *   ② 收到 20002 → `OnBattleReconnect` → `Reconnect WeakReconn` → 用 battlers 复原召唤者
+     *      （`Set summor data , but not crate a new obj!!!`）；
+     *   ③ `DoReconnect! CurState → TargetState`（由 step 决定）→ `SyncFromReconnectData`
+     *      （roundNum 与本地比较，落后则 `IsLocalValid False`）；
+     *   ④ **把 logs 整份交给 Lua 的 BattleHistoryMgr**：先清空本地回合数据，再按序重放
+     *      （日志里从第 1 轮的 PlayGame 一路 Convert 到当前轮），据此复原棋盘与手牌表现；
+     *   ⑤ 回到对应阶段继续正常收发（日志中重连后玩家继续 `放下扣牌` 布阵）。
+     *
+     * 因此本方法必须：把 battler 的出站 Client 换绑到新连接，并回整局日志历史 + 双方快照。
+     *
+     * @param uid 重连玩家
+     * @param client 新连接对应的 Client
+     */
+    Reconnect(uid: string, client: Client): BattleReconnectionResponse {
+        let battler = this.BattlersDict[uid];
+        if (!battler) {
+            Logger.LogWarn(`BattleRoom[${this.RoomToken}] Reconnect 未找到玩家 ${uid}`);
+            return { error: ErrorCode.SESSION_NOT_FIND } as BattleReconnectionResponse;
+        }
+        if (!battler.hasInited) {
+            Logger.LogWarn(`BattleRoom[${this.RoomToken}] Reconnect ${uid} 战斗信息未就绪`);
+            return { error: ErrorCode.SERVICE_NOT_READY } as BattleReconnectionResponse;
+        }
+
+        /**
+         * 换绑出站通道：旧 socket 断开时 ConnManager 已移除旧 Client，
+         * 若不换绑，后续 25005/25011 会发到死连接上（sendS2C 报「连接已不存在」）。
+         */
+        battler.client = client;
+
+        /** 本轮已提交过布阵 → 恢复 DeployCompleted，避免重连后重复等待 25006 */
+        if (battler.DeployedRound === this.RoundNum) {
+            this.DeployCompleted[battler.side] = true;
+        }
+
+        let rep: BattleReconnectionResponse = {
+            error: ErrorCode.SUCCESS,
+            /** 战斗通道 token：客户端在新 socket 上仍用它标记战斗频道 */
+            token: this.BattleToken,
+            roomToken: this.RoomToken,
+            roomType: RoomType.LADDER_ROOM,
+            quickBattle: false,
+            /** 服务端权威回合号（客户端据此判断本地数据是否落后） */
+            roundNum: this.RoundNum,
+            step: this.CurrentStep,
+            needFlush: false,
+            /** 仍是「自己视角」的阵营，与 25002 的 side 一致 */
+            side: battler.side,
+            selfWin: false,
+            enemyWin: false,
+            battlers: this.Battlers.map((b) => b.GetBattler()),
+            infos: this.Battlers.map((b) => b.GetInfo()),
+            /** 换牌阶段的勾选结果：已进入后续阶段，无需再选，回空表 */
+            selectedCards: [],
+            waitingTime: BattleConst.PHASE_WAITING_TIME,
+            enemyID: 0,
+            /** 整局表现日志，客户端从头重放 */
+            logs: battler.HistoryLogs,
+            autoDeploy: false,
+            deployAction: battler.LastDeployActions,
+            penaltyTimes: 0,
+            dealCached: [...this.lastDealUIDs],
+        };
+
+        Logger.LogInfo(`BattleRoom[${this.RoomToken}] ${uid} 弱重连：round=${this.RoundNum} step=${this.CurrentStep} logs=${rep.logs.length}`);
+
+        /**
+         * 快照恢复出来的房间（跨进程重启）在真人已换绑出站通道后补驱动一次。
+         * 放在组装完应答之后：20002 先入队，补发的 25005/25007 才有正确的先后次序。
+         */
+        this.ResumeAfterRestore();
+
+        return rep;
     }
 
     /**
@@ -656,6 +943,9 @@ export class BattleRoom implements IBattleRound {
             }
         }
 
+        /** 【扩展点】战斗表现节点已就绪、逐格结算开始前：可在此就地发起召唤等战斗事件 */
+        this.OnFightBegin(logs, actions);
+
         /**
          * 逐格结算（两行三列，同列阻挡；本格双方可行动单位同时交手）。
          *
@@ -666,11 +956,16 @@ export class BattleRoom implements IBattleRound {
          */
         for (let index = 0; index < BattleConst.FIELD_SIZE; index++) {
 
-            /*
-             * 无论有无牌，都响应结算效果
-             */
-            /** 标出本格进入行动结算（FieldWarn, NullSide, 结算位置 index） */
-            actions.push(this.MakeRoomStep(AttackType.FieldWarn, { side: 1, index: index  }, { side: 2, index: index }));
+            // 问题 1 修复：无论有无牌，都显示 FieldWarn，同时展示双方的地块状态
+            /** 标出本格进入行动结算（FieldWarn, NullSide，包含双方地块信息） */
+            let fieldWarnAction: Action = {
+                b1: battlers.length >= 1 ? { side: battlers[0].side, index: index } : undefined,
+                b2: battlers.length === 2 ? { side: battlers[1].side, index: index } : undefined,
+                attackType: AttackType.FieldWarn,
+                hits: [],
+                heros: [],
+            };
+            actions.push(fieldWarnAction);
             logs.push(this.MakeRoomLog(BattleLogType.FieldWarn, [], [index]));
 
             /** 翻开本格双方扣着的牌（法术进墓 / 单位 Spawn），翻牌完成后再判战斗 */
@@ -697,9 +992,13 @@ export class BattleRoom implements IBattleRound {
      * 每格进入行动结算时，先执行翻牌再判定战斗：
      *   - 若该格已有单位（此前已翻开/在场）→ 无需翻牌，直接交给后续战斗判定；
      *   - 若无单位但格上有扣牌 → 翻开：
-     *       · 法术牌 → 翻开即消耗，直接进墓（不创建单位，DiscardToCemetery 会清格）；
+     *       · 法术 / 主将技牌 → 翻开即消耗进墓，再结算它的 Skill 效果（ResolveMagic）；
      *       · 单位牌 → 执行 Spawn 召唤单位（BattlePlayer.CreateUnit 内部触发 BattleUnit.Spawn），
      *         并产出 DisplayBorn 召唤登场表现。
+     *
+     * 主将技走的是同一条路：它在布阵阶段就是一张扣在地块上的 Magic 牌
+     * （见 BattlePlayer.CreateHeroSkillCard），因此同样受翻开顺序与推挤的影响，
+     * 不再有「开战前单独兑现」的特殊时机。
      */
     protected ResolveFlip(battlers: BattlePlayer[], battler: BattlePlayer, index: number, logs: BattleLogSimple[], actions: Action[]): void {
         /** 已翻开/在场单位：无需翻牌 */
@@ -715,10 +1014,11 @@ export class BattleRoom implements IBattleRound {
             return;
         }
 
-        /** 法术牌：先不处理效果，翻开即进墓 */
+        /** 法术 / 主将技牌：翻开即进墓，再按 SkillList → Buffers 结算效果 */
         if (card.IsMagic) {
             let discardLogs = battler.DiscardToCemetery(cardUid, index);
             logs.push(...discardLogs);
+            this.ResolveMagic(battler, card, logs, actions);
             return;
         }
 
@@ -732,6 +1032,75 @@ export class BattleRoom implements IBattleRound {
         if (bornAction) {
             actions.push(bornAction);
         }
+    }
+
+    /**
+     * 结算一张已翻开的 Magic 牌（法术 / 主将技）的效果。
+     *
+     * 逐层查表，与「这张牌是怎么来的」无关：
+     *   `Cards.SkillList` → `Skills.Buffers` → `Buffers.ActiveEffect` → 派发。
+     * 这样主将技与普通法术共用同一条实现，新增效果只需往 BattleEffectTable 里登记
+     * 三张表的行，不必再改结算流程。
+     *
+     * ⚠ 只实现已实证的表现分支。客户端 `ProcessAbility` 只认 ActiveEffect 1..55，
+     * 且未列入其 case 的枚举值是**静默空操作**（不报错），所以这里遇到没实现的
+     * 效果必须显式告警，而不是当成功。
+     */
+    protected ResolveMagic(player: BattlePlayer, card: BattleCard, logs: BattleLogSimple[], actions: Action[]): void {
+        for (let skillId of card.Current.abilitie?.skillId ?? []) {
+            let skill = BattleEffectTable.GetSkill(skillId);
+            if (!skill) {
+                Logger.LogWarn(`BattleRoom[${this.RoomToken}] ${player.uid} Magic 牌 cid=${card.cid} 的 Skill=${skillId} 未登记，无效果`);
+                continue;
+            }
+            for (let bufferId of skill.buffers) {
+                let buffer = BattleEffectTable.GetBuffer(bufferId);
+                if (!buffer) {
+                    Logger.LogWarn(`BattleRoom[${this.RoomToken}] ${player.uid} Skill=${skillId} 的 Buffer=${bufferId} 未登记，无效果`);
+                    continue;
+                }
+                switch (buffer.activeEffect) {
+                    case ActiveEffect.SpecialSummon:
+                        this.ResolveSpecialSummon(player, buffer, logs, actions);
+                        break;
+                    default:
+                        Logger.LogWarn(`BattleRoom[${this.RoomToken}] ${player.uid} cid=${card.cid} 的 ActiveEffect=${ActiveEffect[buffer.activeEffect]}(${buffer.activeEffect}) 尚未实现，跳过`);
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * 【ActiveEffect=SpecialSummon(7)】凭空召唤。
+     *
+     * 参数取自 Buffers 表：`Parm2`=召唤物卡 cid、`Parm3`=数量、
+     * `ParmList`=额外赋予召唤物的能力 id（与 Cards 行自身的 PassiveSkilllist 合并去重）。
+     * 表现上必须合成**一条** Skill 动作：客户端每播一条 Skill 动作就播一次 Ultra 特写，
+     * 然后把该动作的 hits 逐个走 ProcessAbility → SpecialSummon（见 MakeSummonSkillAction）。
+     */
+    protected ResolveSpecialSummon(player: BattlePlayer, buffer: BufferDef, logs: BattleLogSimple[], actions: Action[]): void {
+        let cardDef = BattleEffectTable.GetCard(buffer.parm2);
+        if (!cardDef) {
+            Logger.LogWarn(`BattleRoom[${this.RoomToken}] ${player.uid} Buffer=${buffer.id} 的召唤物 cid=${buffer.parm2} 未登记，取消召唤`);
+            return;
+        }
+
+        let spec: SummonSpec = {
+            /** 客户端用它校验 Skills 表（查不到即静默放弃召唤），必须是 Buffer/Skill 本体编号 */
+            skillId: buffer.id,
+            bufferId: buffer.id,
+            cid: cardDef.cid,
+            cost: cardDef.cost,
+            atk: cardDef.atk,
+            def: cardDef.def,
+            skillIdList: [...cardDef.skillIdList],
+            passiveSkillIdList: Array.from(new Set([...cardDef.passiveSkillIdList, ...buffer.parmList])),
+            count: buffer.parm3,
+        };
+
+        let landed = this.ResolveSummon(player, BattleConst.HERO_INDEX, spec, logs, actions);
+        Logger.LogInfo(`BattleRoom[${this.RoomToken}] ${player.uid} SpecialSummon Buffer=${buffer.id} 召唤 cid=${spec.cid} 落格 ${landed}/${spec.count}`);
     }
 
     /**
@@ -905,10 +1274,10 @@ export class BattleRoom implements IBattleRound {
         }
         let hits: Hit[] = [];
         if (atkDmg > 0) {
-            hits.push(this.MakeUnitHit(defPl.side, defIdx, defCard, atkDmg, atkPl.side, atkIdx));
+            hits.push(this.MakeUnitHit(defPl.side, defIdx, atkDmg));
         }
         if (defDmg > 0) {
-            hits.push(this.MakeUnitHit(atkPl.side, atkIdx, atkCard, defDmg, defPl.side, defIdx));
+            hits.push(this.MakeUnitHit(atkPl.side, atkIdx, defDmg));
         }
         return {
             b1: { side: atkPl.side, index: atkIdx },
@@ -929,12 +1298,68 @@ export class BattleRoom implements IBattleRound {
         if (aU && aU.def <= 0) {
             actions.push(this.MakeRoomStep(AttackType.Dead, { side: atkPl.side, index: atkIdx }));
             atkPl.OnUnitDead(aU);
+            this.OnUnitKilled(atkPl, aU, logs, actions);
         }
         let dU = defPl.GetUnit(defIdx);
         if (dU && dU.def <= 0) {
             actions.push(this.MakeRoomStep(AttackType.Dead, { side: defPl.side, index: defIdx }));
             defPl.OnUnitDead(dU);
+            this.OnUnitKilled(defPl, dU, logs, actions);
         }
+    }
+
+    /**
+     * 【扩展点】战斗表现节点（RoundBegin/RoundFight/部署日志）已就绪、逐格结算开始前触发。
+     * 默认空实现；子类可在此调用 ResolveSummon 等战斗事件原语。
+     */
+    protected OnFightBegin(logs: BattleLogSimple[], actions: Action[]): void { }
+
+    /**
+     * 【扩展点】某单位阵亡结算完毕（Dead 动作已下发、格位已清空）后立即触发。
+     * 默认空实现；「被消灭后召唤」类效果（亡语等）在此调用 ResolveSummon，
+     * 表现日志/动作会插入到死亡事件**之后**的结算点，客户端按序播放。
+     */
+    protected OnUnitKilled(deadPlayer: BattlePlayer, unit: BattleUnit, logs: BattleLogSimple[], actions: Action[]): void { }
+
+    /**
+     * 【召唤原语】按规格凭空召唤 `spec.count` 个同型单位：逐个落格（CreateUnit），
+     * 再把全部落点汇成**一条** Skill 动作（N 个 hit）+ 逐落点一条 Born 登场表现。
+     *
+     * 建实体的是 Skill 动作里的 hit（bufferId 决定表现分支、card 决定实体），
+     * 客户端链路见 MakeSummonSkillAction 注释；Born 只负责实体建立后的登场动画。
+     * 实测（2026-09-24）证伪旧假设：Born 动作携带 isMaterialized=true 的卡快照
+     * **不会**让客户端凭空建实体（目标格若无实体，Born 被静默忽略）。
+     *
+     * @param player 召唤方玩家
+     * @param casterIndex 施法挂点格索引；须是客户端该刻有实体的格，否则整条 Skill 动作
+     *                    被丢弃（调用方统一传 BattleConst.HERO_INDEX）
+     * @param spec 召唤效果与落地卡型（含数量）
+     * @returns 实际落格数量
+     */
+    protected ResolveSummon(player: BattlePlayer, casterIndex: number, spec: SummonSpec, logs: BattleLogSimple[], actions: Action[]): number {
+        let landed: number[] = [];
+        for (let i = 0; i < spec.count; i++) {
+            let index = player.SummonCloneToField(spec);
+            if (index < 0) {
+                break;
+            }
+            landed.push(index);
+        }
+        if (landed.length === 0) {
+            return 0;
+        }
+
+        /** 一次效果 = 一条 Skill 动作（内含全部 hit）⇒ 客户端只播一次特写 */
+        let summonAction = player.MakeSummonSkillAction(casterIndex, spec, landed);
+        if (summonAction) {
+            actions.push(summonAction);
+        }
+        /**
+         * 特殊召唤的单位逻辑走hit数据
+         * 不需要再构建Born动作
+         */
+
+        return landed.length;
     }
 
     /** 返回地块所属列表（index<3 ⇒ 第1行，列=index；3..5 ⇒ 第2行，列=index-3）。 */
@@ -998,31 +1423,18 @@ export class BattleRoom implements IBattleRound {
         attacker.AttackCount = Math.max(0, attacker.AttackCount - 1);
     }
 
-    /** 构造一条「某格单位受击」的 hit（用卡牌快照描述受击方当前状态）。 */
-    protected MakeUnitHit(side: number, index: number, card: any, hurt: number, fromSide: number, fromIndex: number): Hit {
-        let abi = card.abilitie;
+    /**
+     * 构造一条「某格单位受击」的 hit。
+     *
+     * 真实服务器录像（LUA/Rec/*.rec，见 tools/rec_decode.py）里攻击类 hit 只有
+     * `field` + `hurt` 两个字段：卡牌快照走 25007 的格子与 DisplayHurt 日志，
+     * **不放 hit.card**。带上 card 会让客户端按 `locationStatus` 走移牌分支，
+     * 存活单位被标记成 FIELD_TO_CEMETERY 时表现协程永不结束（整回合卡死）。
+     */
+    protected MakeUnitHit(side: number, index: number, hurt: number): Hit {
         return {
             field: { side, index },
             hurt: hurt,
-            card: {
-                uid: card.uid ?? 0,
-                cid: card.cid ?? 0,
-                cost: card.cost ?? 0,
-                isMaterialized: true,
-                locationStatus: LocationStatus.FIELD_TO_CEMETERY,
-            },
-            abilitie: {
-                skillId: [...(abi?.skillId ?? [])],
-                passiveSkillId: [...(abi?.passiveSkillId ?? [])],
-                skillExpander: (abi?.skillExpander ?? []).map((e: any) => ({ ...e })),
-                atk: abi?.atk ?? 0,
-                curDef: abi?.curDef ?? 0,
-                maxDef: abi?.maxDef ?? 0,
-                isPrepare: abi?.isPrepare ?? false,
-                flyLayer: abi?.flyLayer ?? 0,
-                auraSkillId: [...(abi?.auraSkillId ?? [])],
-            },
-            attacker: { side: fromSide, index: fromIndex },
         };
     }
 
@@ -1041,36 +1453,17 @@ export class BattleRoom implements IBattleRound {
         let hit: Hit = {
             field: { side: def.side, index: 100 },
             hurt: dmg,
-            card: {
-                uid: 0,
-                cid: 0,
-                cost: 0,
-                isMaterialized: true,
-                locationStatus: LocationStatus.FIELD_TO_CEMETERY,
-            },
-            abilitie: {
-                skillId: [],
-                passiveSkillId: [],
-                skillExpander: [],
-                atk: 0,
-                curDef: def.hero.curHP ?? 0,
-                maxDef: def.hero.maxHP ?? 0,
-                isPrepare: false,
-                flyLayer: 0,
-                auraSkillId: [],
-            },
-            attacker: { side: atk.side, index: atkIdx },
         };
         return {
             b1: { side: atk.side, index: atkIdx },
+            b2: { side: def.side, index: 100 },
             attackType: AttackType.AttackFace,
             hits: [hit],
             heros: [def.GetHeroInfo()],
         };
     }
 
-    /** 生成一条房间级战斗表现日志（节点：RoundBegin/RoundFight/RoundEnd/FieldWarn 等）。 */
-    protected MakeRoomLog(type: BattleLogType, units: BattleLogUnit[] = [], intParams: number[] = []): BattleLogSimple {
+    /** 生成一条房间级战斗表现日志（节点：RoundBegin/RoundFight/RoundEnd/FieldWarn 等）。 */    protected MakeRoomLog(type: BattleLogType, units: BattleLogUnit[] = [], intParams: number[] = []): BattleLogSimple {
         return {
             type: type,
             side: BattleLogSide.NullSide,
@@ -1079,7 +1472,7 @@ export class BattleRoom implements IBattleRound {
     }
 
     /** 生成一条房间级战斗表现动作（节点步骤：RoundBeginStep/FieldWarn/…）。 */
-    protected MakeRoomStep(attackType: AttackType, b1?:Battlefield,b2?:Battlefield): Action {
+    protected MakeRoomStep(attackType: AttackType, b1?: Battlefield, b2?: Battlefield): Action {
         return {
             b1: b1 ?? undefined,
             b2: b2 ?? undefined,
@@ -1089,3 +1482,5 @@ export class BattleRoom implements IBattleRound {
         };
     }
 }
+
+RegisterBattleClasses({ BattleRoom });

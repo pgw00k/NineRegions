@@ -17,7 +17,9 @@
     "docker:run": "docker run --rm -p 8800:8800/tcp -p 9002:9002/udp xj-local-server",
     "bundle": "esbuild dist/src/index.js --bundle --platform=node --target=node18 --format=cjs --outfile=dist/bundle.js",
     "pack": "rimraf dist/pack && pnpm run build && pnpm run bundle && pkg dist/bundle.js --targets node18-win-x64 --output dist/pack/nine-regions-backend.exe",
-    "pack:dir": "pnpm run pack && xcopy /e /i /y static dist\\pack\\static && copy /y .env.example dist\\pack\\.env.example && copy /y protocol\\source\\pack_msg dist\\pack\\ 2>nul"
+    "pack:dir": "pnpm run pack && xcopy /e /i /y static dist\\pack\\static && copy /y .env.example dist\\pack\\.env.example && copy /y protocol\\source\\pack_msg dist\\pack\\ 2>nul",
+    "test:battle-snapshot": "tsx scripts/replay_snapshot_flow.ts",
+    "test:bot-flow": "tsx scripts/replay_bot_flow.ts"
   },
   "engines": {
     "node": ">=18"

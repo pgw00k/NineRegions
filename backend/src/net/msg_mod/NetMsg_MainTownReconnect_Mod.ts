@@ -15,6 +15,7 @@ import { NetMsg_MainTownReconnect } from '../msg/NetMsg_MainTownReconnect';
 import { PlayerService } from '../../database/service/Player.service';
 import { DeckService } from '../../database/service/Deck.service';
 import { PlayerBaseService } from '../../database/service/PlayerBase.service';
+import { BattleServer } from '../../Battle/BattleServer';
 
 /**
  * NetMsg_LogicReconnection_Mod

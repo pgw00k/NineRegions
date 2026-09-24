@@ -14,6 +14,7 @@ import { PlayerService } from '../../database/service/Player.service';
 import { DeckService } from '../../database/service/Deck.service';
 import { CardLibraryService } from '../../database/service/CardLibrary.service';
 import { PlayerBaseService } from '../../database/service/PlayerBase.service';
+import { BattleServer } from '../../Battle/BattleServer';
 
 /**
  * NetMsg_EnterGame
@@ -41,7 +42,20 @@ export class NetMsg_EnterGame_Mod extends NetMsg_EnterGame {
       ...res,
       error: ErrorCode.SUCCESS,
       ...playerBase,
+      ...this.PendingBattle(suid),
     }
     return Promise.resolve(res);
+  }
+
+  /**
+   * 有一场没打完的战斗时回填 battle* 字段。
+   *
+   * 客户端 Lua（NetMsg_EnterGame.lua 的 OnReceive）用它决定「进主城」还是「回战场」：
+   * `BattleDataInterface.ReLoginBattleProcedure(battleRoomType, battleAccountToken,
+   * battleRoomToken, battleResult)` —— roomType 映射不到本地战斗类型、或两个 token
+   * 任一为空，就直接 return false 进主城。所以这里必须三个字段一起给齐。
+   */
+  private PendingBattle(uid: string): Partial<EnterGameResponse> {
+    return BattleServer.Instance.GetPendingBattle(uid) ?? {};
   }
 }

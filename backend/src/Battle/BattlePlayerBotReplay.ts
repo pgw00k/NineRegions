@@ -3,6 +3,7 @@ import { Logger } from "../core/Logger";
 import { BattleHero } from "./BattleHero";
 import { BattleConst } from "./BattleConst";
 import { BattlePlayerBot } from "./BattlePlayerBot";
+import { RegisterBattleClasses } from "./BattleSnapshot";
 
 /**
  * 回放数据 —— 机器人「模拟真人提交操作」时依据的脚本。
@@ -207,3 +208,5 @@ export class BattlePlayerBotReplay extends BattlePlayerBot {
         }
     }
 }
+
+RegisterBattleClasses({ BattlePlayerBot, BattlePlayerBotReplay });

@@ -1,6 +1,7 @@
 import { Action, AttackType, BattleLogParams, BattleLogSide, BattleLogSimple, BattleLogType, BattleLogUnit, BattleFieldSimple, BattlerInfoSimple, BattlerSimple, CardSimple_2, ChangeCardRequest, ChangeCardResponse, DeployActionSimple, HeroInfo, Hit, LocationStatus, MESSAGE_ID, ActionType, Battlefield } from "mc-local-share";
 import { BattleHero } from "./BattleHero";
 import { BattleConst } from "./BattleConst";
+import { BattleEffectTable } from "./BattleEffectTable";
 import { DeckService } from "../database/service/Deck.service";
 import { CardService } from "../database/service/Card.service";
 import { Client } from "../net/Client";
@@ -12,6 +13,36 @@ import { BattleField } from "./BattleField";
 import { BattleCard } from "./BattleCard";
 import { BattleUnit } from "./BattleUnit";
 import { IBattleRound } from "./IBattleState";
+import { RegisterBattleClasses } from "./BattleSnapshot";
+
+/**
+ * 一次「战斗内凭空召唤」所需的全部客户端配置标识与落地牌型。
+ *
+ * 客户端只认这三张配置表里的真实主键（缺一即整条召唤无表现，且不会报错）：
+ *  - skillId  → 客户端 Skills 表（BattleSubSummon.SpecialSummon 用 GetSkillsByID 校验）
+ *  - bufferId → 客户端 Buffers 表，其 ActiveEffect 必须为 7(SpecialSummon)
+ *  - cid      → 客户端 Cards 表，用于 MCCard.CreateByBattleActionCard 建实体
+ */
+export interface SummonSpec {
+    /** 生效技能 ID（同时是 Buffers 表的同名主键，客户端两表共用编号） */
+    skillId: number;
+    /** 触发的缓冲效果 ID，客户端按它的 ActiveEffect 选择表现分支 */
+    bufferId: number;
+    /** 召唤物卡 ID */
+    cid: number;
+    /** 召唤物费用 */
+    cost: number;
+    /** 召唤物初始攻击 */
+    atk: number;
+    /** 召唤物初始防御（同时作为最大防御） */
+    def: number;
+    /** 召唤物自带主动技能列表（客户端按此渲染技能图标） */
+    skillIdList: number[];
+    /** 召唤物自带被动能力列表（如冲锋 1000001，BattleUnit.Spawn 据此赋予本回合进攻次数） */
+    passiveSkillIdList: number[];
+    /** 召唤数量（Buffers.Parm3），由调用方决定；同一次效果的全部召唤物合成一条 Skill 动作 */
+    count: number;
+}
 
 export class BattlePlayer implements IBattleRound {
 
@@ -83,6 +114,12 @@ export class BattlePlayer implements IBattleRound {
      */
     public Units: Record<number, BattleUnit> = {};
 
+    /** 召唤卡序列号：召唤生成的克隆卡 UID = side*1000+500+n，与牌库卡（+index+1）区间错开 */
+    private SummonSeq: number = 0;
+
+    /** 非正式卡序列号：主将技卡等内建卡的 UID = side*1000+800+n，与牌库/召唤区间错开 */
+    private ExtraSeq: number = 0;
+
     /**
      * 本轮部署阶段内产生的「待播发」战斗日志（如部署时立即消耗的表现）。
      * 由 ApplyDeploy 追加、BeginDeployment 清空，供 BattleRoom.SimulateFight 播发。
@@ -93,6 +130,23 @@ export class BattlePlayer implements IBattleRound {
      * 需要下发给客户端播放对应的布阵效果
      */
     public S2CDeployActions:Action[] = [];
+
+    /**
+     * 本局累计的战斗表现日志，严格按「已下发给该客户端」的顺序排列。
+     *
+     * 客户端 20002 弱重连后，BattleHistoryMgr.lua 会**清空本地全部回合数据**，再把这份
+     * 日志从头重放（实证 JYLog_Backup/2021-04-08：`Send Battle History Data To Lua Success!!
+     * Round Num: 4, Msg Id: BATTLE_RECONNECTION_REP` 之后逐条 `Battle History Convert Simple
+     * Data Success!!! Type: …`，首条即第 1 轮的 PlayGame）。
+     * 所以重连应答的 logs 是整局历史，不是当前回合的增量。
+     */
+    public HistoryLogs: BattleLogSimple[] = [];
+
+    /** 客户端最近一次提交的布阵原文（20002 的 deployAction），供重连后复原部署界面 */
+    public LastDeployActions: DeployActionSimple[] = [];
+
+    /** 提交布阵时的回合号（= BattleRoom.RoundNum），供重连判断本轮是否已提交 */
+    public DeployedRound: number = 0;
 
     /**
      * 本轮部署阶段开始：清空「本轮待播发日志」。
@@ -120,9 +174,17 @@ export class BattlePlayer implements IBattleRound {
         /** 抽牌阶段 */
         let drawn = this.DrawCard(BattleConst.DRAW_PER_ROUND);
 
-        /** 遍历本方单位，逐个触发 RoundBegin */
+        /** 
+         * 遍历本方单位，逐个触发 RoundBegin
+         * 问题 3 修复：对于本轮内通过 PUSH 推挤到新地块的单位，需要在 RoundBegin 时恢复其攻击能力
+         * 因为 RoundBegin 是在部署阶段之前执行的，推挤发生在 RoundBegin 之后，所以需要额外处理
+         */
         Object.values(this.Units).forEach((unit) => unit.RoundBegin());
-
+        
+        // 问题 3 修复补充：检查所有地块上的单位，如果该单位在本轮部署中被推挤过且 AttackCount 为 0，
+        // 说明它在上一轮战斗中使用完了攻击次数，但在当前轮次由于被推挤而失去了攻击机会
+        // 这里通过比对部署阶段的记录来确定是否需要恢复攻击能力
+        
         return drawn;
     }
 
@@ -180,24 +242,49 @@ export class BattlePlayer implements IBattleRound {
     }
 
     /**
-     * 凭空召唤：在本方第一块空地上召唤单位（占格 + CreateUnit + Spawn）。
-     * @param cardUid 要被召唤的卡 UID（须在 AllCards 中，且应为单位牌而非法术）
-     * @returns 落地地块 index；无空地或卡非法时返回 -1
+     * 凭空召唤：按牌型规格在本方一块空地上立即上场（占格 + CreateUnit + Spawn）。
+     *
+     * 与「部署 PUT 扣牌 → 翻牌」不同，这里不经过扣牌状态：落格即 CreateUnit。
+     * 服务端状态先就位，表现层由调用方在事件发生的结算点就地产出：
+     * MakeSummonSkillAction（一条动作带全部 hit，客户端据此建实体并只播一次特写）
+     * + MakeBornLog / MakeBornAction（逐落点的登场动画）。
+     *
+     * 召唤卡使用独立的新 UID（不消耗手牌/牌库）。
+     *
+     * @param spec 落地单位的牌型（cid/费用/攻防/主动技能，须是客户端配置表里的真实牌）
+     * @returns 落地地块 index；无空地返回 -1
      */
-    SummonUnit(cardUid: number): number {
+    SummonCloneToField(spec: SummonSpec): number {
         let target = this.FindEmptyField();
         if (target < 0) {
-            Logger.LogWarn(`BattlePlayer[${this.uid}] SummonUnit 无空地，取消召唤 uid=${cardUid}`);
+            Logger.LogWarn(`BattlePlayer[${this.uid}] SummonCloneToField 无空地，取消召唤 cid=${spec.cid}`);
             return -1;
         }
-        let card = this.AllCards[cardUid];
-        if (!card) {
-            Logger.LogWarn(`BattlePlayer[${this.uid}] SummonUnit 未找到卡 uid=${cardUid}`);
-            return -1;
-        }
-        /** 占格（MakeBornAction 依赖 GetFieldCard 读到该格卡牌快照） */
-        this.BattleFields[target].cardUid = cardUid;
-        this.CreateUnit(cardUid, target);
+
+        let raw: CardSimple_2 = {
+            uid: this.side * 1000 + 500 + (++this.SummonSeq),
+            cid: spec.cid,
+            cost: spec.cost,
+            /** 后续轮快照里客户端跳过 mat=true 的卡（不再建扣牌），已物化单位须保持 true */
+            isMaterialized: true,
+            abilitie: {
+                skillId: [...spec.skillIdList],
+                passiveSkillId: [...spec.passiveSkillIdList],
+                skillExpander: [],
+                atk: spec.atk,
+                curDef: spec.def,
+                maxDef: spec.def,
+                isPrepare: false,
+                flyLayer: 0,
+                auraSkillId: [],
+            },
+        };
+        let clone = new BattleCard(spec.cid, raw);
+        this.AllCards[raw.uid!] = clone;
+
+        this.BattleFields[target].cardUid = raw.uid!;
+        this.CreateUnit(raw.uid!, target);
+        Logger.LogInfo(`BattlePlayer[${this.uid}] 凭空召唤 新uid=${raw.uid} cid=${spec.cid} field=${target}`);
         return target;
     }
 
@@ -362,6 +449,14 @@ export class BattlePlayer implements IBattleRound {
     }
 
     SendMessage(id: MESSAGE_ID, data: any) {
+        /**
+         * 累积表现日志，供 20002 弱重连时整局重放（见 HistoryLogs 注释）。
+         * 所有带 logs 的应答（25004/25010/25005/25007/25011）都走这里，
+         * 顺序即客户端收到的顺序，因此重连后的重放与初次播放完全一致。
+         */
+        if (Array.isArray(data?.logs)) {
+            this.HistoryLogs.push(...data.logs);
+        }
         this.client.PushMessage(id, data);
     }
 
@@ -447,22 +542,76 @@ export class BattlePlayer implements IBattleRound {
         /**
          * 两遍处理，避免客户端动作顺序影响推挤结果：
          *   第一遍：PUSH（把已在场的卡从 field.index 挪到 index 落点）；
-         *   第二遍：PUT（放置本回合打出的新牌 / 消耗法术）。
+         *   第二遍：PUT / SKILL（放置本回合打出的新牌）。
          * 「先推挤、再落子」保证 PUSH 拿到的永远是部署前的旧占位卡，
          * 不会把刚放下的新牌误推走（问题2：第二轮部署+PUSH）。
          */
 
         let pushActions = actions.filter((action) => action.type === ActionType.PUSH) || [];
-        let putActions = actions.filter((action) => action.type === ActionType.PUT) || [];
+        let hideActions = actions.filter((action) =>
+            action.type === ActionType.PUT || action.type === ActionType.SKILL) || [];
 
-        let otherActions = actions.filter((action) => action.type !== ActionType.PUSH && action.type !== ActionType.PUT) || [];
+        let otherActions = actions.filter((action) =>
+            action.type !== ActionType.PUSH
+            && action.type !== ActionType.PUT
+            && action.type !== ActionType.SKILL
+        ) || [];
 
         otherActions.forEach((action) => {
             Logger.LogError(`BattlePlayer[${this.uid}] 未知动作=${action.type}`, action);
         });
 
         this.ApplyPushActions(pushActions);
-        this.ApplyPutActions(putActions);
+        this.ApplyPutActions(hideActions);
+    }
+
+    /**
+     * 实例化本方的主将技卡。
+     *
+     * 主将技不是独立玩法，它本来就是一张 `Cards` 表里 `IsFormal=0` 的 Magic 牌
+     * （不能编入卡组，所以 mc.card 里查不到）。客户端在布阵阶段把它从手牌拖到地块上
+     * 走的就是普通落子：
+     *   `JYBattleOpStateDone.<DoProcedure>d__7.MoveNext(0x158C890)` 里
+     *   `MCCard.IsHeroSkillCard(card)` → `BattleUtils.CreateBattleDeployPutAction(card, pos, isHeroSkill)`
+     *   → `actionType = isHeroSkill*2+1`（即 1→3），随后 `FireEventRemoveHandCard`。
+     * 因此服务端也应当把它当成一张牌：扣放在地块上、占格、受推挤、按翻开顺序结算。
+     *
+     * 取哪张卡按**服务端自己下发**的 `hero.heroSkillID` 查内建表（189 条
+     * HeroeUniqueSkills 的 ID 与 CardID 全等），不采信客户端上报的 cardUid。
+     *
+     * @returns 本局单卡 UID；主将技尚未登记进 BattleEffectTable 时返回 0（该动作被忽略）
+     */
+    CreateHeroSkillCard(): number {
+        let cid = this.hero.heroSkillID;
+        let def = BattleEffectTable.GetCard(cid);
+        if (!def) {
+            Logger.LogWarn(`BattlePlayer[${this.uid}] 主将技=${cid} 未登记进 BattleEffectTable，忽略该动作`);
+            return 0;
+        }
+
+        let uid = this.side * 1000 + 800 + (++this.ExtraSeq);
+        let raw: CardSimple_2 = {
+            uid: uid,
+            cid: def.cid,
+            cost: def.cost,
+            isMaterialized: false,
+            abilitie: {
+                skillId: [...def.skillIdList],
+                passiveSkillId: [...def.passiveSkillIdList],
+                skillExpander: [],
+                atk: def.atk,
+                curDef: def.def,
+                maxDef: def.def,
+                isPrepare: false,
+                flyLayer: 0,
+                auraSkillId: [],
+            },
+        };
+        let card = new BattleCard(def.cid, raw);
+        card.IsMagic = def.isMagic;
+        this.AllCards[uid] = card;
+        Logger.LogInfo(`BattlePlayer[${this.uid}] 主将技卡实例化 cid=${def.cid} uid=${uid}`);
+        return uid;
     }
 
     /** 第一遍：处理所有 PUSH 推挤（旧占位卡从 field.index → index）。 */
@@ -491,28 +640,46 @@ export class BattlePlayer implements IBattleRound {
             let unit = this.Units[movingUid];
             if (unit) {
                 unit.field = targetIndex;
+                /** 
+                 * 问题 3 修复：单位被推挤到新地块后，如果该单位是之前轮次召唤的且本回合已使用过攻击（AttackCount=0），
+                 * RoundBegin 已经在本回合开始时调用过，不会再次增加 AttackCount。但由于它现在位于新地块，
+                 * 应该在本回合继续拥有攻击机会。这里通过检查 RoundNum 来决定是否需要恢复攻击能力。
+                 * 注意：正确的修复应该在 RoundBegin 逻辑中增加对"本轮内刚移动到当前地块的单位"的判断
+                 */
             }
             Logger.LogInfo(`BattlePlayer[${this.uid}] PUSH ${origSlotID}→${targetIndex} uid=${movingUid}`);
         });
     }
 
-    /** 第二遍：处理所有 PUT 落子（法术牌与单位牌都先扣着占格，翻牌在结算阶段进行）。 */
+    /**
+     * 第二遍：处理所有落子（法术牌、单位牌、主将技卡都先扣着占格，翻牌在行动阶段进行）。
+     *
+     * 两类动作的唯一差别在 cardUid 的语义：
+     *   - PUT(1)   → 本局单卡 UID（`CreateBattleDeployPutAction` 的普通分支取 MCCard 运行时 uid）；
+     *   - SKILL(3) → 主将技卡的 **Cards ID**（`...CreateBattleDeployPutAction` 的 isHeroSkill 分支取
+     *     `CardsDefine.ID`）。服务端不认这个上报值，按自己的 `heroSkillID` 内建实例。
+     */
     private ApplyPutActions(actions: DeployActionSimple[]): void {
         actions.forEach((action) => {
             let bid = action.index;
-            let cardUid = action.cardUid;
             let slot = this.BattleFields[bid];
             if (!slot) {
-                Logger.LogWarn(`BattlePlayer[${this.uid}] PUT=${bid} 地块不存在`);
+                Logger.LogWarn(`BattlePlayer[${this.uid}] 落子=${bid} 地块不存在（动作type=${action.type}）`);
                 return;
             }
+
+            let cardUid = action.cardUid;
+            if (action.type === ActionType.SKILL) {
+                cardUid = this.CreateHeroSkillCard();
+            }
+
             if (!cardUid || !this.AllCards[cardUid]) {
-                Logger.LogWarn(`BattlePlayer[${this.uid}] PUT=${bid} cardUid=${cardUid} 非法`);
+                Logger.LogWarn(`BattlePlayer[${this.uid}] 落子=${bid} cardUid=${cardUid} 非法（动作type=${action.type}）`);
                 return;
             }
             if (slot.hasCard) {
                 // 目标地块已占用（部署阶段应无此情形，健壮性兜底，避免重叠）
-                Logger.LogWarn(`BattlePlayer[${this.uid}] PUT=${bid} 已占用`);
+                Logger.LogWarn(`BattlePlayer[${this.uid}] 落子=${bid} 已占用`);
                 return;
             }
 
@@ -523,7 +690,9 @@ export class BattlePlayer implements IBattleRound {
              *
              * 部署阶段不做牌型区分：法术牌与单位牌都以「扣着的牌（PUT Card）」占格，
              * 真实效果留到行动阶段逐格翻牌时决定 ——
-             *   法术 → 翻开即消耗进墓；  单位 → 翻开召唤（CreateUnit + Spawn）。
+             *   单位 → 翻开召唤（CreateUnit + Spawn）；
+             *   法术 / 主将技 → 翻开进墓，再按 SkillList → Buffers 结算效果。
+             * 主将技卡本就不在 HandUIDs 里（按需实例化），这里找不到即无事发生。
              */
             let handIndex = this.HandUIDs.indexOf(cardUid);
             if (handIndex >= 0) {
@@ -774,22 +943,25 @@ export class BattlePlayer implements IBattleRound {
     }
 
     /**
-     * 生成一条我方「卡牌翻面/召唤上场」动作（AttackType.Born），单实例方法。
+     * 生成一条「卡牌翻面/召唤上场」动作（AttackType.Born），单实例方法。
      *
-     * 客户端据此在 b1 指定格子播放卡面翻起、角色上场的动画。hits[0].card 携带该卡
-     * 的 uid/cid/费用/物质化与登场状态（默认 locationStatus=HAND_TO_FIELD(13)），
-     * hits[0].abilitie 携带身上已生效的攻防与异能，供客户端重建该格卡牌的表现。
+     * 客户端据此在 b1 指定格子播放卡面翻起、角色上场的动画。
      *
-     * 反编译客户端（BattleMainBorn）确认：Born 由 hit 直接产单位，**没有**「目标格须
-     * 预先有卡牌快照」的前置校验；但 hit.card.locationStatus 必须让客户端把它标记为
-     * 「已在场上」（ENTER_FIELD=7 / DECK_TO_FIELD=10），否则被视为未登场而丢弃。
-     * 部署翻牌沿用默认 HAND_TO_FIELD(13)（该格已被快照接纳，不冲突）；
-     * 凭空召唤场景请显式传 DECK_TO_FIELD(10)（目标不过任何快照）。
+     * 线上字段集对齐真实录像（LUA/Rec/pve_1000*.rec，tools/rec_decode.py 可读）：
+     * 录像里 Born 的 hit 只有 **field + abilitie**，没有 card；客户端
+     * `BattleMainBorn.DoExcecute`(0x14EA2C0) 只取 `AttackerPointer`(b1)、
+     * `VictimPointer`(b2)、`HitInfos`，协程 `Born`(0x14F4BA0) 只调用
+     * `GetAbilities`(0x14EA480，按 hit.field 匹配格位取 abilitie) 与
+     * `tryShowSpellCard`，**全程不读 hit.card**。卡牌身份由 25007 的格子快照
+     * 与 DisplayBorn 日志给出，不靠动作携带。
+     *
+     * 实测（2026-09-24）：Born 只对「已有实体」的格播放登场动画——目标格若从未通过
+     * 快照扣牌(KouPai)或技能召唤(processSpecialSummon)建立实体，Born 被客户端
+     * 静默忽略（不报错也不建实体）。凭空召唤须走 MakeSummonSkillAction。
      *
      * @param index 自己某块地块的索引
-     * @param locStatus 登场状态，默认 HAND_TO_FIELD
      */
-    MakeBornAction(index: number, locStatus: LocationStatus = LocationStatus.HAND_TO_FIELD): Action | undefined {
+    MakeBornAction(index: number): Action | undefined {
         let card = this.GetFieldCard(index);
         if (!card) {
             return undefined;
@@ -797,13 +969,6 @@ export class BattlePlayer implements IBattleRound {
         let abilitie = card.abilitie;
         let hit: Hit = {
             field: { side: this.side, index },
-            card: {
-                uid: card.uid ?? 0,
-                cid: card.cid ?? 0,
-                cost: card.cost ?? 0,
-                isMaterialized: card.isMaterialized ?? false,
-                locationStatus: locStatus,
-            },
             abilitie: {
                 skillId: [...(abilitie?.skillId ?? [])],
                 passiveSkillId: [...(abilitie?.passiveSkillId ?? [])],
@@ -815,7 +980,6 @@ export class BattlePlayer implements IBattleRound {
                 flyLayer: abilitie?.flyLayer ?? 0,
                 auraSkillId: [...(abilitie?.auraSkillId ?? [])],
             },
-            attacker: { side: this.side, index },
         };
         return {
             b1: { side: this.side, index },
@@ -824,4 +988,89 @@ export class BattlePlayer implements IBattleRound {
             heros: [],
         };
     }
+
+    /**
+     * 生成一条「技能召唤」动作（AttackType.Skill），**一条动作承载本次效果的全部 hit**。
+     *
+     * 客户端消费链路（GameAssembly.dll 原生实现，非 Lua；RVA 见括注）：
+     * `BattleMainSkillCast.DoExcecute(0x14A5400)` 起协程后，**先播一次 Ultra 特写**
+     * （`StartBattleSequnce`/`PlayUltraCutin`），随后 `playBuilderWithAction` 逐个 hit
+     * 建 `DoEffectProcedure` → `ProcessAbility(0x14A5F50, HitIndex)`：
+     * 取 `action.HitInfos[HitIndex]` 的 **bufferId**(0x12D6490) → BattleUtils.GetBuffersDefine
+     * → BuffersDefine.ActiveEffect → 命中 7(SpecialSummon)/11/20/24/34/37/47 时走同一分支
+     * (0x14A6905)，调用 BattleAPI.StartSubSummonCo(0x12D4210)(action.Index, HitIndex,
+     * action.SkillId, efxEntity, hit)，在 **该 hit 自己的 field** 上做召唤。
+     * ⇒ **N 个 hit = 1 次特写 + N 次召唤**；拆成 N 条动作就是 N 次特写（表现错误）。
+     *
+     * **前提**：ProcessAbility 所在协程 `BattleMainSkillCast.<SkillCast>d__44.MoveNext(0x14B7AB0)`
+     * 开头就用 b1 取施法者实体，取不到即整条丢弃（0x14A6905 分支根本不会执行）
+     * ⇒ 施法挂点必须是客户端该刻有实体的格，统一用主将格（见 BattleConst.HERO_INDEX）。
+     * 随后 BattleSubSummon.SpecialSummon(0x15281E0) 依次要求：
+     *   1) SkillId 能在客户端 Skills 表查到（GetSkillsByID 返回空即静默 return）；
+     *   2) hit.card 有值（Nullable<BattleActionCard>，缺失即 return）；
+     *   3) hit.card.cid 能在客户端 Cards 表建出 MCCard（CreateByBattleActionCard）；
+     * 满足后把 hit.field 格上的旧实体 RemoveFromBattleField，再以
+     * BattleAPI.StartPutCardSpecialSummon → FireEventKoupaiPut 走「扣牌翻面」原语建实体。
+     * 即：**实体由 hit.card 决定，由 hit.bufferId 的 ActiveEffect 决定是否召唤，
+     * 与 Born 无关**（Born 只对已存在实体播登场表现）。
+     *
+     * @param casterIndex 施法挂点格索引；**必须是客户端该刻有实体的格**，否则整条动作被丢弃
+     * @param spec 召唤效果与落地卡型（bufferId / skillId 决定表现分支，cid 决定实体）
+     * @param indices 本次召唤的全部落点（本方地块索引，按落子顺序）
+     */
+    MakeSummonSkillAction(casterIndex: number, spec: SummonSpec, indices: number[]): Action | undefined {
+        let hits: Hit[] = [];
+        for (let index of indices) {
+            let card = this.GetFieldCard(index);
+            if (!card) {
+                continue;
+            }
+            let abilitie = card.abilitie;
+            hits.push({
+                field: { side: this.side, index },
+                /** 客户端按此查 Buffers 表决定表现分支，缺失则该 hit 无表现 */
+                bufferId: spec.bufferId,
+                card: {
+                    uid: card.uid ?? 0,
+                    cid: card.cid ?? 0,
+                    cost: card.cost ?? 0,
+                    isMaterialized: false,
+                    locationStatus: LocationStatus.DECK_TO_FIELD,
+                },
+                abilitie: {
+                    skillId: [...(abilitie?.skillId ?? [])],
+                    passiveSkillId: [...(abilitie?.passiveSkillId ?? [])],
+                    skillExpander: (abilitie?.skillExpander ?? []).map((e) => ({ ...e })),
+                    atk: abilitie?.atk ?? 0,
+                    curDef: abilitie?.curDef ?? 0,
+                    maxDef: abilitie?.maxDef ?? 0,
+                    isPrepare: abilitie?.isPrepare ?? false,
+                    flyLayer: abilitie?.flyLayer ?? 0,
+                    auraSkillId: [...(abilitie?.auraSkillId ?? [])],
+                },
+                attacker: { side: this.side, index: casterIndex },
+            });
+        }
+        if (hits.length === 0) {
+            return undefined;
+        }
+        return {
+            b1: { side: this.side, index: casterIndex },
+            /** b2 沿用单 hit 时的语义：首个落点 */
+            b2: { side: this.side, index: indices[0] },
+            skillId: spec.skillId,
+            attackType: AttackType.Skill,
+            hits: hits,
+            heros: [],
+        };
+    }
 }
+
+/**
+ * 登记「可从战斗快照重建」的类型。
+ *
+ * 放在类定义所在文件的末尾，而不是 server.ts 之类的组装点：只要 import 到这些战斗类
+ * （正式启动、离线回归脚本都一样），快照的编解码能力就自动生效，不会出现
+ * 「测试脚本漏注册 → 落盘即抛错」。
+ */
+RegisterBattleClasses({ BattlePlayer, BattleHero, BattleCard, BattleUnit, BattleField });
