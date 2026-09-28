@@ -715,6 +715,26 @@ export class BattlePlayer implements IBattleRound {
     DiscardToCemetery(cardUid: number, field: number): BattleLogSimple[] {
         let logs: BattleLogSimple[] = [];
 
+        // 问题 4 修复：先获取完整卡牌信息，再执行操作
+        const card = this.AllCards[cardUid];
+        if (!card) {
+            Logger.LogWarn(`BattlePlayer[${this.uid}] DiscardToCemetery 未找到卡牌 uid=${cardUid}`);
+            return logs;
+        }
+        
+        const cid = card.cid;
+        const abilitie = card.Current.abilitie;
+        
+        // 使用完整卡牌信息构建单位日志
+        let unit = [this.MakeLogUnit(
+            this.side, 
+            field, 
+            cid, 
+            abilitie?.atk ?? 0, 
+            abilitie?.curDef ?? 0, 
+            abilitie?.maxDef ?? 0
+        )];
+        
         if (!this.CemeteryUIDs.includes(cardUid)) {
             this.CemeteryUIDs.push(cardUid);
         }
@@ -725,8 +745,7 @@ export class BattlePlayer implements IBattleRound {
             slot.cardUid = 0;
         }
 
-        const cid = this.AllCards[cardUid]?.cid ?? 0;
-        let unit = [this.MakeLogUnit(this.side, field, cid, 0, 0, 0)];
+        // 添加进墓表现日志，使用完整卡牌信息
         logs.push(this.MakeLog(BattleLogType.DisplayAddToCemetery, BattleLogSide.NullSide, unit, [cardUid]));
         Logger.LogInfo(`BattlePlayer[${this.uid}] 法术翻开消耗 uid=${cardUid} cid=${cid} → 墓地`);
         return logs;
