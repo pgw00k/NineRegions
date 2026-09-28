@@ -1016,8 +1016,16 @@ export class BattleRoom implements IBattleRound {
 
         /** 法术 / 主将技牌：翻开即进墓，再按 SkillList → Buffers 结算效果 */
         if (card.IsMagic) {
+            // 问题 4 修复：法术牌翻开需要先播放翻牌动作，再进墓
             let discardLogs = battler.DiscardToCemetery(cardUid, index);
             logs.push(...discardLogs);
+            
+            // 添加翻开动作，让客户端播放翻牌动画
+            let flipAction = battler.MakeAction(AttackType.Born, battler.side, index);
+            if (flipAction) {
+                actions.push(flipAction);
+            }
+            
             this.ResolveMagic(battler, card, logs, actions);
             return;
         }
