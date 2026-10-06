@@ -47,7 +47,6 @@ export async function main(): Promise<void> {
     })
     .then(() => {
       logger.info('boot', 'HTTP服务已启动');
-      logger.info('boot', '服务装配完成');
     })
     .catch((err) => {
       logger.error('boot', `初始化失败:${err}`);

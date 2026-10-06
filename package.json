@@ -6,7 +6,7 @@
   "packageManager": "pnpm@9.0.0",
   "scripts": {
     "install:all": "pnpm install",
-    "dev": "pnpm -r --parallel run dev",
+    "dev": "pnpm run build:share && pnpm --filter mc-local-backend dev",
     "gen": "pnpm -r --parallel run gen",
     "gen:ts": "pnpm --filter mc-local-share run gen:ts",
     "build": "pnpm -r run build",

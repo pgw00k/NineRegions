@@ -10,6 +10,7 @@
     "gen:res": "tsx scripts/generate_res.ts",
     "gen:ts": "tsx scripts/generate_ts.ts",
     "gen:grpc": "tsx scripts/generate_gRPC.ts",
+    "dev": "tsc -p tsconfig.build.json",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf dist",
     "typecheck": "tsc -p tsconfig.json --noEmit"

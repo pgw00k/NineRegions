@@ -225,3 +225,8 @@ LUA/
 _il2cpp/
 Test/
 GameAssembly/
+
+backend/database/
+
+*lock.yaml
+*lock.json

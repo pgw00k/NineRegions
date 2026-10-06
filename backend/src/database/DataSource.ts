@@ -16,6 +16,7 @@ export let DBConnectCmd = {
     username: "",
     password: "",
     database: "",
+    schema: "mc", 
     synchronize: true, // 开发环境下使用，生产环境应设为false
     logging: true,
     entities: [Player, UserLibrary, Deck, CardLibrary, Card,PlayerInfo],
