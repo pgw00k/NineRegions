@@ -12,6 +12,8 @@
 
 ## 快速流程
 当前的版本主要面向开发者，前置环境请直接参考环境说明。
+客户端：[https://pan.baidu.com/s/1yof9gGeNWao2W1Rmh8NTlw?pwd=3950](https://pan.baidu.com/s/1yof9gGeNWao2W1Rmh8NTlw?pwd=3950)
+简要说明：[https://www.bilibili.com/video/BV1jYpN6vEPn](https://www.bilibili.com/video/BV1jYpN6vEPn)
 1. clone 完成后，先安装node的基础环境，由于使用了pnpm作为包管理器（主要是为了将协议层share进行单独隔离0）而不是npm，所以硬性要求pnpm，使用 `pnpm install` 或者 `npm run install:all` 来安装都可以。
 2. 下载 [backend_ex.zip](https://github.com/pgw00k/NineRegions/releases/download/ex/backend_ex.zip) 解压到 backend 目录中
 3. 使用 `001_InitDB.bat` 文件来快速初始化本地数据库，需要设置psql的bin目录，同时要确保有 **init_mc.backup** 文件，不然没有用户数据。
