@@ -40,6 +40,7 @@ import { NetMsg_DLC4GetInfo } from './NetMsg_DLC4GetInfo';
 import { NetMsg_DLC4SetEquiment } from './NetMsg_DLC4SetEquiment';
 import { NetMsg_DLC4SetTAlent } from './NetMsg_DLC4SetTAlent';
 import { NetMsg_EditDeck } from './NetMsg_EditDeck';
+import { NetMsg_EditSetting } from './NetMsg_EditSetting';
 import { NetMsg_EnterGame } from './NetMsg_EnterGame';
 import { NetMsg_FirstPayReward } from './NetMsg_FirstPayReward';
 import { NetMsg_GetDeckCode } from './NetMsg_GetDeckCode';
@@ -139,6 +140,7 @@ export class MessageController extends MessageControllerBase {
     this.AutoResponser[MESSAGE_ID.DLC4_SETEQUIPMENT_REQ] = new NetMsg_DLC4SetEquiment();
     this.AutoResponser[MESSAGE_ID.DLC4_SETTALENT_REQ] = new NetMsg_DLC4SetTAlent();
     this.AutoResponser[MESSAGE_ID.EDIT_DECK_REQ] = new NetMsg_EditDeck();
+    this.AutoResponser[MESSAGE_ID.EDIT_SETTING_REQ] = new NetMsg_EditSetting();
     this.AutoResponser[MESSAGE_ID.ENTER_GAME_REQ] = new NetMsg_EnterGame();
     this.AutoResponser[MESSAGE_ID.FIRSTCHARGEREWARD_REQ] = new NetMsg_FirstPayReward();
     this.AutoResponser[MESSAGE_ID.GET_DECKCODE_REQ] = new NetMsg_GetDeckCode();

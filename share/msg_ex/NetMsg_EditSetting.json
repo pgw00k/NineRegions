@@ -1,0 +1,8 @@
+{
+  "TageName": "EditSetting",
+  "reqId": "EDIT_SETTING_REQ",
+  "reqProto": "EditSettingRequest",
+  "recId": "EDIT_SETTING_REP",
+  "recvProto": "EditSettingResponse",
+  "needParseLua": false
+}
